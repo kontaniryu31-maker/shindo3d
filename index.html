@@ -40,7 +40,18 @@
   .card .unit{font-size:18px;font-weight:900;line-height:1.25;margin-top:2px;}
   .card .body{padding:13px 16px 16px;}
   .card .core{font-size:12px;font-weight:700;color:#5b6a72;line-height:1.6;}
+  .card .prog{margin-top:12px;}
+  .card .prog .meta{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;font-weight:900;color:#5b6a72;margin-bottom:4px;}
+  .card .prog .meta b{font-size:14px;}
+  .card .bar{height:10px;border-radius:999px;background:#eef2f4;overflow:hidden;}
+  .card .bar>i{display:block;height:100%;width:0;border-radius:999px;transition:width .6s cubic-bezier(.2,.8,.2,1);}
+  .c-sansu .bar>i{background:#2E91A8;} .c-shakai .bar>i{background:#2F9E78;} .c-rika .bar>i{background:#D8731C;}
   .card .go{margin-top:12px;display:inline-block;font-size:13px;font-weight:900;color:#fff;border-radius:11px;padding:8px 16px;}
+  .total{margin-top:16px;background:#fff;border:2px solid #cfe6ea;border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .total .t-emoji{font-size:24px;}
+  .total .t-txt{font-size:13px;font-weight:900;color:#2E91A8;}
+  .total .t-bar{flex:1;min-width:160px;height:12px;border-radius:999px;background:#eef2f4;overflow:hidden;}
+  .total .t-bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2E91A8,#2F9E78,#D8731C);border-radius:999px;transition:width .7s cubic-bezier(.2,.8,.2,1);}
   .c-sansu .top{background:linear-gradient(180deg,#3FA0B5,#2E91A8);} .c-sansu .go{background:#2E91A8;} .c-sansu:hover{border-color:#2E91A8;}
   .c-shakai .top{background:linear-gradient(180deg,#46B58E,#2F9E78);} .c-shakai .go{background:#2F9E78;} .c-shakai:hover{border-color:#2F9E78;}
   .c-rika .top{background:linear-gradient(180deg,#E08A4F,#D8731C);} .c-rika .go{background:#D8731C;} .c-rika:hover{border-color:#D8731C;}
@@ -67,7 +78,13 @@
   <div class="lead">
     「すすむ × ふかめる × つなげる」の3つの じくで、単元を 立体的に 見える化した 自由進度表です。
     各マスに「これが できたら クリア」「つかうどうぐ・リンク（NHK for School など）」「無限れんしゅう問題」「探究タイム」がそろっています。
-    やりたい教科を えらんでください。
+    やりたい教科を えらんでください。じぶんの ペースで OK！ やった ぶんだけ いろが つくよ。
+  </div>
+
+  <div class="total" id="total" style="display:none">
+    <span class="t-emoji">🌟</span>
+    <span class="t-txt" id="total-txt">きみの がくしゅう</span>
+    <span class="t-bar"><i id="total-bar"></i></span>
   </div>
 
   <div class="grid">
@@ -79,7 +96,8 @@
       </div>
       <div class="body">
         <div class="core">いちばん大事：位をそろえて 同じ位どうしで 計算する（くらいのしくみ）。お買いもの・モンスターバトル・暗号たんていのPBLつき。</div>
-        <span class="go">ひらく →</span>
+        <div class="prog"><div class="meta"><span class="lbl">すすみぐあい</span><span><b class="cnt">0</b> / 20 マス</span></div><div class="bar"><i></i></div></div>
+        <span class="go">はじめる →</span>
       </div>
     </a>
 
@@ -91,7 +109,8 @@
       </div>
       <div class="body">
         <div class="core">いちばん大事：方位と地図記号という“だれにでも伝わるルール”で 土地のようすを 読む。絵地図・方位じしんの読み取りPBLつき。</div>
-        <span class="go">ひらく →</span>
+        <div class="prog"><div class="meta"><span class="lbl">すすみぐあい</span><span><b class="cnt">0</b> / 20 マス</span></div><div class="bar"><i></i></div></div>
+        <span class="go">はじめる →</span>
       </div>
     </a>
 
@@ -103,7 +122,8 @@
       </div>
       <div class="body">
         <div class="core">いちばん大事：生きものは きまった じゅんばんで 育ち、からだの つくりには 共通点がある。育ちのじゅんばん・こん虫クイズの探究つき。</div>
-        <span class="go">ひらく →</span>
+        <div class="prog"><div class="meta"><span class="lbl">すすみぐあい</span><span><b class="cnt">0</b> / 20 マス</span></div><div class="bar"><i></i></div></div>
+        <span class="go">はじめる →</span>
       </div>
     </a>
   </div>
@@ -113,5 +133,54 @@
     進度（色ぬり）は つかっている端末に 自動保存されます。
   </div>
 </div>
+<script>
+(function(){
+  // 各単元ツールの localStorage キー（同一オリジン）。total は すすむ5×ふかめる4＝20マス。
+  var UNITS = [
+    { cls: "c-sansu",  key: "shindo3d_hissan_v6",       total: 20 },
+    { cls: "c-shakai", key: "shindo3d_shakai_nara_v1",  total: 20 },
+    { cls: "c-rika",   key: "shindo3d_rika3_v1",        total: 20 }
+  ];
+  function doneCount(key){
+    try {
+      var raw = localStorage.getItem(key);
+      if(!raw) return 0;
+      var obj = JSON.parse(raw);
+      var d = (obj && obj.done) ? obj.done : {};
+      var n = 0; for(var k in d){ if(d[k]) n++; }
+      return n;
+    } catch(e){ return 0; }
+  }
+  var sum = 0, max = 0;
+  UNITS.forEach(function(u){
+    var card = document.querySelector("." + u.cls);
+    if(!card) return;
+    var c = Math.min(doneCount(u.key), u.total);
+    sum += c; max += u.total;
+    var pct = Math.round(c / u.total * 100);
+    var cnt = card.querySelector(".cnt"); if(cnt) cnt.textContent = c;
+    var bar = card.querySelector(".bar > i"); if(bar) setTimeout(function(){ bar.style.width = pct + "%"; }, 80);
+    var go = card.querySelector(".go");
+    if(go){
+      if(c >= u.total) go.textContent = "クリア！🎉 もう一回 →";
+      else if(c > 0)   go.textContent = "つづきから →";
+      else             go.textContent = "はじめる →";
+    }
+  });
+  // 全体バナー
+  var total = document.getElementById("total");
+  if(total){
+    total.style.display = "flex";
+    var pct = max ? Math.round(sum / max * 100) : 0;
+    var txt = document.getElementById("total-txt");
+    if(txt) txt.textContent = sum === 0
+      ? "きみの がくしゅう：ここから スタート！（ぜんぶで " + max + " マス）"
+      : (sum >= max ? "ぜんぶ クリア！すごい！🎉（" + sum + " / " + max + " マス）"
+                    : "きみの がくしゅう：" + sum + " / " + max + " マス（" + pct + "％）");
+    var tb = document.getElementById("total-bar");
+    if(tb) setTimeout(function(){ tb.style.width = pct + "%"; }, 120);
+  }
+})();
+</script>
 </body>
 </html>
