@@ -15,9 +15,13 @@
     color:#2A3B40;
     background:radial-gradient(1200px 700px at 78% -8%, #E6F5F7 0%, #EEF6F7 45%, #E8F0F1 100%);
     min-height:100vh;
-    padding:28px 18px 60px;
+    padding:24px 18px 60px;
   }
   .wrap{max-width:980px;margin:0 auto;}
+  body.big .wrap{zoom:1.18;}
+  .topbar{display:flex;justify-content:flex-end;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+  .pref{font-size:12px;font-weight:900;cursor:pointer;border:1.5px solid #cfe0e4;background:#fff;color:#5b6a72;border-radius:999px;padding:6px 13px;}
+  .pref.on{background:#2E91A8;color:#fff;border-color:#2E91A8;}
   .head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
   .logo{width:54px;height:54px;border-radius:14px;background:#2E91A8;color:#fff;font-weight:900;font-size:18px;
     display:grid;place-items:center;flex:none;box-shadow:0 6px 0 rgba(46,145,168,.3);}
@@ -28,57 +32,61 @@
   .ax1{background:#E3F2F5;color:#2E91A8;}
   .ax2{background:#FBF1D6;color:#B58A1B;}
   .ax3{background:#E3F4EE;color:#1f7a5f;}
-  .lead{margin-top:16px;font-size:13.5px;font-weight:700;color:#3a4a52;line-height:1.7;
+  .lead{margin-top:16px;font-size:13.5px;font-weight:700;color:#3a4a52;line-height:1.8;
     background:#fff;border:1px solid #e1e8ea;border-radius:14px;padding:14px 16px;}
-  .grid{margin-top:22px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;}
-  .card{display:block;text-decoration:none;color:inherit;background:#fff;border:2px solid #e1e8ea;border-radius:18px;
-    overflow:hidden;transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;}
-  .card:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(46,145,168,.18);}
-  .card .top{padding:16px 16px 12px;color:#fff;}
-  .card .emoji{font-size:30px;}
-  .card .subj{font-size:12px;font-weight:900;opacity:.95;margin-top:6px;}
-  .card .unit{font-size:18px;font-weight:900;line-height:1.25;margin-top:2px;}
-  .card .body{padding:13px 16px 16px;}
-  .card .core{font-size:12px;font-weight:700;color:#5b6a72;line-height:1.6;}
-  .card .prog{margin-top:12px;}
-  .card .prog .meta{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;font-weight:900;color:#5b6a72;margin-bottom:4px;}
-  .card .prog .meta b{font-size:14px;}
-  .card .bar{height:10px;border-radius:999px;background:#eef2f4;overflow:hidden;}
-  .card .bar>i{display:block;height:100%;width:0;border-radius:999px;transition:width .6s cubic-bezier(.2,.8,.2,1);}
-  .c-sansu .bar>i{background:#2E91A8;} .c-shakai .bar>i{background:#2F9E78;} .c-rika .bar>i{background:#D8731C;}
-  .card .go{margin-top:12px;display:inline-block;font-size:13px;font-weight:900;color:#fff;border-radius:11px;padding:8px 16px;}
   .total{margin-top:16px;background:#fff;border:2px solid #cfe6ea;border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
   .total .t-emoji{font-size:24px;}
   .total .t-txt{font-size:13px;font-weight:900;color:#2E91A8;}
   .total .t-bar{flex:1;min-width:160px;height:12px;border-radius:999px;background:#eef2f4;overflow:hidden;}
   .total .t-bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2E91A8,#2F9E78,#D8731C);border-radius:999px;transition:width .7s cubic-bezier(.2,.8,.2,1);}
-  .c-sansu .top{background:linear-gradient(180deg,#3FA0B5,#2E91A8);} .c-sansu .go{background:#2E91A8;} .c-sansu:hover{border-color:#2E91A8;}
-  .c-shakai .top{background:linear-gradient(180deg,#46B58E,#2F9E78);} .c-shakai .go{background:#2F9E78;} .c-shakai:hover{border-color:#2F9E78;}
-  .c-rika .top{background:linear-gradient(180deg,#E08A4F,#D8731C);} .c-rika .go{background:#D8731C;} .c-rika:hover{border-color:#D8731C;}
+  .grid{margin-top:22px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;}
+  .card{display:block;text-decoration:none;color:inherit;background:#fff;border:2px solid #e1e8ea;border-radius:18px;
+    overflow:hidden;transition:transform .15s ease, box-shadow .15s ease;}
+  .card:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(46,145,168,.18);}
+  .card .top{padding:16px 16px 12px;color:#fff;}
+  .card .emoji{font-size:30px;}
+  .card .subj{font-size:12px;font-weight:900;opacity:.95;margin-top:6px;}
+  .card .unit{font-size:18px;font-weight:900;line-height:1.3;margin-top:2px;}
+  .card .body{padding:13px 16px 16px;}
+  .card .core{font-size:12px;font-weight:700;color:#5b6a72;line-height:1.7;}
+  .card .prog{margin-top:12px;}
+  .card .prog .meta{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;font-weight:900;color:#5b6a72;margin-bottom:4px;}
+  .card .prog .meta b{font-size:14px;}
+  .card .bar{height:10px;border-radius:999px;background:#eef2f4;overflow:hidden;}
+  .card .bar>i{display:block;height:100%;width:0;border-radius:999px;transition:width .6s cubic-bezier(.2,.8,.2,1);}
+  .card .go{margin-top:12px;display:inline-block;font-size:13px;font-weight:900;color:#fff;border-radius:11px;padding:9px 16px;}
+  ruby rt{font-size:.55em;font-weight:700;}
+  .hide-furi rt{display:none;}
   .foot{margin-top:30px;font-size:11px;font-weight:700;color:#8a97a0;line-height:1.7;text-align:center;}
   .foot b{color:#5b6a72;}
+  .err{margin-top:20px;background:#FDECEC;border:1.5px solid #E2A0A0;color:#9a3b3b;border-radius:12px;padding:12px 16px;font-size:13px;font-weight:800;}
 </style>
 </head>
-<body>
+<body class="hide-furi">
 <div class="wrap">
+  <div class="topbar">
+    <button class="pref" id="pf-furi">ふりがな</button>
+    <button class="pref" id="pf-big">大きい文字</button>
+  </div>
+
   <div class="head">
     <div class="logo">3D</div>
     <div>
       <div class="title">3D 自由進度表 ポータル</div>
-      <div class="sub">単元をえらんで スタート — 自分のペースで すすめる学び</div>
+      <div class="sub" data-furi>単元《たんげん》をえらんで スタート ― 自分《じぶん》のペースで すすめる学《まな》び</div>
     </div>
   </div>
 
   <div class="axes">
     <span class="ax1">━ すすむ（ステージ）</span>
-    <span class="ax2">━ ふかめる（読む→つかう→せつめい→高め合う）</span>
-    <span class="ax3">━ つなげる（前後の単元へ）</span>
+    <span class="ax2" data-furi>━ ふかめる（読《よ》む→つかう→せつめい→高《たか》め合《あ》う）</span>
+    <span class="ax3" data-furi>━ つなげる（前後《ぜんご》の単元《たんげん》へ）</span>
   </div>
 
-  <div class="lead">
-    「すすむ × ふかめる × つなげる」の3つの じくで、単元を 立体的に 見える化した 自由進度表です。
-    各マスに「これが できたら クリア」「つかうどうぐ・リンク（NHK for School など）」「無限れんしゅう問題」「探究タイム」がそろっています。
-    やりたい教科を えらんでください。じぶんの ペースで OK！ やった ぶんだけ いろが つくよ。
+  <div class="lead" data-furi>
+    「すすむ × ふかめる × つなげる」の3つの じくで、単元《たんげん》を 立体的《りったいてき》に 見《み》える化《か》した 自由進度表《じゆうしんどひょう》です。
+    各《かく》マスに「これが できたら クリア」「つかうどうぐ・リンク（NHK for School など）」「無限《むげん》れんしゅう問題《もんだい》」「探究《たんきゅう》タイム」がそろっています。
+    やりたい教科《きょうか》を えらんでください。じぶんの ペースで OK！ やった ぶんだけ いろが つくよ。
   </div>
 
   <div class="total" id="total" style="display:none">
@@ -87,99 +95,103 @@
     <span class="t-bar"><i id="total-bar"></i></span>
   </div>
 
-  <div class="grid">
-    <a class="card c-sansu" href="./sansu/">
-      <div class="top">
-        <div class="emoji">🧮</div>
-        <div class="subj">算数 3年（東京書籍）</div>
-        <div class="unit">たし算とひき算の筆算</div>
-      </div>
-      <div class="body">
-        <div class="core">いちばん大事：位をそろえて 同じ位どうしで 計算する（くらいのしくみ）。お買いもの・モンスターバトル・暗号たんていのPBLつき。</div>
-        <div class="prog"><div class="meta"><span class="lbl">すすみぐあい</span><span><b class="cnt">0</b> / 20 マス</span></div><div class="bar"><i></i></div></div>
-        <span class="go">はじめる →</span>
-      </div>
-    </a>
+  <div class="grid" id="grid"></div>
+  <div id="err"></div>
 
-    <a class="card c-shakai" href="./shakai/">
-      <div class="top">
-        <div class="emoji">🗺️</div>
-        <div class="subj">社会 3年（青葉出版・奈良市版）</div>
-        <div class="unit">わたしたちの奈良市<br>（方位・地図記号）</div>
-      </div>
-      <div class="body">
-        <div class="core">いちばん大事：方位と地図記号という“だれにでも伝わるルール”で 土地のようすを 読む。絵地図・方位じしんの読み取りPBLつき。</div>
-        <div class="prog"><div class="meta"><span class="lbl">すすみぐあい</span><span><b class="cnt">0</b> / 20 マス</span></div><div class="bar"><i></i></div></div>
-        <span class="go">はじめる →</span>
-      </div>
-    </a>
-
-    <a class="card c-rika" href="./rika/">
-      <div class="top">
-        <div class="emoji">🌱</div>
-        <div class="subj">理科 3年（啓林館）</div>
-        <div class="unit">生きものの育ちとつくり<br>（たね・植物・チョウ）</div>
-      </div>
-      <div class="body">
-        <div class="core">いちばん大事：生きものは きまった じゅんばんで 育ち、からだの つくりには 共通点がある。育ちのじゅんばん・こん虫クイズの探究つき。</div>
-        <div class="prog"><div class="meta"><span class="lbl">すすみぐあい</span><span><b class="cnt">0</b> / 20 マス</span></div><div class="bar"><i></i></div></div>
-        <span class="go">はじめる →</span>
-      </div>
-    </a>
-  </div>
-
-  <div class="foot">
-    制作：<b>紺谷 隆</b>（奈良市立東登美ヶ丘小学校）／ けテぶれ・QNKS・SRL の考えをベースにした自作教材<br>
-    進度（色ぬり）は つかっている端末に 自動保存されます。
+  <div class="foot" data-furi>
+    制作《せいさく》：<b>紺谷 隆《こんたに たかし》</b>（奈良市立東登美ヶ丘小学校《ならしりつ ひがしとみがおか しょうがっこう》）／ けテぶれ・QNKS・SRL の考《かんが》えをベースにした自作教材《じさくきょうざい》<br>
+    進度《しんど》（色《いろ》ぬり）は つかっている端末《たんまつ》に 自動保存《じどうほぞん》されます。
   </div>
 </div>
+
 <script>
 (function(){
-  // 各単元ツールの localStorage キー（同一オリジン）。total は すすむ5×ふかめる4＝20マス。
-  var UNITS = [
-    { cls: "c-sansu",  key: "shindo3d_hissan_v6",       total: 20 },
-    { cls: "c-shakai", key: "shindo3d_shakai_nara_v1",  total: 20 },
-    { cls: "c-rika",   key: "shindo3d_rika3_v1",        total: 20 }
-  ];
-  function doneCount(key){
-    try {
-      var raw = localStorage.getItem(key);
-      if(!raw) return 0;
-      var obj = JSON.parse(raw);
-      var d = (obj && obj.done) ? obj.done : {};
-      var n = 0; for(var k in d){ if(d[k]) n++; }
-      return n;
-    } catch(e){ return 0; }
+  /* ===== ふりがな：漢字《よみ》 → ruby に変換／OFFは ruby を隠す ===== */
+  var RUBY = /([一-鿿々〇ヶ々ヶ]+)《([^》]+)》/g;
+  function toRuby(s){ return String(s).replace(RUBY, "<ruby>$1<rt>$2</rt></ruby>"); }
+  // 固定テキスト（data-furi）も ruby 化しておく（表示/非表示は CSS で切替）
+  function rubifyStatic(){
+    var els = document.querySelectorAll("[data-furi]");
+    els.forEach(function(el){ el.innerHTML = toRuby(el.innerHTML); });
   }
-  var sum = 0, max = 0;
-  UNITS.forEach(function(u){
-    var card = document.querySelector("." + u.cls);
-    if(!card) return;
-    var c = Math.min(doneCount(u.key), u.total);
-    sum += c; max += u.total;
-    var pct = Math.round(c / u.total * 100);
-    var cnt = card.querySelector(".cnt"); if(cnt) cnt.textContent = c;
-    var bar = card.querySelector(".bar > i"); if(bar) setTimeout(function(){ bar.style.width = pct + "%"; }, 80);
-    var go = card.querySelector(".go");
-    if(go){
-      if(c >= u.total) go.textContent = "クリア！🎉 もう一回 →";
-      else if(c > 0)   go.textContent = "つづきから →";
-      else             go.textContent = "はじめる →";
-    }
-  });
-  // 全体バナー
-  var total = document.getElementById("total");
-  if(total){
+
+  /* ===== 進度（各ツールの localStorage を読む） ===== */
+  function doneCount(key){
+    try{
+      var raw = localStorage.getItem(key); if(!raw) return 0;
+      var obj = JSON.parse(raw); var d = (obj && obj.done) ? obj.done : {};
+      var n=0; for(var k in d){ if(d[k]) n++; } return n;
+    }catch(e){ return 0; }
+  }
+
+  function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+  // 漢字《よみ》記法は許可しつつ、それ以外はそのまま（信頼できる自作データ前提）
+  function disp(s){ return toRuby(s); }
+
+  function renderCards(units){
+    var grid = document.getElementById("grid");
+    var sum=0, max=0, html="";
+    units.forEach(function(u){
+      var c = Math.min(doneCount(u.storeKey), u.total);
+      sum += c; max += u.total;
+      var pct = Math.round(c / u.total * 100);
+      var go = c >= u.total ? "クリア！🎉 もう一回 →" : (c > 0 ? "つづきから →" : "はじめる →");
+      html +=
+        '<a class="card" href="' + esc(u.path) + '">' +
+          '<div class="top" style="background:' + esc(u.top) + '">' +
+            '<div class="emoji">' + esc(u.emoji) + '</div>' +
+            '<div class="subj">' + disp(u.subject) + '</div>' +
+            '<div class="unit">' + disp(u.unit) + '</div>' +
+          '</div>' +
+          '<div class="body">' +
+            '<div class="core">' + disp(u.core) + '</div>' +
+            '<div class="prog"><div class="meta"><span>すすみぐあい</span><span><b>' + c + '</b> / ' + u.total + ' マス</span></div>' +
+              '<div class="bar"><i data-pct="' + pct + '" style="background:' + esc(u.color) + '"></i></div></div>' +
+            '<span class="go" style="background:' + esc(u.color) + '">' + go + '</span>' +
+          '</div>' +
+        '</a>';
+    });
+    grid.innerHTML = html;
+    // バーをアニメ
+    setTimeout(function(){
+      document.querySelectorAll(".card .bar > i").forEach(function(i){ i.style.width = (i.getAttribute("data-pct")||0) + "%"; });
+    }, 80);
+    // 全体
+    var total = document.getElementById("total");
     total.style.display = "flex";
     var pct = max ? Math.round(sum / max * 100) : 0;
     var txt = document.getElementById("total-txt");
-    if(txt) txt.textContent = sum === 0
+    txt.textContent = sum === 0
       ? "きみの がくしゅう：ここから スタート！（ぜんぶで " + max + " マス）"
       : (sum >= max ? "ぜんぶ クリア！すごい！🎉（" + sum + " / " + max + " マス）"
                     : "きみの がくしゅう：" + sum + " / " + max + " マス（" + pct + "％）");
-    var tb = document.getElementById("total-bar");
-    if(tb) setTimeout(function(){ tb.style.width = pct + "%"; }, 120);
+    setTimeout(function(){ document.getElementById("total-bar").style.width = pct + "%"; }, 120);
   }
+
+  /* ===== こども向け設定（ふりがな・文字サイズ）を保存 ===== */
+  var PREF_KEY = "portal_prefs";
+  function loadPrefs(){ try{ return JSON.parse(localStorage.getItem(PREF_KEY)) || {}; }catch(e){ return {}; } }
+  function savePrefs(p){ try{ localStorage.setItem(PREF_KEY, JSON.stringify(p)); }catch(e){} }
+  var prefs = loadPrefs();
+  function applyPrefs(){
+    document.body.classList.toggle("hide-furi", !prefs.furi);
+    document.body.classList.toggle("big", !!prefs.big);
+    document.getElementById("pf-furi").classList.toggle("on", !!prefs.furi);
+    document.getElementById("pf-big").classList.toggle("on", !!prefs.big);
+  }
+  document.getElementById("pf-furi").addEventListener("click", function(){ prefs.furi = !prefs.furi; savePrefs(prefs); applyPrefs(); });
+  document.getElementById("pf-big").addEventListener("click", function(){ prefs.big = !prefs.big; savePrefs(prefs); applyPrefs(); });
+
+  /* ===== 起動 ===== */
+  rubifyStatic();
+  applyPrefs();
+  fetch("./units.json")
+    .then(function(r){ if(!r.ok) throw new Error("units.json " + r.status); return r.json(); })
+    .then(function(data){ renderCards((data && data.units) || []); })
+    .catch(function(e){
+      document.getElementById("err").innerHTML =
+        '<div class="err">単元リスト（units.json）を よみこめませんでした。ページを ひらき直してください。<br><small>' + esc(e.message) + '</small></div>';
+    });
 })();
 </script>
 </body>
