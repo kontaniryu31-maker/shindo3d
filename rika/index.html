@@ -75,6 +75,7 @@ const STAGES = [
   { n: 3, title: "植物のそだち", sub: "子葉→葉が ふえる", ex: "子葉→本葉" },
   { n: 4, title: "植物の体のつくり", sub: "根・くき・葉", ex: "根・くき・葉" },
   { n: 5, title: "ちょうのそだち", sub: "たまご→せい虫・こん虫の体", ex: "たまご→よう虫→さなぎ→せい虫" },
+  { n: 6, title: "たしかめテスト", sub: "たね・植物・チョウ まとめ", ex: "一問一答で たしかめ" },
 ];
 const DEPTH = [
   { lv: 1, name: "読む", desc: "音読→線引き", badge: "📖", badgeName: "読破" },
@@ -90,6 +91,23 @@ const EXPLORE = {
   minpriHint: "れい：画用紙に「育ちの じゅんばんクイズ」や「これは こん虫？クイズ」を 作って、みんなで チャレンジ！",
 };
 
+/* NHK for School 検証済みクリップ（2026-06-06 全URL curl 200確認・edu.web.nhk 実ドメイン）
+   ※eboardは小5・小6理科のみで小3理科が無いため不採用（嘘リンク回避）。
+   ※NEXT_CARDS/PLAN より前に宣言（参照順による初期化エラー回避）。 */
+const NHK = {
+  mushimegane: { t: "NHK：虫めがねの使いかた", url: "https://edu.web.nhk/school/watch/clip/?das_id=D0005300084_00000" },
+  tane:        { t: "NHK：たねのふしぎ（3年）", url: "https://edu.web.nhk/school/watch/bangumi/?das_id=D0005110002_00000" },
+  sodachi:     { t: "NHK：植物の育ち方とからだ（3年）", url: "https://edu.web.nhk/school/watch/bangumi/?das_id=D0005110384_00000" },
+  kusabana:    { t: "NHK：草花のからだ（根・くき・葉）", url: "https://edu.web.nhk/school/watch/bangumi/?das_id=D0005110004_00000" },
+  hanaato:     { t: "NHK：花がさいたあと（植物の一生）", url: "https://edu.web.nhk/school/watch/bangumi/?das_id=D0005110389_00000" },
+  aomushi1:    { t: "NHK：アオムシのへんしん①（たまご→さなぎ）", url: "https://edu.web.nhk/school/watch/bangumi/?das_id=D0005110003_00000" },
+  aomushi2:    { t: "NHK：アオムシのへんしん②（さなぎ→せい虫）", url: "https://edu.web.nhk/school/watch/bangumi/?das_id=D0005110006_00000" },
+  mushikarada: { t: "NHK：虫のからだ（頭・むね・はら／あし6本）", url: "https://edu.web.nhk/school/watch/bangumi/?das_id=D0005110010_00000" },
+  konchuiroiro:{ t: "NHK：こん虫のいろいろ", url: "https://edu.web.nhk/school/watch/clip/?das_id=D0005300307_00000" },
+  nakamawake:  { t: "NHK：こん虫とこん虫ではない虫たち", url: "https://edu.web.nhk/school/watch/clip/?das_id=D0005302284_00000" },
+  doko:        { t: "NHK：虫はどこにいる？（すみか）", url: "https://edu.web.nhk/school/watch/bangumi/?das_id=D0005110388_00000" },
+};
+
 /* つなげる：系統チェーン（学習指導要領 生命領域／啓林館わくわく理科の系統で作成） */
 const FROM_CHAIN = [
   { grade: "1年 生活科", label: "あさがおを 育てよう", think: "たねを まいて 水やり。子葉→葉→花→たね を 育てて かんさつ（栽培と かんさつの 体けん）" },
@@ -101,15 +119,15 @@ const NEXT_CARDS = [
     key: "konchu", grade: "3年 すぐ後", title: "こん虫の かんさつ",
     think: "【共通性・多様性】バッタ・トンボ・カブトムシ…体は どれも『頭・むね・はら＋あし6本』（共通）。でも 育ち方や すみかは いろいろ（多様）",
     concept: "チョウの つぎは いろいろな こん虫を しらべるよ。体の つくりは どれも『頭・むね・はら、あし6本』で 同じ（＝共通）。でも 育ち方は『さなぎに なる（チョウ・カブトムシ）／ならない（バッタ・トンボ）』とちがい、すみかも さまざま（＝多様）。この『同じ』と『ちがう』の 見かたが 理科の いちばん 大事な ところ。",
-    video: null,
-    links: [{ t: "教科書「こん虫の かんさつ」", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+    video: NHK.nakamawake,
+    links: [{ t: "教科書「こん虫の かんさつ」", url: null }, NHK.konchuiroiro, NHK.mushikarada],
   },
   {
     key: "flower", grade: "3年 すぐ後", title: "花が さいた あと（植物の 一生）",
     think: "【生命の つながり】葉→つぼみ→花→実→たね。そして また たねから…（命が ひとめぐり）",
     concept: "育った 植物は つぼみ→花が さく→実が できる→実の 中に また たねが できる、と すすむ。その たねを まくと つぎの 命が 育つ。植物の 一生は ぐるっと ひとめぐりして つながっている（＝生命の つながり）。たねの 観察が、ここで ひとつの 輪に なる。",
-    video: null,
-    links: [{ t: "教科書「花が さいた あと」", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+    video: NHK.hanaato,
+    links: [{ t: "教科書「花が さいた あと」", url: null }, NHK.hanaato, NHK.sodachi],
   },
   {
     key: "season4", grade: "4年", title: "季節と 生物",
@@ -135,9 +153,10 @@ const NEXT_CARDS = [
 ];
 
 /* ===== 共通の教材リンク（右パネルにいつも出す） ===== */
+/* ===== 共通の教材リンク（右パネルにいつも出す） ===== */
 const COMMON_LINKS = [
-  { t: "NHK for School 理科（3年）", url: "https://www.nhk.or.jp/school/rika/" },
-  { t: "eboard（理科）", url: "https://www.eboard.jp/" },
+  { t: "NHK for School 理科（3年 ふしぎがいっぱい）", url: "https://www.nhk.or.jp/school/rika/" },
+  NHK.mushikarada,
 ];
 
 /* ===== やるべきこと：PLAN[stage][lv] =====
@@ -151,14 +170,14 @@ const PLAN = {
       prep: ["教科書", "赤えんぴつ", "ノート"],
       asks: ["かんさつでは どんな ことに 気をつけて 見る？", "「色・形・大きさ」は どこに 出てくる？", "線を引いた ことばで 1文 言える？"],
       teacher: ["かんさつの 観点（色・形・大きさ等）を つかめているか", "用語を 自分のことばで 言いかえられるか"],
-      links: [{ t: "教科書「しぜんのかんさつ」", url: null }],
+      links: [{ t: "教科書「しぜんのかんさつ」", url: null }, NHK.mushimegane],
     },
     1: { ready: true, kind: "use", page: "教科書「しぜんのかんさつ」", drill: "かんさつカード",
       goal: "校庭の 春の生きものを 虫めがねで 見て、色・形・大きさ・数を かんさつカードに かける。",
       prep: ["虫めがね", "かんさつカード", "色えんぴつ"],
       asks: ["色は？ 形は？ 大きさは？（くらべて 言える？）", "虫めがねは どう つかうと よく見える？", "見つけた ことを 絵と ことばで かけた？", "前に 見た ものと どこが ちがう？"],
       teacher: ["虫めがねを 正しく つかえているか", "色・形・大きさ・数の 観点で 記録できているか"],
-      links: [{ t: "かんさつカード", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+      links: [{ t: "かんさつカード", url: null }, NHK.mushimegane],
     },
     2: { ready: true, kind: "explain",
       explain: { problem: "「かんさつ」って どうすること？", page: "教科書「しぜんのかんさつ」", point: "かんさつ＝色・形・大きさ・数を よく見て くらべて きろくすること。虫めがねは 小さい ものを 大きく して くわしく 見るための 道具。" },
@@ -167,7 +186,7 @@ const PLAN = {
       prep: ["自分の かんさつカード", "ノート"],
       asks: ["なぜ 虫めがねを つかうと よく わかるの？", "色・形・大きさの ほかに 見る ことは ある？", "ことばだけでなく 絵でも つたえられる？"],
       teacher: ["かんさつの 観点を 自分のことばで 説明できるか", "絵と ことばを 対応づけているか"],
-      links: [{ t: "教科書「しぜんのかんさつ」", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+      links: [{ t: "教科書「しぜんのかんさつ」", url: null }, NHK.mushimegane],
     },
     3: { ready: true, kind: "together",
       goal: "かんさつの しかたや 見つけた ことを 友だちと 見せ合い、よりよい かんさつに できる。",
@@ -184,14 +203,14 @@ const PLAN = {
       prep: ["教科書", "赤えんぴつ", "ノート"],
       asks: ["どんな しゅるいの たねが 出てくる？", "「たねを まく」とき 気をつける ことは？", "線を引いた ことばで 言える？"],
       teacher: ["たね・たねまきの 用語を つかめているか", "用語を 自分のことばで 言えるか"],
-      links: [{ t: "教科書「たねをまこう」", url: null }],
+      links: [{ t: "教科書「たねをまこう」", url: null }, NHK.tane],
     },
     1: { ready: true, kind: "use", page: "教科書「たねをまこう」", drill: "かんさつカード",
       goal: "ホウセンカ・ヒマワリ・ダイズ などの たねを 虫めがねで 見て、色・形・大きさを くらべてかける。たねを まける。",
       prep: ["いろいろな たね", "虫めがね", "かんさつカード", "うえきばち・土"],
       asks: ["たねの 色・形・大きさは しゅるいで ちがう？", "いちばん 大きい たね・小さい たねは どれ？", "たねまきで 土の ふかさは どれくらい？", "まいた あと どうなると 思う？"],
       teacher: ["たねを 観点ごとに くらべて 記録できているか", "たねまきの 手順（ふかさ・水やり）を 守れているか"],
-      links: [{ t: "かんさつカード", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+      links: [{ t: "かんさつカード", url: null }, NHK.mushimegane],
     },
     2: { ready: true, kind: "explain",
       explain: { problem: "たねは しゅるいで どう ちがう？", page: "教科書「たねをまこう」", point: "たねは しゅるいに よって 色・形・大きさが ちがう。でも、まいて 水を やると どれも めが 出て 育っていく（共通）。" },
@@ -200,7 +219,7 @@ const PLAN = {
       prep: ["自分の たねカード", "ノート"],
       asks: ["たねの どこが しゅるいで ちがう？", "ちがうのに 同じ ことは 何？", "絵で たねの ちがいを 表せる？"],
       teacher: ["『ちがい』と『共通（めが出る）』を 分けて 説明できるか", "観察した 事実を もとに 話せているか"],
-      links: [{ t: "教科書「たねをまこう」", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+      links: [{ t: "教科書「たねをまこう」", url: null }, NHK.tane],
     },
     3: { ready: true, kind: "together",
       goal: "たねの ちがいや 気づきを 友だちと 見せ合い、考えを 高め合える。",
@@ -217,14 +236,14 @@ const PLAN = {
       prep: ["教科書", "赤えんぴつ", "ノート"],
       asks: ["はじめに 出てくる 葉を 何と いう？", "そのあと どう 育つ？", "線を引いた ことばで 言える？"],
       teacher: ["子葉・本葉などの 用語を つかめているか", "育つ じゅんばんに 気づいているか"],
-      links: [{ t: "教科書「植物の そだち」", url: null }],
+      links: [{ t: "教科書「植物の そだち」", url: null }, NHK.sodachi],
     },
     1: { ready: true, kind: "use", page: "教科書「植物の そだち」", drill: "かんさつカード（つづけて）",
       goal: "まいた たねから 子葉が 出て、つぎに 葉が ふえる ようすを、高さや 葉の数を きろくして 続けてかける。",
       prep: ["育てている 植物", "ものさし", "かんさつカード"],
       asks: ["はじめに 出た 葉（子葉）は 何まい？", "そのあと 出た 葉と 形は ちがう？", "高さは 前より のびた？（ものさしで はかった？）", "つぎは どう 育つと 思う？"],
       teacher: ["子葉と 本葉を 見分けて 記録できているか", "高さ・葉の数を 数や ものさしで はかれているか"],
-      links: [{ t: "かんさつカード", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+      links: [{ t: "かんさつカード", url: null }, NHK.mushimegane],
     },
     2: { ready: true, kind: "explain",
       explain: { problem: "植物は どんな じゅんに 育つ？", page: "教科書「植物の そだち」", point: "たね→子葉が 出る→葉が ふえる→くきが のびて 大きく なる。じゅんばんに すがたを かえて 育っていく。" },
@@ -233,7 +252,7 @@ const PLAN = {
       prep: ["続けて かいた カード", "ノート"],
       asks: ["はじめと 今で どこが かわった？", "なぜ じゅんばんに 育つと いえる？", "矢印で 育ちを 表せる？"],
       teacher: ["変化を じゅんじょよく 説明できるか", "記録（事実）を もとに 話せているか"],
-      links: [{ t: "教科書「植物の そだち」", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+      links: [{ t: "教科書「植物の そだち」", url: null }, NHK.sodachi],
     },
     3: { ready: true, kind: "together",
       goal: "育ちの じゅんばんや 気づきを 友だちと くらべ、考えを 高め合える。",
@@ -250,14 +269,14 @@ const PLAN = {
       prep: ["教科書", "赤えんぴつ", "ノート"],
       asks: ["植物の 体は いくつの 部分から できている？", "「根・くき・葉」は どこに 出てくる？", "線を引いた ことばで 言える？"],
       teacher: ["根・くき・葉の 用語を つかめているか", "体の つくりに 気づいているか"],
-      links: [{ t: "教科書「植物の 体の つくり」", url: null }],
+      links: [{ t: "教科書「植物の 体の つくり」", url: null }, NHK.kusabana],
     },
     1: { ready: true, kind: "use", page: "教科書「植物の 体の つくり」", drill: "かんさつカード",
       goal: "育った 植物を そっと ぬいたり 図で 見たりして、根・くき・葉の 3つを 見つけ、それぞれの ようすをかける。",
       prep: ["育てた 植物（または 図）", "虫めがね", "かんさつカード"],
       asks: ["土の 中に あったのは どこ？（根）", "葉を ささえているのは どこ？（くき）", "根・くき・葉、それぞれ どんな 形・色？", "ほかの 植物も 同じ 3つが ある？"],
       teacher: ["根・くき・葉を 正しく 見分けられているか", "それぞれの ようすを 観点ごとに 記録できているか"],
-      links: [{ t: "かんさつカード", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+      links: [{ t: "かんさつカード", url: null }, NHK.mushimegane],
     },
     2: { ready: true, kind: "explain",
       explain: { problem: "植物の 体は 何で できている？", page: "教科書「植物の 体の つくり」", point: "植物の 体は 根・くき・葉 から できている。しゅるいが ちがっても、どの 植物にも この 3つが ある（共通の つくり）。" },
@@ -266,7 +285,7 @@ const PLAN = {
       prep: ["ノート", "色えんぴつ"],
       asks: ["なぜ どの 植物も 3つ あると いえる？", "ちがう 植物で くらべて たしかめた？", "図に 名前を 正しく 書けた？"],
       teacher: ["『どの植物も 同じ つくり』と 一般化して 説明できるか", "図と 名前を 対応づけているか"],
-      links: [{ t: "教科書「植物の 体の つくり」", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+      links: [{ t: "教科書「植物の 体の つくり」", url: null }, NHK.kusabana],
     },
     3: { ready: true, kind: "together",
       goal: "体の つくりの 図を 友だちと 見せ合い、より わかりやすい まとめに 高め合える。",
@@ -283,14 +302,14 @@ const PLAN = {
       prep: ["教科書", "赤えんぴつ", "ノート"],
       asks: ["チョウは どんな じゅんに 育つ？", "「よう虫」「さなぎ」は どこに 出てくる？", "こん虫の 体は いくつの 部分？"],
       teacher: ["育ちの じゅんばんの 用語を つかめているか", "体の つくりに 気づいているか"],
-      links: [{ t: "教科書「チョウを 育てよう」", url: null }],
+      links: [{ t: "教科書「チョウを 育てよう」", url: null }, NHK.aomushi1, NHK.aomushi2],
     },
     1: { ready: true, kind: "use", page: "教科書「チョウを 育てよう」", drill: "かんさつカード",
       goal: "モンシロチョウを たまご→よう虫→さなぎ→せい虫 と 育てて、すがたの かわり方を 続けてかける。せい虫の 体（頭・むね・はら・あし6本）をたしかめる。",
       prep: ["育てている チョウ（たまご・よう虫）", "虫めがね", "かんさつカード"],
       asks: ["今は どの すがた？ 前と どこが かわった？", "よう虫は 何を 食べている？", "せい虫の 体は いくつの 部分？ あしは 何本？ どこから 出ている？", "つぎは どう なると 思う？"],
       teacher: ["育ちの 各段かいを 記録できているか", "頭・むね・はら／あし6本を 正しく 見つけられているか"],
-      links: [{ t: "かんさつカード", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+      links: [{ t: "かんさつカード", url: null }, NHK.mushimegane],
     },
     2: { ready: true, kind: "explain",
       explain: { problem: "チョウの 育ちと こん虫の 体", page: "教科書「チョウを 育てよう」", point: "チョウは たまご→よう虫→さなぎ→せい虫 と すがたを かえて 育つ。こん虫の 体は 頭・むね・はら の 3つで、あしは むねから 6本。" },
@@ -299,7 +318,7 @@ const PLAN = {
       prep: ["続けて かいた カード", "ノート", "色えんぴつ"],
       asks: ["さなぎの ときは 何を している？", "なぜ あしは『むねから 6本』と いえる？", "ほかの こん虫も 同じ つくり？"],
       teacher: ["育ちの じゅんを 正しく 説明できるか", "こん虫の 体の きまり（3部分・あし6本）を 説明できるか"],
-      links: [{ t: "教科書「チョウを 育てよう」", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+      links: [{ t: "教科書「チョウを 育てよう」", url: null }, NHK.mushikarada],
     },
     3: { ready: true, kind: "together",
       goal: "育ちの じゅんや こん虫の 体の きまりを 友だちと 説明し合い、まとめを 高め合える。",
@@ -307,6 +326,39 @@ const PLAN = {
       asks: ["友だちの まとめの よい所は？", "ほかの こん虫（バッタ等）も 体は 同じだった？", "単元の まとめを ひとことで 言うと？"],
       teacher: ["こん虫の きまりを 友だちと 共有できているか", "ほかの こん虫へ 考えを 広げているか"],
       links: [{ t: "（ペアで 説明し合う）", url: null }],
+    },
+  },
+
+  6: { // たしかめテスト（たね・植物・チョウ まとめ）
+    0: { ready: true, kind: "read", readPage: "教科書 たね・植物・チョウの まとめページ",
+      goal: "テスト範囲（たねの観察／植物の そだちと体／チョウの育ちと こん虫の体）を 読み返し、大事な ことばを たしかめる。",
+      prep: ["教科書", "ノート", "これまでの かんさつカード"],
+      asks: ["どの 単元が いちばん 自信ある？", "あいまいな ことばは どれ？", "『共通』と『多様』の れいを 言える？"],
+      teacher: ["3つの 内容を 自分で ふり返れているか", "あいまいな点を 自覚できているか"],
+      links: [{ t: "教科書 まとめ", url: null }, NHK.mushikarada],
+    },
+    1: { ready: true, kind: "use", page: "一問一答ミッション", drill: "たしかめ問題",
+      goal: "ヘッダーの『⚡一問一答』で たしかめ問題に チャレンジし、まちがえた所を 見つける。",
+      prep: ["ノート", "赤えんぴつ"],
+      asks: ["何問 できた？ まちがえたのは どこ？", "なぜ まちがえた？（おぼえちがい？読みちがい？）", "もう一回 やって できた？"],
+      teacher: ["自分の 弱点を 見つけられているか", "まちがい直しが できているか"],
+      links: [{ t: "⚡一問一答（ヘッダー上の ボタン）", url: null }, NHK.mushikarada],
+    },
+    2: { ready: true, kind: "explain",
+      explain: { problem: "まちがえた 問題を 1つ えらぶ", page: "教科書 まとめ", point: "答えだけでなく『なぜ そうなるか』を 図や ことばで 言えると、ほんとうに わかったと いえる。" },
+      goal: "まちがえた問題を 1つ えらび、正しい答えと『なぜ』を 図や ことばで 説明できる。",
+      flow: ["①まちがえた問題を 1つ えらぶ", "②正しい答えと 理由を 図・ことばで かく", "③友だち・先生に 説明して OKなら ぬる"],
+      prep: ["まちがえた問題", "ノート", "色えんぴつ"],
+      asks: ["なぜ その答えに なる？", "図で 表せる？", "前に 習った どの ことばと つながる？"],
+      teacher: ["まちがいの 理由を 説明できるか", "根きょを もって 直せているか"],
+      links: [{ t: "教科書 まとめ", url: null }, NHK.mushikarada],
+    },
+    3: { ready: true, kind: "together",
+      goal: "たしかめ問題を 友だちと 出し合い・教え合って、単元ぜんたいを 高め合える。",
+      prep: ["自作の たしかめ問題", "ノート"],
+      asks: ["友だちが まちがえやすい所は？", "どう 説明すると 伝わった？", "この単元の まとめを ひとことで 言うと？"],
+      teacher: ["教え合いで 理解を ふかめているか", "単元を まとめられているか"],
+      links: [{ t: "（ペアで 出し合う）", url: null }],
     },
   },
 };
@@ -332,31 +384,114 @@ const LIFE_CYCLES = [
 ];
 
 /* ===== 探究ミッション②：これは こん虫？クイズ 用データ =====
-   こん虫＝体が 頭・むね・はら の 3つ＆あし6本。legs と insect で 自動はんてい。 */
+   こん虫＝体が 頭・むね・はら の 3つ＆あし6本。legs と insect で 自動はんてい。
+   写真は すべて Wikimedia Commons の CC/PD 実ファイル（2026-06-06 API取得＋curl 200検証済み）。
+   by に「作者 / ライセンス」を入れ、画像下に クレジット表示（CC BY系の表示義務に対応）。 */
+const WM = "https://upload.wikimedia.org/wikipedia/commons/";
 const CREATURES = [
-  { name: "モンシロチョウ", emoji: "🦋", legs: 6, insect: true },
-  { name: "アリ", emoji: "🐜", legs: 6, insect: true },
-  { name: "バッタ", emoji: "🦗", legs: 6, insect: true },
-  { name: "カブトムシ", emoji: "🪲", legs: 6, insect: true },
-  { name: "トンボ", emoji: "🪰", legs: 6, insect: true },
-  { name: "テントウムシ", emoji: "🐞", legs: 6, insect: true },
-  { name: "ハチ", emoji: "🐝", legs: 6, insect: true },
-  { name: "セミ", emoji: "🦗", legs: 6, insect: true },
-  { name: "クモ", emoji: "🕷️", legs: 8, insect: false, why: "あしが 8本（体は 頭むね・はらの 2つ）" },
-  { name: "ダンゴムシ", emoji: "🦠", legs: 14, insect: false, why: "あしが たくさん（こん虫の なかまでは ない）" },
-  { name: "ムカデ", emoji: "🐛", legs: 30, insect: false, why: "あしが とても 多い" },
-  { name: "カタツムリ", emoji: "🐌", legs: 0, insect: false, why: "あしが ない（貝の なかま）" },
-  { name: "ミミズ", emoji: "🪱", legs: 0, insect: false, why: "あしが ない" },
-  { name: "カエル", emoji: "🐸", legs: 4, insect: false, why: "あしが 4本（こん虫では ない）" },
+  // --- こん虫（あし6本・頭むね腹） ---
+  { name: "モンシロチョウ", legs: 6, insect: true, emoji: "🦋",
+    img: WM + "4/44/Pieris_rapae_close_Richard_Bartz.jpg", by: "Richard Bartz / CC BY-SA 2.5" },
+  { name: "アゲハ", legs: 6, insect: true, emoji: "🦋",
+    img: WM + "a/a2/Papilio_xuthus_070707.jpg", by: "Yoshikazu Takahira / CC BY 3.0" },
+  { name: "ナナホシテントウ", legs: 6, insect: true, emoji: "🐞",
+    img: WM + "7/77/Coccinella_septempunctata_Luc_Viatour.JPG", by: "Luc Viatour / CC BY-SA 3.0" },
+  { name: "カブトムシ", legs: 6, insect: true, emoji: "🪲",
+    img: WM + "6/66/Kabutomushi-JapaneseBeetle-July2004.jpg", by: "Gombe / CC BY-SA 3.0" },
+  { name: "バッタ", legs: 6, insect: true, emoji: "🦗",
+    img: WM + "4/49/Atractomorpha_lata_male_27102012_01.jpg", by: "Joydeep / CC BY-SA 3.0" },
+  { name: "アリ", legs: 6, insect: true, emoji: "🐜",
+    img: WM + "thumb/7/75/Camponotus_japonicus_on_metallic_column_-_1.jpg/500px-Camponotus_japonicus_on_metallic_column_-_1.jpg", by: "KKPCW / CC BY-SA 4.0" },
+  { name: "ミツバチ", legs: 6, insect: true, emoji: "🐝",
+    img: WM + "thumb/9/99/Apis_mellifera_flying.jpg/500px-Apis_mellifera_flying.jpg", by: "Muhammad Mahdi Karim / GFDL" },
+  { name: "トンボ", legs: 6, insect: true, emoji: "🛩️",
+    img: WM + "thumb/c/c5/Dragonfly_%28Sympetrum_frequens%29.jpg/500px-Dragonfly_%28Sympetrum_frequens%29.jpg", by: "OpenCage / CC BY-SA 2.5" },
+  { name: "セミ", legs: 6, insect: true, emoji: "🌳",
+    img: WM + "thumb/e/e5/Graptopsaltria-nigrofuscata-by-Bruno-Uehara.jpg/500px-Graptopsaltria-nigrofuscata-by-Bruno-Uehara.jpg", by: "Bruno Ramos Uehara / CC BY-SA 4.0" },
+  { name: "コオロギ", legs: 6, insect: true, emoji: "🦗",
+    img: WM + "thumb/e/e9/Zweifleckgrille_Gryllus_bimaculatus_2.jpg/500px-Zweifleckgrille_Gryllus_bimaculatus_2.jpg", by: "Wikimedia Commons / CC BY 3.0" },
+  { name: "カマキリ", legs: 6, insect: true, emoji: "🦗",
+    img: WM + "thumb/3/32/Tenodera_sinensis_5_Luc_Viatour.jpg/500px-Tenodera_sinensis_5_Luc_Viatour.jpg", by: "Luc Viatour / CC BY-SA 3.0" },
+  // --- こん虫では ない ---
+  { name: "クモ", legs: 8, insect: false, emoji: "🕷️",
+    img: WM + "thumb/7/74/Spider_Nephila_clavata_0911.jpg/500px-Spider_Nephila_clavata_0911.jpg", by: "Wikimedia Commons / CC BY-SA 3.0",
+    why: "あしが 8本、体は 2つ（クモの なかま）。こん虫の めじるし（あし6本）に 合わない。" },
+  { name: "ダンゴムシ", legs: 14, insect: false, emoji: "🪨",
+    img: WM + "thumb/4/4e/Armadillidium_vulgare_001.jpg/500px-Armadillidium_vulgare_001.jpg", by: "H. Krisp / CC BY 3.0",
+    why: "あしが 14本。エビ・カニの なかま（こうかく類）で、こん虫では ない。" },
+  { name: "カタツムリ", legs: 0, insect: false, emoji: "🐌",
+    img: WM + "thumb/f/f9/Euhadra_peliomphala.jpg/500px-Euhadra_peliomphala.jpg", by: "Wikimedia Commons / パブリックドメイン",
+    why: "あしが ない（貝の なかま）。からだも 頭むね腹に 分かれていない。" },
+  { name: "カエル", legs: 4, insect: false, emoji: "🐸",
+    img: WM + "thumb/5/5a/Hyla_japonica_sep01.jpg/500px-Hyla_japonica_sep01.jpg", by: "池田正樹 / CC BY-SA 3.0",
+    why: "あしが 4本で せぼねが ある どうぶつ。こん虫では ない。" },
+  { name: "ムカデ", legs: "たくさん", insect: false, emoji: "🐛",
+    img: WM + "thumb/5/5f/Scolopendra_subspinipes.jpg/500px-Scolopendra_subspinipes.jpg", by: "Wikimedia Commons / CC BY 2.0",
+    why: "あしが とても 多い（多足類）。こん虫の あし6本に 合わない。" },
 ];
 
-/* ===== 探究ミッション③：かんさつ名人ミッション 用データ ===== */
+/* ===== 探究ミッション③：かんさつ名人ミッション 用データ（本物の写真で 観察） ===== */
 const KANSATSU_TARGETS = [
-  { name: "たね", emoji: "🌰" }, { name: "子葉・葉", emoji: "🌱" },
-  { name: "チョウの よう虫", emoji: "🐛" }, { name: "せい虫（チョウ）", emoji: "🦋" },
-  { name: "花", emoji: "🌸" },
+  { name: "ヒマワリの たね", emoji: "🌻",
+    img: WM + "5/5c/Sunflower_%28Helianthus_annuus%29_seeds.jpg", by: "Salil Kumar Mukherjee / CC BY-SA 4.0" },
+  { name: "ホウセンカの 葉", emoji: "🌱",
+    img: WM + "2/26/Impatiens_balsamina_kz01.jpg", by: "Krzysztof Ziarnek / CC BY-SA 4.0" },
+  { name: "タンポポの 花", emoji: "🌼",
+    img: WM + "8/8e/Taraxacum_officinale_side_makro.jpg", by: "Petar Milošević / CC BY-SA 4.0" },
+  { name: "チョウの よう虫（あおむし）", emoji: "🐛",
+    img: WM + "c/c2/Pieris_rapae_-_larva_01_%28HS%29.JPG", by: "Harald Süpfle / CC BY-SA 3.0" },
+  { name: "せい虫（モンシロチョウ）", emoji: "🦋",
+    img: WM + "4/44/Pieris_rapae_close_Richard_Bartz.jpg", by: "Richard Bartz / CC BY-SA 2.5" },
+  { name: "カブトムシ", emoji: "🪲",
+    img: WM + "6/66/Kabutomushi-JapaneseBeetle-July2004.jpg", by: "Gombe / CC BY-SA 3.0" },
+  { name: "バッタ", emoji: "🦗",
+    img: WM + "4/49/Atractomorpha_lata_male_27102012_01.jpg", by: "Joydeep / CC BY-SA 3.0" },
 ];
 const KANSATSU_POINTS = ["色", "形", "大きさ（長さ）", "数", "さわった かんじ", "前と くらべて かわった ところ"];
+
+/* ===== 探究ミッション④：一問一答（たしかめ）用データ =====
+   テスト範囲（たね・植物・チョウ・こん虫）の 一問一答。q=問い a=答え cat=分野。 */
+const IQ_QA = [
+  { cat: "こん虫", q: "こん虫の 体は いくつの 部分に 分かれている？", a: "頭・むね・はら の 3つ" },
+  { cat: "こん虫", q: "こん虫の あしは 何本？ どこから 出ている？", a: "6本。むね から 出ている" },
+  { cat: "チョウ", q: "チョウは どんな じゅんに 育つ？", a: "たまご → よう虫 → さなぎ → せい虫" },
+  { cat: "こん虫", q: "さなぎに ならずに 育つ こん虫は？（れい）", a: "バッタ・トンボ など" },
+  { cat: "植物", q: "植物の 体は どの 3つから できている？", a: "根・くき・葉" },
+  { cat: "植物", q: "たねを まいて いちばん はじめに 出てくる 葉は？", a: "子葉（ふた葉）" },
+  { cat: "植物", q: "ホウセンカの たねは どこに できる？", a: "花が さいた あとの 実の 中" },
+  { cat: "植物", q: "根の はたらきは？（2つ）", a: "体を ささえる／水を すいあげる" },
+  { cat: "かんさつ", q: "かんさつカードに 書く ことを 3つ いうと？", a: "色・形・大きさ（ほかに 数・長さ など）" },
+  { cat: "チョウ", q: "モンシロチョウの よう虫は 何を 食べる？", a: "キャベツ などの 葉" },
+  { cat: "こん虫", q: "こん虫の なかま では ない 生きものは？（れい）", a: "クモ（あし8本）・ダンゴムシ など" },
+  { cat: "こん虫", q: "トンボの よう虫の 名前は？", a: "ヤゴ" },
+  { cat: "植物", q: "植物が 育つと、高さや 葉の 数は どう なる？", a: "高く なり、数は ふえる" },
+  { cat: "チョウ", q: "さなぎの ときは 食べたり 動いたり する？", a: "しない（中で 体を つくりかえている）" },
+  { cat: "かんさつ", q: "虫めがねで 動かせない ものを 見る ときは？", a: "虫めがねを 目に 近づけ、顔（体）を 見る ものに 近づける" },
+  { cat: "こん虫", q: "こん虫の すみかは どんな ところ？", a: "食べ物が あり、かくれられる ところ" },
+  { cat: "植物", q: "ヒマワリと ホウセンカ、育ちの じゅんは 同じ？ ちがう？", a: "同じ（子葉→葉→花→実〔たね〕）" },
+  { cat: "中核", q: "こん虫の 体の つくりは、生きものの『共通』『多様』どっち？", a: "共通（どれも 頭・むね・はら＋あし6本）" },
+  { cat: "こん虫", q: "テントウムシは こん虫？", a: "こん虫（あし6本）" },
+  { cat: "こん虫", q: "カブトムシの 育ち方は チョウと 同じ？", a: "同じ（さなぎに なる 育ち方）" },
+  // --- 追加分（2026-06-06） ---
+  { cat: "植物", q: "たねを まく きせつは いつごろ？", a: "春（あたたかく なってから）" },
+  { cat: "植物", q: "子葉の つぎに 出てくる 葉を 何という？", a: "本葉（ほんば）" },
+  { cat: "植物", q: "葉は どこに ついている？", a: "くき に ついている" },
+  { cat: "植物", q: "くきの はたらきを ひとつ いうと？", a: "葉や 花を ささえ、水の とおり道に なる" },
+  { cat: "植物", q: "ヒマワリは 育つと、どれくらいの 高さに なる？", a: "1メートル いじょうに 高く なる" },
+  { cat: "チョウ", q: "モンシロチョウの たまごは どこに ある？", a: "キャベツ などの 葉の うら" },
+  { cat: "チョウ", q: "アゲハの よう虫は 何を 食べる？", a: "ミカンや サンショウの 葉" },
+  { cat: "チョウ", q: "さなぎから 出てくるのは 何？", a: "せい虫（チョウ）" },
+  { cat: "チョウ", q: "チョウの せい虫は 何を 食べる？", a: "花の みつ" },
+  { cat: "こん虫", q: "こん虫の はね は 体の どこに ついている？", a: "むね（あしも はねも むねから）" },
+  { cat: "こん虫", q: "こん虫の 目や 口は 体の どこに ある？", a: "頭" },
+  { cat: "こん虫", q: "クモの あしは 何本？ こん虫？", a: "8本。こん虫では ない" },
+  { cat: "こん虫", q: "ダンゴムシの あしは 何本？ こん虫？", a: "14本。こん虫では ない（エビ・カニの なかま）" },
+  { cat: "こん虫", q: "カブトムシは どんな ところに いる？", a: "クヌギ などの 木の みつ（林）" },
+  { cat: "かんさつ", q: "かんさつカードに 日づけや 天気を 書くのは なぜ？", a: "あとで くらべられる ように するため" },
+  { cat: "かんさつ", q: "植物の 高さを はかる どうぐは？", a: "ものさし（まきじゃく）" },
+  { cat: "中核", q: "生きものの『すがたが ちがう』ことを 何という？", a: "多様（たようせい）" },
+  { cat: "中核", q: "生きものに 見られる『同じ つくり・きまり』を 何という？", a: "共通（きょうつうせい）" },
+];
 
 /* ╔══════════════════════════════════════════════════════════════════╗
    ║  ↓↓↓ ここから下は「エンジン」：基本さわらない（色・立体・App本体）↓↓↓  ║
@@ -395,6 +530,7 @@ function App() {
   const [showOrder, setShowOrder] = useState(false);     // 探究：育ちのじゅんばんクイズ
   const [showInsect, setShowInsect] = useState(false);   // 探究：これはこん虫？クイズ
   const [showKansatsu, setShowKansatsu] = useState(false); // 探究：かんさつ名人ミッション
+  const [showIchimon, setShowIchimon] = useState(false);   // 探究：一問一答（たしかめ）
   const [loaded, setLoaded] = useState(false);
 
   // 立体シーンをコンテナ幅に合わせて自動縮小（はみ出し防止）
@@ -487,6 +623,10 @@ function App() {
               fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "5px 13px", borderRadius: 13,
               color: "#fff", background: KANSATSU_COLOR, border: "none", boxShadow: "0 2px 0 rgba(50,120,150,.3)",
             }}>🔍 かんさつ名人</button>
+            <button onClick={() => { setShowIchimon(true); setShowBack(false); }} style={{
+              fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "5px 13px", borderRadius: 13,
+              color: "#fff", background: IQ_COLOR, border: "none", boxShadow: "0 2px 0 rgba(122,87,194,.3)",
+            }}>⚡ 一問一答</button>
             <button onClick={() => { setShowBack((v) => !v); }} style={{
               fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "5px 13px", borderRadius: 13,
               color: "#fff", background: GREEN, border: "none", boxShadow: "0 2px 0 rgba(63,169,140,.3)",
@@ -932,6 +1072,7 @@ function App() {
       {showOrder && <OrderQuiz onClose={() => setShowOrder(false)} />}
       {showInsect && <InsectQuiz onClose={() => setShowInsect(false)} />}
       {showKansatsu && <KansatsuMission onClose={() => setShowKansatsu(false)} />}
+      {showIchimon && <IchimonQuiz onClose={() => setShowIchimon(false)} />}
 
     </div>
   );
@@ -949,6 +1090,7 @@ const GENERATORS = {};
 const ORDER_COLOR = "#C98A1E";    // 🦋 育ちのじゅんばんクイズ
 const INSECT_COLOR = "#3C8C5A";   // 🐛 これはこん虫？
 const KANSATSU_COLOR = "#2E91A8"; // 🔍 かんさつ名人ミッション
+const IQ_COLOR = "#7A57C2";       // ⚡ 一問一答（たしかめ）
 
 /* 共通：探究ミッションの 外わく（モーダル） */
 function Overlay({ color, gradFrom, icon, sub, title, onClose, children }) {
@@ -1040,6 +1182,23 @@ function OrderQuiz({ onClose }) {
   );
 }
 
+/* 画像直リンクURL → Wikimedia Commons ファイルページURL（作者・ライセンス全文の出典先）。
+   CC BY/BY-SA の「帰属（出典明示）」のため、クレジットをこのページにリンクする。 */
+function commonsPage(img) {
+  if (!img) return null;
+  const m = img.match(/\/commons\/(?:thumb\/)?[0-9a-f]\/[0-9a-f]{2}\/([^\/]+)/);
+  return m ? "https://commons.wikimedia.org/wiki/File:" + m[1] : "https://commons.wikimedia.org/";
+}
+function PhotoCredit({ by, img }) {
+  if (!by) return null;
+  return (
+    <a href={commonsPage(img)} target="_blank" rel="noreferrer"
+      style={{ display: "inline-block", fontSize: 8.5, fontWeight: 700, color: "#9aa7ad", marginTop: 3, textDecoration: "underline" }}>
+      📷 {by}（Wikimedia Commons）↗
+    </a>
+  );
+}
+
 /* ===== 探究②：これは こん虫？クイズ（なかま分け） ===== */
 function InsectQuiz({ onClose }) {
   const pick = () => Math.floor(Math.random() * CREATURES.length);
@@ -1064,10 +1223,14 @@ function InsectQuiz({ onClose }) {
         🎯 <b style={{ color: INSECT_COLOR }}>こん虫</b>＝体が「頭・むね・はら」の 3つ＆あしが <b>6本</b>（むねから）。あしの数を ヒントに 見分けよう！
       </div>
 
-      <div style={{ textAlign: "center", border: "2px solid #e0e8ea", borderRadius: 14, padding: "16px", background: "#fff" }}>
-        <div style={{ fontSize: 64, lineHeight: 1 }}>{c.emoji}</div>
-        <div style={{ fontSize: 20, fontWeight: 900, color: INK, marginTop: 6 }}>{c.name}</div>
-        <div style={{ fontSize: 12.5, fontWeight: 800, color: SUB, marginTop: 4 }}>あしの数：<b style={{ color: INK }}>{c.legs}本</b></div>
+      <div style={{ textAlign: "center", border: "2px solid #e0e8ea", borderRadius: 14, padding: "14px", background: "#fff" }}>
+        {c.img
+          ? <img src={c.img} alt={c.name} loading="lazy" onError={(e)=>{e.target.style.display="none";}}
+              style={{ width: "100%", maxWidth: 320, height: 200, objectFit: "cover", borderRadius: 12, border: "1px solid #e0e8ea", display: "block", margin: "0 auto" }} />
+          : <div style={{ fontSize: 64, lineHeight: 1 }}>{c.emoji}</div>}
+        <PhotoCredit by={c.by} img={c.img} />
+        <div style={{ fontSize: 20, fontWeight: 900, color: INK, marginTop: 6 }}>{c.emoji} {c.name}</div>
+        {judged && <div style={{ fontSize: 12.5, fontWeight: 800, color: SUB, marginTop: 4 }}>あしの数：<b style={{ color: INK }}>{c.legs}{typeof c.legs === "number" ? "本" : ""}</b></div>}
       </div>
 
       {!judged ? (
@@ -1108,6 +1271,14 @@ function KansatsuMission({ onClose }) {
       <div style={{ background: "#E8F5F8", border: `2px solid ${KANSATSU_COLOR}`, borderRadius: 12, padding: "11px 14px", marginBottom: 14, fontSize: 12.5, fontWeight: 700, color: INK, lineHeight: 1.6 }}>
         🎯 <b style={{ color: KANSATSU_COLOR }}>{t.emoji} {t.name}</b> を かんさつカードに 書こう。書けた <b>見かた</b>に チェックを つけてね。<b>4つ いじょう</b>で かんさつ名人！
       </div>
+      {t.img && (
+        <div style={{ textAlign: "center", marginBottom: 14, border: "2px solid #e0e8ea", borderRadius: 14, padding: "12px", background: "#fff" }}>
+          <img src={t.img} alt={t.name} loading="lazy" onError={(e)=>{e.target.style.display="none";}}
+            style={{ width: "100%", maxWidth: 340, height: 220, objectFit: "cover", borderRadius: 12, border: "1px solid #e0e8ea", display: "block", margin: "0 auto" }} />
+          <div style={{ fontSize: 12.5, fontWeight: 900, color: INK, marginTop: 7 }}>👀 この {t.name} を よく見て かんさつ</div>
+          <PhotoCredit by={t.by} img={t.img} />
+        </div>
+      )}
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {KANSATSU_POINTS.map((p) => {
           const on = !!picked[p];
@@ -1123,6 +1294,65 @@ function KansatsuMission({ onClose }) {
         <div style={{ fontSize: 13, fontWeight: 900, color: master ? GREEN_TX : SUB }}>{master ? "🏆 かんさつ名人！" : `あと ${4 - count} つで 名人`}（いま {count} つ）</div>
         <div style={{ fontSize: 11, fontWeight: 700, color: SUB, marginTop: 5, lineHeight: 1.5 }}>たくさんの 見かたで 書けるほど、くわしい かんさつに なるよ。</div>
         <button onClick={newT} style={{ marginTop: 11, fontSize: 13.5, fontWeight: 900, cursor: "pointer", color: "#fff", background: KANSATSU_COLOR, border: "none", borderRadius: 11, padding: "9px 20px" }}>べつの ものを かんさつ →</button>
+      </div>
+    </Overlay>
+  );
+}
+
+/* ===== 探究④：一問一答（たしかめテスト用・フラッシュカード） ===== */
+const CAT_COLOR = { "こん虫": "#3C8C5A", "チョウ": "#C98A1E", "植物": "#2E9E6B", "かんさつ": "#2E91A8", "中核": "#D7A91E" };
+function IchimonQuiz({ onClose }) {
+  const shuffle = () => {
+    const a = IQ_QA.map((_, i) => i);
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  };
+  const [order, setOrder] = useState(shuffle);
+  const [pos, setPos] = useState(0);
+  const [reveal, setReveal] = useState(false);
+  const [got, setGot] = useState(0);
+  const [done, setDone] = useState(0);
+  const q = IQ_QA[order[pos]];
+  const last = pos >= order.length - 1;
+
+  const mark = (ok) => { if (ok) setGot((g) => g + 1); setDone((d) => d + 1); };
+  const next = () => { setReveal(false); if (last) { setOrder(shuffle()); setPos(0); } else setPos((p) => p + 1); };
+  const restart = () => { setOrder(shuffle()); setPos(0); setReveal(false); setGot(0); setDone(0); };
+
+  return (
+    <Overlay color={IQ_COLOR} gradFrom="#9B7BD4" icon="⚡" sub="たね・植物・チョウの たしかめ" title="一問一答テスト" onClose={onClose}>
+      <div style={{ background: "#F1ECFA", border: `2px solid ${IQ_COLOR}`, borderRadius: 12, padding: "10px 13px", marginBottom: 12, fontSize: 12, fontWeight: 700, color: INK, lineHeight: 1.55 }}>
+        🎯 問いを 読んで 答えを 考える → <b>「答えを 見る」</b>で たしかめ → できたら ⭕、まだなら ❌。ぜんぶで {IQ_QA.length}問！
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+        <span style={{ fontSize: 11, fontWeight: 900, color: "#fff", background: CAT_COLOR[q.cat] || IQ_COLOR, borderRadius: 8, padding: "3px 10px" }}>{q.cat}</span>
+        <span style={{ fontSize: 11.5, fontWeight: 800, color: SUB }}>{pos + 1} / {order.length} 問め</span>
+      </div>
+
+      <div style={{ border: "2px solid #e0e8ea", borderRadius: 14, padding: "18px 16px", background: "#fff", textAlign: "center" }}>
+        <div style={{ fontSize: 12, fontWeight: 800, color: IQ_COLOR }}>Q.</div>
+        <div style={{ fontSize: 18, fontWeight: 900, color: INK, marginTop: 4, lineHeight: 1.5 }}>{q.q}</div>
+        {!reveal ? (
+          <button onClick={() => setReveal(true)} style={{ marginTop: 16, fontSize: 14, fontWeight: 900, cursor: "pointer", color: "#fff", background: IQ_COLOR, border: "none", borderRadius: 12, padding: "11px 26px" }}>答えを 見る 👀</button>
+        ) : (
+          <div style={{ marginTop: 14, borderTop: "2px dashed #e0e8ea", paddingTop: 12 }}>
+            <div style={{ fontSize: 12, fontWeight: 800, color: GREEN_TX }}>A.</div>
+            <div style={{ fontSize: 18, fontWeight: 900, color: GREEN_TX, marginTop: 3, lineHeight: 1.5 }}>{q.a}</div>
+          </div>
+        )}
+      </div>
+
+      {reveal && (
+        <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
+          <button onClick={() => { mark(true); next(); }} style={{ flex: 1, fontSize: 15, fontWeight: 900, cursor: "pointer", color: "#fff", background: GREEN, border: "none", borderRadius: 12, padding: "12px 0" }}>⭕ できた → つぎ</button>
+          <button onClick={() => { mark(false); next(); }} style={{ flex: 1, fontSize: 15, fontWeight: 900, cursor: "pointer", color: "#D85A30", background: "#fff", border: "2px solid #D85A30", borderRadius: 12, padding: "12px 0" }}>❌ まだ → つぎ</button>
+        </div>
+      )}
+
+      <div style={{ marginTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span style={{ fontSize: 12.5, fontWeight: 800, color: SUB }}>せいせき：<b style={{ color: INK }}>{got} / {done}</b> 問 できた</span>
+        <button onClick={restart} style={{ fontSize: 11, fontWeight: 800, cursor: "pointer", color: SUB, background: "#fff", border: "1.5px solid #cdd8dd", borderRadius: 10, padding: "5px 12px" }}>さいしょから</button>
       </div>
     </Overlay>
   );
