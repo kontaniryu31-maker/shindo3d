@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D 自由進度表 — 理科3年（たね・植物・チョウ）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef } = React;
+
+/* window.storage（Claude artifact）が無い環境用：localStorage シム */
+if (typeof window !== "undefined" && !window.storage) {
+  window.storage = {
+    async get(k) { const v = localStorage.getItem(k); return v == null ? null : { value: v }; },
+    async set(k, v) { localStorage.setItem(k, v); },
+    async delete(k) { localStorage.removeItem(k); },
+  };
+}
+
+/* ===== カラー（ポンチ絵系・現行踏襲） ===== */
+/* ===== カラー（水色=すすむ／紫=ふかめる／緑=つなげる） ===== */
+const AQUA = "#4DB6C7";          // ヘッダー帯など装飾の水色
+const BLUE = "#2E91A8";          // 進度＝落ち着いた水色
+const AMBER = ["#B7CBEA", "#F4C8A6", "#CDD6E0", "#F7E29A"];    // 深度＝金銀銅鉄（パステル塗り：鉄→銅→銀→金）
+const AMBER_DK = ["#4F79C4", "#DB8442", "#6E8CA6", "#D7A91E"]; // 同・濃いめ（枠線・文字・見出し用）
+const AMBER_MAIN = "#D7A91E";    // 深度の代表色＝金（濃いめ）
+const GREEN = "#3FA98C";          // 伸度＝緑（線・面・帯用）
+const GREEN_TX = "#1f7a5f";       // 伸度の文字用（濃い緑＝白地で読める）
+const GRAY = "#8a97a0";
+const INK = "#2A3B40";
+const SUB = "#5b6a72";
+const NOTE_BG = "#FCF3D6";        // 黄色の注記帯
+const NOTE_BD = "#E6C34D";
+const NOTE_INK = "#8A6D1B";
+
+/* ╔══════════════════════════════════════════════════════════════════╗
+   ║  ★★★ 単元データ（ここを差し替えれば 別単元の3D自由進度表になる）★★★  ║
+   ╚══════════════════════════════════════════════════════════════════╝
+   ※ これは「理科3年（たね・植物・チョウ）」版。算数の計算ゲームは外し、理科の
+      探究ミッション3本（育ちのじゅんばん／これはこん虫？／かんさつ名人）に置換ずみ。
+   【新しい単元の作り方】
+   1) このHTMLを複製して 別フォルダに置く（例：game/shindo3d_rika4/index.html）。
+   2) この「単元データ」ブロックだけを 書き替える。
+        UNIT / BOOK / CORE … 見出し・教科書名・この単元の「核」
+        STAGES …「すすむ」軸（横）の各ステージ。n は連番、title/sub/ex。
+        DEPTH  …「ふかめる（わかりの深さ）」軸（縦4段）。基本は流用でOK。
+        EXPLORE … 探究タイム（Lv4）の「○○マップ」カードの 名前・れい。
+        PLAN[stage番号][深度index(0=読む 1=かんさつ 2=せつめい 3=高め合う)]
+              … 各マスの goal/prep/asks/teacher/links。ready:false で「準備中」表示。
+              … 深度index1(かんさつ)は page/drill、index2(せつめい)は explain{problem,page,point} を持つ。
+        FROM_CHAIN / NEXT_CARDS …「つなげる」裏面（どこから来て どこへ）。
+        COMMON_LINKS … 右パネルに いつも出す共通リンク。
+        LIFE_CYCLES / CREATURES / KANSATSU_* … 探究ミッション3本の 出題データ。
+   3) STORE_KEY（下のエンジン側）を 単元ごとに変える（保存が混ざらないように）。
+   ※ これより下の「エンジン」部分（色・立体ジオメトリ・App本体・探究ミッション）は基本さわらない。 */
+
+const UNIT = "生きものの 育ちと つくり（たね・植物・チョウ）";
+const BOOK = "啓林館「わくわく理科3」（しぜんのかんさつ／たね・植物／チョウ）";
+const CORE = "生きものは 色・形・大きさが それぞれ ちがう（多様）。でも 育ち方には きまった じゅんばんが あり、体も きまった つくり（こん虫＝頭・むね・はら／植物＝根・くき・葉）で できている（共通）。よく見て くらべて、この『ちがい』と『同じ』を 見つける。";
+
+const STAGES = [
+  { n: 1, title: "しぜんのかんさつ", sub: "見かた・道具", ex: "虫めがね・カード" },
+  { n: 2, title: "たねの観察", sub: "いろいろな たね", ex: "ホウセンカ・ヒマワリ" },
+  { n: 3, title: "植物のそだち", sub: "子葉→葉が ふえる", ex: "子葉→本葉" },
+  { n: 4, title: "植物の体のつくり", sub: "根・くき・葉", ex: "根・くき・葉" },
+  { n: 5, title: "ちょうのそだち", sub: "たまご→せい虫・こん虫の体", ex: "たまご→よう虫→さなぎ→せい虫" },
+];
+const DEPTH = [
+  { lv: 1, name: "読む", desc: "音読→線引き", badge: "📖", badgeName: "読破" },
+  { lv: 2, name: "かんさつ", desc: "見て・きろく", badge: "🔍", badgeName: "かんさつできた" },
+  { lv: 3, name: "せつめい", desc: "なぜ？図で", badge: "💡", badgeName: "説明できた" },
+  { lv: 4, name: "高め合う", desc: "友だちと", badge: "🤝", badgeName: "高め合い" },
+];
+
+/* 探究タイム（Lv4）の「○○マップ」カードの中身（単元に合わせて差し替え） */
+const EXPLORE = {
+  mapTitle: "生きものの 育ち マップ",
+  mapHint: "れい：たね と たまご は どこが にてる？　植物（子葉→葉）と チョウ（たまご→よう虫→さなぎ→せい虫）の『すがたの かわり方』を 矢印で ならべて くらべよう。",
+  minpriHint: "れい：画用紙に「育ちの じゅんばんクイズ」や「これは こん虫？クイズ」を 作って、みんなで チャレンジ！",
+};
+
+/* つなげる：系統チェーン（学習指導要領 生命領域／啓林館わくわく理科の系統で作成） */
+const FROM_CHAIN = [
+  { grade: "1年 生活科", label: "あさがおを 育てよう", think: "たねを まいて 水やり。子葉→葉→花→たね を 育てて かんさつ（栽培と かんさつの 体けん）" },
+  { grade: "2年 生活科", label: "やさいを 育てよう／生きものと なかよし", think: "やさいの 栽培と 生きものの 飼育。せわを して 育ちを かんさつ（生命を 大切にする 心）" },
+];
+/* つなげる先カード（生命領域の系統：3年つづき→4年→5年。教科書ページは url:null でテキスト表示） */
+const NEXT_CARDS = [
+  {
+    key: "konchu", grade: "3年 すぐ後", title: "こん虫の かんさつ",
+    think: "【共通性・多様性】バッタ・トンボ・カブトムシ…体は どれも『頭・むね・はら＋あし6本』（共通）。でも 育ち方や すみかは いろいろ（多様）",
+    concept: "チョウの つぎは いろいろな こん虫を しらべるよ。体の つくりは どれも『頭・むね・はら、あし6本』で 同じ（＝共通）。でも 育ち方は『さなぎに なる（チョウ・カブトムシ）／ならない（バッタ・トンボ）』とちがい、すみかも さまざま（＝多様）。この『同じ』と『ちがう』の 見かたが 理科の いちばん 大事な ところ。",
+    video: null,
+    links: [{ t: "教科書「こん虫の かんさつ」", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+  },
+  {
+    key: "flower", grade: "3年 すぐ後", title: "花が さいた あと（植物の 一生）",
+    think: "【生命の つながり】葉→つぼみ→花→実→たね。そして また たねから…（命が ひとめぐり）",
+    concept: "育った 植物は つぼみ→花が さく→実が できる→実の 中に また たねが できる、と すすむ。その たねを まくと つぎの 命が 育つ。植物の 一生は ぐるっと ひとめぐりして つながっている（＝生命の つながり）。たねの 観察が、ここで ひとつの 輪に なる。",
+    video: null,
+    links: [{ t: "教科書「花が さいた あと」", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+  },
+  {
+    key: "season4", grade: "4年", title: "季節と 生物",
+    think: "【時間で 見る】あたたかさ（気温）が かわると、生きものの ようすも かわる（1年を通して くらべる）",
+    concept: "4年では、春・夏・秋・冬で 気温が かわると、サクラや ツバメ、こん虫の ようすが どう かわるかを、1年を通して かんさつして くらべる。3年で 身につけた『よく見て きろくする』力が そのまま 役に立つよ。",
+    video: null,
+    links: [{ t: "教科書「季節と 生物」（4年）", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+  },
+  {
+    key: "life5", grade: "5年", title: "たね・たまごから 新しい命",
+    think: "【生命の 連続性】たねは どうやって 芽を 出す？ たまごは どう 育つ？（発芽・成長・結実／動物の誕生）",
+    concept: "5年では、たねが 芽を 出す しくみ（発芽）、花の 受粉から 実・たねが できる しくみ、メダカや 人の たまご（命）が 育つ しくみを くわしく しらべる。3年で 見た『たね・たまごから 育つ』が、もっと 深い『命の つながり』の 学びに なる。",
+    video: null,
+    links: [{ t: "教科書「植物の 発芽と 成長」「動物の たんじょう」（5年）", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+  },
+  {
+    key: "kankyo6", grade: "6年", title: "生物と 環境（食べる・食べられる）",
+    think: "【生物と 環境の つながり】生きものは 食べ物・空気・水で つながり合っている（食物連鎖）",
+    concept: "6年では、生きものが『食べる・食べられる』で くさりのように つながっていること（食物連鎖）、空気（酸素・二酸化炭素）や 水を通して 植物・動物・人が かかわり合って いることを しらべる。3年で 見た『生きものは すみかと かかわって 生きている』が、地球ぜんたいの 大きな つながりの 学びに 育つ。",
+    video: null,
+    links: [{ t: "教科書「生物と 環境」（6年）", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+  },
+];
+
+/* ===== 共通の教材リンク（右パネルにいつも出す） ===== */
+const COMMON_LINKS = [
+  { t: "NHK for School 理科（3年）", url: "https://www.nhk.or.jp/school/rika/" },
+  { t: "eboard（理科）", url: "https://www.eboard.jp/" },
+];
+
+/* ===== やるべきこと：PLAN[stage][lv] =====
+   全5ステージ × 全4Lv（0:読む 1:つかう 2:せつめい 3:高め合う）を作り込み済み。
+   Lv2(index2 せつめい)は「説明プリント→先生OK」のプリント運用（kind:"explain_print"）。
+   ready:false にすると、そのマスは「準備中」表示にフォールバックする（横展開時の未作成用）。 */
+const PLAN = {
+  1: { // しぜんのかんさつ（見かた・道具）
+    0: { ready: true, kind: "read", readPage: "教科書「しぜんのかんさつ」のページ",
+      goal: "教科書を 音読し、大事なことば（虫めがね・色・形・大きさ・かんさつカード）に 線を引ける。",
+      prep: ["教科書", "赤えんぴつ", "ノート"],
+      asks: ["かんさつでは どんな ことに 気をつけて 見る？", "「色・形・大きさ」は どこに 出てくる？", "線を引いた ことばで 1文 言える？"],
+      teacher: ["かんさつの 観点（色・形・大きさ等）を つかめているか", "用語を 自分のことばで 言いかえられるか"],
+      links: [{ t: "教科書「しぜんのかんさつ」", url: null }],
+    },
+    1: { ready: true, kind: "use", page: "教科書「しぜんのかんさつ」", drill: "かんさつカード",
+      goal: "校庭の 春の生きものを 虫めがねで 見て、色・形・大きさ・数を かんさつカードに かける。",
+      prep: ["虫めがね", "かんさつカード", "色えんぴつ"],
+      asks: ["色は？ 形は？ 大きさは？（くらべて 言える？）", "虫めがねは どう つかうと よく見える？", "見つけた ことを 絵と ことばで かけた？", "前に 見た ものと どこが ちがう？"],
+      teacher: ["虫めがねを 正しく つかえているか", "色・形・大きさ・数の 観点で 記録できているか"],
+      links: [{ t: "かんさつカード", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+    },
+    2: { ready: true, kind: "explain",
+      explain: { problem: "「かんさつ」って どうすること？", page: "教科書「しぜんのかんさつ」", point: "かんさつ＝色・形・大きさ・数を よく見て くらべて きろくすること。虫めがねは 小さい ものを 大きく して くわしく 見るための 道具。" },
+      goal: "「かんさつとは 色・形・大きさを くらべて きろくすること」だと、れいを あげて 説明できる。",
+      flow: ["①自分の かんさつカードを 見かえす", "②「色・形・大きさ・数」で 何が わかったか ことばに する", "③友だち・先生に 説明して OKなら ぬる"],
+      prep: ["自分の かんさつカード", "ノート"],
+      asks: ["なぜ 虫めがねを つかうと よく わかるの？", "色・形・大きさの ほかに 見る ことは ある？", "ことばだけでなく 絵でも つたえられる？"],
+      teacher: ["かんさつの 観点を 自分のことばで 説明できるか", "絵と ことばを 対応づけているか"],
+      links: [{ t: "教科書「しぜんのかんさつ」", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+    },
+    3: { ready: true, kind: "together",
+      goal: "かんさつの しかたや 見つけた ことを 友だちと 見せ合い、よりよい かんさつに できる。",
+      prep: ["自分の かんさつカード", "ノート"],
+      asks: ["友だちの カードで なるほど と思った所は？", "自分の かんさつに 足したい 見かたは？", "どの カードが わかりやすい？ なぜ？"],
+      teacher: ["友だちの 記録を 見て 取り入れているか", "かんさつを より くわしく 高めているか"],
+      links: [{ t: "（ペアで 見せ合う）", url: null }],
+    },
+  },
+
+  2: { // たねの観察（いろいろな たね）
+    0: { ready: true, kind: "read", readPage: "教科書「たねをまこう」のページ",
+      goal: "教科書を 音読し、大事なことば（たね・子葉・たねまき）に 線を引ける。",
+      prep: ["教科書", "赤えんぴつ", "ノート"],
+      asks: ["どんな しゅるいの たねが 出てくる？", "「たねを まく」とき 気をつける ことは？", "線を引いた ことばで 言える？"],
+      teacher: ["たね・たねまきの 用語を つかめているか", "用語を 自分のことばで 言えるか"],
+      links: [{ t: "教科書「たねをまこう」", url: null }],
+    },
+    1: { ready: true, kind: "use", page: "教科書「たねをまこう」", drill: "かんさつカード",
+      goal: "ホウセンカ・ヒマワリ・ダイズ などの たねを 虫めがねで 見て、色・形・大きさを くらべてかける。たねを まける。",
+      prep: ["いろいろな たね", "虫めがね", "かんさつカード", "うえきばち・土"],
+      asks: ["たねの 色・形・大きさは しゅるいで ちがう？", "いちばん 大きい たね・小さい たねは どれ？", "たねまきで 土の ふかさは どれくらい？", "まいた あと どうなると 思う？"],
+      teacher: ["たねを 観点ごとに くらべて 記録できているか", "たねまきの 手順（ふかさ・水やり）を 守れているか"],
+      links: [{ t: "かんさつカード", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+    },
+    2: { ready: true, kind: "explain",
+      explain: { problem: "たねは しゅるいで どう ちがう？", page: "教科書「たねをまこう」", point: "たねは しゅるいに よって 色・形・大きさが ちがう。でも、まいて 水を やると どれも めが 出て 育っていく（共通）。" },
+      goal: "「たねは しゅるいで ちがうけれど、まくと めが 出て 育つ」ことを、見つけた たねを れいに 説明できる。",
+      flow: ["①自分が くらべた たねカードを 見かえす", "②「ちがう ところ」と「同じ ところ」を ことばに する", "③友だち・先生に 説明して OKなら ぬる"],
+      prep: ["自分の たねカード", "ノート"],
+      asks: ["たねの どこが しゅるいで ちがう？", "ちがうのに 同じ ことは 何？", "絵で たねの ちがいを 表せる？"],
+      teacher: ["『ちがい』と『共通（めが出る）』を 分けて 説明できるか", "観察した 事実を もとに 話せているか"],
+      links: [{ t: "教科書「たねをまこう」", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+    },
+    3: { ready: true, kind: "together",
+      goal: "たねの ちがいや 気づきを 友だちと 見せ合い、考えを 高め合える。",
+      prep: ["自分の たねカード", "ノート"],
+      asks: ["友だちが くらべた たねで おどろいた ことは？", "自分の 記録に 足したい ことは？", "まいた あとの よそうを 友だちと くらべると？"],
+      teacher: ["友だちの 気づきを 取り入れているか", "よそうを 根きょと ともに 話せているか"],
+      links: [{ t: "（ペアで 見せ合う）", url: null }],
+    },
+  },
+
+  3: { // 植物のそだち（子葉→葉が ふえる）
+    0: { ready: true, kind: "read", readPage: "教科書「植物の そだち」のページ",
+      goal: "教科書を 音読し、大事なことば（子葉・葉・くき・育つ じゅんばん）に 線を引ける。",
+      prep: ["教科書", "赤えんぴつ", "ノート"],
+      asks: ["はじめに 出てくる 葉を 何と いう？", "そのあと どう 育つ？", "線を引いた ことばで 言える？"],
+      teacher: ["子葉・本葉などの 用語を つかめているか", "育つ じゅんばんに 気づいているか"],
+      links: [{ t: "教科書「植物の そだち」", url: null }],
+    },
+    1: { ready: true, kind: "use", page: "教科書「植物の そだち」", drill: "かんさつカード（つづけて）",
+      goal: "まいた たねから 子葉が 出て、つぎに 葉が ふえる ようすを、高さや 葉の数を きろくして 続けてかける。",
+      prep: ["育てている 植物", "ものさし", "かんさつカード"],
+      asks: ["はじめに 出た 葉（子葉）は 何まい？", "そのあと 出た 葉と 形は ちがう？", "高さは 前より のびた？（ものさしで はかった？）", "つぎは どう 育つと 思う？"],
+      teacher: ["子葉と 本葉を 見分けて 記録できているか", "高さ・葉の数を 数や ものさしで はかれているか"],
+      links: [{ t: "かんさつカード", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+    },
+    2: { ready: true, kind: "explain",
+      explain: { problem: "植物は どんな じゅんに 育つ？", page: "教科書「植物の そだち」", point: "たね→子葉が 出る→葉が ふえる→くきが のびて 大きく なる。じゅんばんに すがたを かえて 育っていく。" },
+      goal: "「植物は たね→子葉→葉が ふえる の じゅんに 育つ」ことを、自分の 記録を れいに 説明できる。",
+      flow: ["①続けて かいた カードを じゅんに ならべる", "②「どう かわってきたか」を 矢印・ことばで まとめる", "③友だち・先生に 説明して OKなら ぬる"],
+      prep: ["続けて かいた カード", "ノート"],
+      asks: ["はじめと 今で どこが かわった？", "なぜ じゅんばんに 育つと いえる？", "矢印で 育ちを 表せる？"],
+      teacher: ["変化を じゅんじょよく 説明できるか", "記録（事実）を もとに 話せているか"],
+      links: [{ t: "教科書「植物の そだち」", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+    },
+    3: { ready: true, kind: "together",
+      goal: "育ちの じゅんばんや 気づきを 友だちと くらべ、考えを 高め合える。",
+      prep: ["続けて かいた カード", "ノート"],
+      asks: ["友だちの 植物と 育ち方は 同じ？ ちがう？", "自分の まとめに 足したい ことは？", "みんなで くらべると 何が いえる？"],
+      teacher: ["友だちと くらべて 共通点を 見つけているか", "まとめを 高めているか"],
+      links: [{ t: "（ペアで くらべる）", url: null }],
+    },
+  },
+
+  4: { // 植物の体のつくり（根・くき・葉）
+    0: { ready: true, kind: "read", readPage: "教科書「植物の 体の つくり」のページ",
+      goal: "教科書を 音読し、大事なことば（根・くき・葉）に 線を引ける。",
+      prep: ["教科書", "赤えんぴつ", "ノート"],
+      asks: ["植物の 体は いくつの 部分から できている？", "「根・くき・葉」は どこに 出てくる？", "線を引いた ことばで 言える？"],
+      teacher: ["根・くき・葉の 用語を つかめているか", "体の つくりに 気づいているか"],
+      links: [{ t: "教科書「植物の 体の つくり」", url: null }],
+    },
+    1: { ready: true, kind: "use", page: "教科書「植物の 体の つくり」", drill: "かんさつカード",
+      goal: "育った 植物を そっと ぬいたり 図で 見たりして、根・くき・葉の 3つを 見つけ、それぞれの ようすをかける。",
+      prep: ["育てた 植物（または 図）", "虫めがね", "かんさつカード"],
+      asks: ["土の 中に あったのは どこ？（根）", "葉を ささえているのは どこ？（くき）", "根・くき・葉、それぞれ どんな 形・色？", "ほかの 植物も 同じ 3つが ある？"],
+      teacher: ["根・くき・葉を 正しく 見分けられているか", "それぞれの ようすを 観点ごとに 記録できているか"],
+      links: [{ t: "かんさつカード", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+    },
+    2: { ready: true, kind: "explain",
+      explain: { problem: "植物の 体は 何で できている？", page: "教科書「植物の 体の つくり」", point: "植物の 体は 根・くき・葉 から できている。しゅるいが ちがっても、どの 植物にも この 3つが ある（共通の つくり）。" },
+      goal: "「植物の 体は 根・くき・葉 から できていて、どの 植物も 同じ」ことを、図で 説明できる。",
+      flow: ["①植物の 図を かいて 根・くき・葉を 矢印で しめす", "②「どの 植物にも 3つ ある」ことを ことばに する", "③友だち・先生に 説明して OKなら ぬる"],
+      prep: ["ノート", "色えんぴつ"],
+      asks: ["なぜ どの 植物も 3つ あると いえる？", "ちがう 植物で くらべて たしかめた？", "図に 名前を 正しく 書けた？"],
+      teacher: ["『どの植物も 同じ つくり』と 一般化して 説明できるか", "図と 名前を 対応づけているか"],
+      links: [{ t: "教科書「植物の 体の つくり」", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+    },
+    3: { ready: true, kind: "together",
+      goal: "体の つくりの 図を 友だちと 見せ合い、より わかりやすい まとめに 高め合える。",
+      prep: ["自分の 図", "ノート"],
+      asks: ["友だちの 図の よい所は？", "自分の 図に 足したい ことは？", "ちがう 植物でも 3つ あった？ みんなで たしかめると？"],
+      teacher: ["友だちの 図を 取り入れているか", "共通の つくりを 友だちと 確かめているか"],
+      links: [{ t: "（ペアで 見せ合う）", url: null }],
+    },
+  },
+
+  5: { // ちょうのそだち（たまご→せい虫・こん虫の体）
+    0: { ready: true, kind: "read", readPage: "教科書「チョウを 育てよう」のページ",
+      goal: "教科書を 音読し、大事なことば（たまご・よう虫・さなぎ・せい虫・頭・むね・はら）に 線を引ける。",
+      prep: ["教科書", "赤えんぴつ", "ノート"],
+      asks: ["チョウは どんな じゅんに 育つ？", "「よう虫」「さなぎ」は どこに 出てくる？", "こん虫の 体は いくつの 部分？"],
+      teacher: ["育ちの じゅんばんの 用語を つかめているか", "体の つくりに 気づいているか"],
+      links: [{ t: "教科書「チョウを 育てよう」", url: null }],
+    },
+    1: { ready: true, kind: "use", page: "教科書「チョウを 育てよう」", drill: "かんさつカード",
+      goal: "モンシロチョウを たまご→よう虫→さなぎ→せい虫 と 育てて、すがたの かわり方を 続けてかける。せい虫の 体（頭・むね・はら・あし6本）をたしかめる。",
+      prep: ["育てている チョウ（たまご・よう虫）", "虫めがね", "かんさつカード"],
+      asks: ["今は どの すがた？ 前と どこが かわった？", "よう虫は 何を 食べている？", "せい虫の 体は いくつの 部分？ あしは 何本？ どこから 出ている？", "つぎは どう なると 思う？"],
+      teacher: ["育ちの 各段かいを 記録できているか", "頭・むね・はら／あし6本を 正しく 見つけられているか"],
+      links: [{ t: "かんさつカード", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+    },
+    2: { ready: true, kind: "explain",
+      explain: { problem: "チョウの 育ちと こん虫の 体", page: "教科書「チョウを 育てよう」", point: "チョウは たまご→よう虫→さなぎ→せい虫 と すがたを かえて 育つ。こん虫の 体は 頭・むね・はら の 3つで、あしは むねから 6本。" },
+      goal: "「チョウは すがたを かえて 育つ」「こん虫の 体は 頭・むね・はら＋あし6本」を、図で 説明できる。",
+      flow: ["①育ちの じゅんを 矢印で かく（たまご→…→せい虫）", "②せい虫の 体に 頭・むね・はら・あしを 書きこむ", "③友だち・先生に 説明して OKなら ぬる"],
+      prep: ["続けて かいた カード", "ノート", "色えんぴつ"],
+      asks: ["さなぎの ときは 何を している？", "なぜ あしは『むねから 6本』と いえる？", "ほかの こん虫も 同じ つくり？"],
+      teacher: ["育ちの じゅんを 正しく 説明できるか", "こん虫の 体の きまり（3部分・あし6本）を 説明できるか"],
+      links: [{ t: "教科書「チョウを 育てよう」", url: null }, { t: "NHK for School 理科", url: "https://www.nhk.or.jp/school/rika/" }],
+    },
+    3: { ready: true, kind: "together",
+      goal: "育ちの じゅんや こん虫の 体の きまりを 友だちと 説明し合い、まとめを 高め合える。",
+      prep: ["自分の 図・カード", "ノート"],
+      asks: ["友だちの まとめの よい所は？", "ほかの こん虫（バッタ等）も 体は 同じだった？", "単元の まとめを ひとことで 言うと？"],
+      teacher: ["こん虫の きまりを 友だちと 共有できているか", "ほかの こん虫へ 考えを 広げているか"],
+      links: [{ t: "（ペアで 説明し合う）", url: null }],
+    },
+  },
+};
+
+/* ===== 探究ミッション①：育ちの じゅんばんクイズ 用データ =====
+   stages を 正しい じゅんに 並べたもの。出題時に シャッフルして 並べかえさせる。 */
+const LIFE_CYCLES = [
+  { id: "cho", emoji: "🦋", name: "モンシロチョウ",
+    note: "さなぎに なる 育ち方（チョウ・カブトムシ など）",
+    stages: ["たまご", "よう虫（あおむし）", "さなぎ", "せい虫（チョウ）"] },
+  { id: "katsu", emoji: "🪲", name: "カブトムシ",
+    note: "さなぎに なる 育ち方",
+    stages: ["たまご", "よう虫", "さなぎ", "せい虫（カブトムシ）"] },
+  { id: "batta", emoji: "🦗", name: "バッタ",
+    note: "さなぎに ならない 育ち方（バッタ・トンボ など）",
+    stages: ["たまご", "よう虫", "せい虫（バッタ）"] },
+  { id: "tonbo", emoji: "🪰", name: "トンボ",
+    note: "さなぎに ならない 育ち方（よう虫は ヤゴ）",
+    stages: ["たまご", "よう虫（ヤゴ）", "せい虫（トンボ）"] },
+  { id: "hosen", emoji: "🌱", name: "ホウセンカ（植物）",
+    note: "植物の そだち（子葉→葉→花→たね）",
+    stages: ["たね", "子葉が 出る", "葉が ふえる", "花が さく", "実（たね）が できる"] },
+];
+
+/* ===== 探究ミッション②：これは こん虫？クイズ 用データ =====
+   こん虫＝体が 頭・むね・はら の 3つ＆あし6本。legs と insect で 自動はんてい。 */
+const CREATURES = [
+  { name: "モンシロチョウ", emoji: "🦋", legs: 6, insect: true },
+  { name: "アリ", emoji: "🐜", legs: 6, insect: true },
+  { name: "バッタ", emoji: "🦗", legs: 6, insect: true },
+  { name: "カブトムシ", emoji: "🪲", legs: 6, insect: true },
+  { name: "トンボ", emoji: "🪰", legs: 6, insect: true },
+  { name: "テントウムシ", emoji: "🐞", legs: 6, insect: true },
+  { name: "ハチ", emoji: "🐝", legs: 6, insect: true },
+  { name: "セミ", emoji: "🦗", legs: 6, insect: true },
+  { name: "クモ", emoji: "🕷️", legs: 8, insect: false, why: "あしが 8本（体は 頭むね・はらの 2つ）" },
+  { name: "ダンゴムシ", emoji: "🦠", legs: 14, insect: false, why: "あしが たくさん（こん虫の なかまでは ない）" },
+  { name: "ムカデ", emoji: "🐛", legs: 30, insect: false, why: "あしが とても 多い" },
+  { name: "カタツムリ", emoji: "🐌", legs: 0, insect: false, why: "あしが ない（貝の なかま）" },
+  { name: "ミミズ", emoji: "🪱", legs: 0, insect: false, why: "あしが ない" },
+  { name: "カエル", emoji: "🐸", legs: 4, insect: false, why: "あしが 4本（こん虫では ない）" },
+];
+
+/* ===== 探究ミッション③：かんさつ名人ミッション 用データ ===== */
+const KANSATSU_TARGETS = [
+  { name: "たね", emoji: "🌰" }, { name: "子葉・葉", emoji: "🌱" },
+  { name: "チョウの よう虫", emoji: "🐛" }, { name: "せい虫（チョウ）", emoji: "🦋" },
+  { name: "花", emoji: "🌸" },
+];
+const KANSATSU_POINTS = ["色", "形", "大きさ（長さ）", "数", "さわった かんじ", "前と くらべて かわった ところ"];
+
+/* ╔══════════════════════════════════════════════════════════════════╗
+   ║  ↓↓↓ ここから下は「エンジン」：基本さわらない（色・立体・App本体）↓↓↓  ║
+   ╚══════════════════════════════════════════════════════════════════╝ */
+
+/* ===== 立体（アイソメ） ===== */
+const CW = 130, CH = 54, GX = 4, HEADER = 58, DEEP = 120;
+const N = STAGES.length;
+const FW = N * CW + (N - 1) * GX;
+const FH = HEADER + DEPTH.length * CH;
+const ZX = 0.62, ZY = -0.45;
+const px = (x, y, z) => ({ left: x + z * ZX, top: y + z * ZY });
+const OX = 180, OY = 116;
+// 実際の描画域（左の深度ラベル px(-150) 〜 右の奥行き/ラベルまで）。これで縮小率を計算する
+// 中身の実寸（横≒30〜940 / 縦≒40〜402）に合わせて余白を切り詰め、箱を大きく見せる
+const DRAW_W = 980, DRAW_H = 430;
+const wrap = (p) => ({ left: OX + p.left, top: OY + p.top });
+
+const STORE_KEY = "shindo3d_rika3_v1"; // ★単元ごとに変える（別単元へ流用時は名前を変えて 保存の混在を防ぐ）
+
+/* window.storage が無い環境でも落ちない安全ラッパ */
+const hasStore = typeof window !== "undefined" && window.storage &&
+  typeof window.storage.get === "function";
+const store = {
+  async get(k) { if (!hasStore) return null; try { return await window.storage.get(k); } catch (e) { return null; } },
+  async set(k, v) { if (!hasStore) return; try { await window.storage.set(k, v); } catch (e) {} },
+  async del(k) { if (!hasStore) return; try { await window.storage.delete(k); } catch (e) {} },
+};
+
+function App() {
+  const [openStage, setOpenStage] = useState(1);
+  const [openLv, setOpenLv] = useState(0);       // どのマスを開いているか（既定はLv1「読む」＝学習の入口）
+  const [done, setDone] = useState({});           // "s-k": true（ぬったマス）
+  const [showBack, setShowBack] = useState(false); // つなげる裏面
+  const [activeCard, setActiveCard] = useState("flower"); // つなげる先カード
+  const [showOrder, setShowOrder] = useState(false);     // 探究：育ちのじゅんばんクイズ
+  const [showInsect, setShowInsect] = useState(false);   // 探究：これはこん虫？クイズ
+  const [showKansatsu, setShowKansatsu] = useState(false); // 探究：かんさつ名人ミッション
+  const [loaded, setLoaded] = useState(false);
+
+  // 立体シーンをコンテナ幅に合わせて自動縮小（はみ出し防止）
+  const sceneBoxRef = useRef(null);
+  const [fit, setFit] = useState(1);
+  useEffect(() => {
+    const el = sceneBoxRef.current;
+    if (!el) return;
+    const calc = () => {
+      const w = el.clientWidth;
+      setFit(Math.min(1.3, w / DRAW_W));
+    };
+    calc();
+    let ro;
+    if (typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(calc);
+      ro.observe(el);
+    } else {
+      window.addEventListener("resize", calc);
+    }
+    return () => { if (ro) ro.disconnect(); else window.removeEventListener("resize", calc); };
+  }, []);
+
+  /* ===== 永続保存：読み込み ===== */
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const r = await store.get(STORE_KEY);
+      if (alive && r && r.value) {
+        try {
+          const v = JSON.parse(r.value);
+          setDone(v.done || {});
+        } catch (e) { /* 壊れていたら無視 */ }
+      }
+      if (alive) setLoaded(true);
+    })();
+    return () => { alive = false; };
+  }, []);
+  /* ===== 永続保存：書き込み ===== */
+  useEffect(() => {
+    if (!loaded) return;
+    store.set(STORE_KEY, JSON.stringify({ done }));
+  }, [done, loaded]);
+
+  const toggleDone = (s, k) => setDone((d) => ({ ...d, [`${s}-${k}`]: !d[`${s}-${k}`] }));
+  const resetAll = async () => {
+    setDone({});
+    await store.del(STORE_KEY);
+  };
+
+  const st = STAGES.find((s) => s.n === openStage);
+  const plan = (PLAN[openStage] && PLAN[openStage][openLv]) ? PLAN[openStage][openLv] : { ready: false };
+  const showGuide = openLv != null;
+
+  // 箱頂点
+  const A = px(-20, -20, 0), B = px(FW + 20, -20, 0), Cc = px(FW + 20, FH + 20, 0), D = px(-20, FH + 20, 0);
+  const A2 = px(-20, -20, DEEP), B2 = px(FW + 20, -20, DEEP), C2 = px(FW + 20, FH + 20, DEEP), D2 = px(-20, FH + 20, DEEP);
+
+  return (
+    <div style={{
+      fontFamily: "'Noto Sans JP','Hiragino Kaku Gothic ProN',sans-serif",
+      background: "radial-gradient(1200px 700px at 78% -8%, #E6F5F7 0%, #EEF6F7 45%, #E8F0F1 100%)",
+      minHeight: "100vh", color: INK, padding: "16px 18px 26px", boxSizing: "border-box",
+    }}>
+      <style>{`@keyframes popUp{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes cellPop{0%{transform:scale(1)}45%{transform:scale(1.07)}100%{transform:scale(1)}}`}</style>
+      {/* ヘッダー */}
+      <div style={{ display: "flex", alignItems: "center", gap: 13, flexWrap: "wrap" }}>
+        <div style={{ width: 46, height: 46, borderRadius: 12, background: BLUE, color: "#fff", fontWeight: 900, fontSize: 16, display: "grid", placeItems: "center", flex: "none", boxShadow: "0 5px 0 rgba(46,145,168,.3)" }}>3D</div>
+        <div style={{ flex: 1, minWidth: 240 }}>
+          <div style={{ fontSize: 22, fontWeight: 900, color: BLUE, lineHeight: 1.05 }}>3D 自由進度表</div>
+          <div style={{ fontSize: 12.5, fontWeight: 800, marginTop: 2 }}>たんげん：<span style={{ color: BLUE }}>{UNIT}</span></div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: SUB, marginTop: 1 }}>{BOOK}　／　いちばん大事：{CORE}</div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
+          <div style={{ fontSize: 11, fontWeight: 800, color: SUB, textAlign: "right", lineHeight: 1.5 }}>
+            <span style={{ color: BLUE }}>━</span>すすむ　<span style={{ color: AMBER_MAIN }}>━</span>ふかめる（わかりの ふかさ）　<span style={{ color: GREEN_TX }}>━</span>つなげる
+          </div>
+          <div style={{ display: "flex", gap: 6 }}>
+            <button onClick={() => { setShowOrder(true); setShowBack(false); }} style={{
+              fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "5px 13px", borderRadius: 13,
+              color: "#fff", background: ORDER_COLOR, border: "none",
+              boxShadow: "0 2px 0 rgba(180,120,30,.3)",
+            }}>🦋 育ちのじゅんばんクイズ</button>
+            <button onClick={() => { setShowInsect(true); setShowBack(false); }} style={{
+              fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "5px 13px", borderRadius: 13,
+              color: "#fff", background: INSECT_COLOR, border: "none", boxShadow: "0 2px 0 rgba(60,140,90,.3)",
+            }}>🐛 これはこん虫？</button>
+            <button onClick={() => { setShowKansatsu(true); setShowBack(false); }} style={{
+              fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "5px 13px", borderRadius: 13,
+              color: "#fff", background: KANSATSU_COLOR, border: "none", boxShadow: "0 2px 0 rgba(50,120,150,.3)",
+            }}>🔍 かんさつ名人</button>
+            <button onClick={() => { setShowBack((v) => !v); }} style={{
+              fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "5px 13px", borderRadius: 13,
+              color: "#fff", background: GREEN, border: "none", boxShadow: "0 2px 0 rgba(63,169,140,.3)",
+            }}>{showBack ? "◀ おもてに もどる" : "つなげる（うらを見る）↗"}</button>
+            <button onClick={resetAll} style={{ fontSize: 11, fontWeight: 800, cursor: "pointer", padding: "5px 11px", borderRadius: 13, color: SUB, background: "#fff", border: "1.5px solid #cdd8dd" }}>リセット</button>
+          </div>
+        </div>
+      </div>
+
+      {/* ===== 上段：立体ビュー ===== */}
+      <div ref={sceneBoxRef} style={{
+        marginTop: 10, height: DRAW_H * fit, borderRadius: 16, border: "1px solid #e1e8ea",
+        background: "linear-gradient(180deg,#FBFEFE,#E9F4F6)", position: "relative", overflow: "hidden", perspective: 1500,
+      }}>
+        {/* fitスケール用ラッパ（実描画域 DRAW_W×DRAW_H を中央に置いて縮小） */}
+        <div style={{ position: "absolute", left: "50%", top: 0, width: DRAW_W, height: DRAW_H, transform: `translateX(-50%) scale(${fit})`, transformOrigin: "top center" }}>
+        {/* 回転ステージ（C案：showBackでrotateY） */}
+        <div style={{
+          position: "absolute", inset: 0, transformStyle: "preserve-3d",
+          transform: showBack ? "rotateY(-180deg) rotateX(-8deg)" : "rotateY(0deg)",
+          transition: "transform .8s cubic-bezier(.3,.7,.2,1)",
+        }}>
+          {/* ---------- おもて面 ---------- */}
+          <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden" }}>
+            <svg width="100%" height="100%" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+              {[[A2, B2], [B2, C2], [C2, D2], [D2, A2], [A, A2], [B, B2], [Cc, C2], [D, D2]].map(([p, q], i) => (
+                <line key={i} x1={OX + p.left} y1={OY + p.top} x2={OX + q.left} y2={OY + q.top} stroke="#c2d2d8" strokeWidth="1.6" strokeDasharray="3,4" />
+              ))}
+              {[[A, B], [B, Cc], [Cc, D], [D, A]].map(([p, q], i) => (
+                <line key={"f" + i} x1={OX + p.left} y1={OY + p.top} x2={OX + q.left} y2={OY + q.top} stroke="#9fb6bd" strokeWidth="2" />
+              ))}
+              {(() => {
+                // 原点を箱の左上の少し外に。終点は枠内に収める
+                const o = px(-46, -46, 0);
+                const ox = px(FW + 14, -46, 0);          // すすむ＝右（横）
+                const oy = px(-46, FH + 22, 0);           // ふかめる＝下（縦）
+                const oz = px(-46, -46, DEEP * 0.5);      // つなげる＝奥（短め）
+                const L = (p, q, col) => <line x1={OX + p.left} y1={OY + p.top} x2={OX + q.left} y2={OY + q.top} stroke={col} strokeWidth="3.5" strokeLinecap="round" markerEnd={`url(#ah-${col.replace('#','')})`} />;
+                const mk = (col) => <marker id={`ah-${col.replace('#','')}`} markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" refX="4" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill={col} /></marker>;
+                return (<>
+                  <defs>{mk(BLUE)}{mk(AMBER_MAIN)}{mk(GREEN)}</defs>
+                  {L(o, ox, BLUE)}{L(o, oy, AMBER_MAIN)}{L(o, oz, GREEN)}
+                </>);
+              })()}
+            </svg>
+            {(() => {
+              const labelShadow = "0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff, 1px 1px 2px #fff";
+              const ox = wrap(px(FW - 82, -64, 0));        // すすむ：線の上・右寄り
+              const oy = wrap(px(-122, FH + 12, 0));        // ふかめる：線の左下
+              const oz = wrap(px(-30, -44, DEEP * 0.5));    // つなげる：短い線の先
+              const base = { position: "absolute", fontSize: 13, fontWeight: 900, whiteSpace: "nowrap", textShadow: labelShadow };
+              return (<>
+                <div style={{ ...base, ...ox, color: BLUE }}>すすむ →</div>
+                <div style={{ ...base, ...oy, color: AMBER_MAIN }}>ふかめる ↓</div>
+                <div style={{ ...base, ...oz, color: GREEN_TX }}>つなげる ↗</div>
+              </>);
+            })()}
+            {/* 上面・右側面 */}
+            <svg width="100%" height="100%" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+              {(() => { const tl = px(-20, -20, 0), tr = px(FW + 20, -20, 0), tr2 = px(FW + 20, -20, DEEP), tl2 = px(-20, -20, DEEP);
+                return <polygon points={[tl, tr, tr2, tl2].map(p => `${OX + p.left},${OY + p.top}`).join(" ")} fill="rgba(58,123,213,.06)" stroke="#bcd0d7" strokeWidth="1.4" />; })()}
+              {(() => { const a = px(FW + 20, -20, 0), b = px(FW + 20, FH + 20, 0), c = px(FW + 20, FH + 20, DEEP), d = px(FW + 20, -20, DEEP);
+                return <polygon points={[a, b, c, d].map(p => `${OX + p.left},${OY + p.top}`).join(" ")} fill="rgba(120,140,150,.10)" stroke="#bcd0d7" strokeWidth="1.4" />; })()}
+            </svg>
+
+            {/* ステージ見出し */}
+            {STAGES.map((s, i) => {
+              const p = wrap(px(i * (CW + GX), 0, 0));
+              const isOpen = openStage === s.n;
+              const built = !!(PLAN[s.n] && PLAN[s.n][0] && PLAN[s.n][0].ready);
+              return (
+                <button key={s.n} onClick={() => { setOpenStage(s.n); setOpenLv(0); }} style={{
+                  position: "absolute", ...p, width: CW, height: HEADER - 6,
+                  background: isOpen ? BLUE : "#EAF2FC", color: isOpen ? "#fff" : INK,
+                  border: `2px solid ${BLUE}`, borderRadius: 8, cursor: "pointer", padding: "5px 8px", boxSizing: "border-box", textAlign: "left",
+                  boxShadow: isOpen ? "0 4px 12px rgba(58,123,213,.35)" : "none",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ width: 19, height: 19, borderRadius: "50%", background: isOpen ? "#fff" : BLUE, color: isOpen ? BLUE : "#fff", fontSize: 10.5, fontWeight: 900, display: "grid", placeItems: "center", flex: "none" }}>{s.n}</span>
+                    <span style={{ fontSize: 11.5, fontWeight: 900, lineHeight: 1.0 }}>{s.title}<br /><span style={{ fontSize: 8.5, opacity: .85, fontWeight: 800 }}>{s.sub}</span></span>
+                  </div>
+                  <div style={{ fontSize: 8, fontWeight: 800, color: isOpen ? "#cfe0ff" : (built ? GREEN : SUB), textAlign: "right", marginTop: 1 }}>{built ? "✓つかえる" : "じゅんび中"}</div>
+                </button>
+              );
+            })}
+
+            {/* 深度マス */}
+            {STAGES.map((s, i) =>
+              DEPTH.map((d, k) => {
+                const p = wrap(px(i * (CW + GX), HEADER + k * CH, 0));
+                const isDone = !!done[`${s.n}-${k}`];
+                const isOpenCell = openStage === s.n && openLv === k;
+                return (
+                  <div key={`${s.n}-${k}-${isDone ? 1 : 0}`} onClick={() => { setOpenStage(s.n); setOpenLv(k); }} style={{
+                    position: "absolute", ...p, width: CW, height: CH - 6,
+                    background: isDone ? AMBER[k] : "#fff", border: `2px solid ${AMBER_DK[k]}`,
+                    outline: isOpenCell ? `3px solid ${AMBER_DK[k]}` : "none",
+                    borderRadius: 7, cursor: "pointer", boxSizing: "border-box", display: "flex", alignItems: "center", gap: 2,
+                    animation: isDone ? "cellPop .3s ease" : "none",
+                  }}>
+                    <span style={{ width: 7, height: "100%", background: AMBER_DK[k], borderRadius: "5px 0 0 5px", flex: "none" }} />
+                    <span style={{ fontSize: 12, flex: "none", marginLeft: 1 }}>{d.badge}</span>
+                    <span style={{ fontSize: 11.5, fontWeight: 900, color: isDone ? INK : AMBER_DK[k], flex: 1, whiteSpace: "nowrap", overflow: "hidden", letterSpacing: "-0.3px" }}>{d.name}</span>
+                    <span style={{ fontSize: 8, fontWeight: 800, color: isDone ? INK : AMBER_DK[k], paddingRight: 4, flex: "none" }}>L{d.lv}</span>
+                  </div>
+                );
+              })
+            )}
+            {/* 深度ラベル左 */}
+            {DEPTH.map((d, k) => {
+              const p = wrap(px(-150, HEADER + k * CH, 0));
+              return (
+                <div key={"dl" + k} style={{ position: "absolute", ...p, width: 140, height: CH - 6, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ fontSize: 14 }}>{d.badge}</span>
+                    <span style={{ fontSize: 11.5, fontWeight: 900 }}>Lv{d.lv} {d.name}</span>
+                  </div>
+                  <span style={{ fontSize: 9, fontWeight: 700, color: SUB, marginLeft: 20 }}>{d.desc}</span>
+                </div>
+              );
+            })}
+            <div style={{ position: "absolute", right: 14, bottom: 10, fontSize: 10, fontWeight: 800, color: SUB }}>マスを タップ → 下に「やるべきこと」</div>
+          </div>
+
+          {/* ---------- うら面（つなげる） ---------- */}
+          <div style={{
+            position: "absolute", inset: 0, backfaceVisibility: "hidden",
+            transform: "rotateY(180deg)", background: "linear-gradient(180deg,#F3FBF7,#e6f4ee)",
+            padding: "16px 20px", boxSizing: "border-box", display: "flex", flexDirection: "column",
+          }}>
+            <div style={{ fontSize: 15, fontWeight: 900, color: GREEN_TX }}>↗ つなげる（伸度）：この単元は どこから来て、どこへ つながる？</div>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: SUB, marginTop: 2 }}>カードを えらぶと、下に くわしく（系統の話・リンク・中核の考え）が出るよ</div>
+
+            {/* どこから（系統） */}
+            <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 10.5, fontWeight: 900, color: GRAY }}>← どこから：</span>
+              {FROM_CHAIN.map((c, i) => (
+                <span key={i} title={c.think} style={{ fontSize: 10.5, fontWeight: 800, color: "#5b6a72", background: "#fff", border: "1.5px dashed #9aa7ad", borderRadius: 10, padding: "3px 9px" }}>
+                  {c.grade}：{c.label}
+                </span>
+              ))}
+              <span style={{ fontSize: 11, fontWeight: 900, color: BLUE, background: "rgba(58,123,213,.1)", border: `2px solid ${BLUE}`, borderRadius: 10, padding: "3px 10px" }}>● 3年：この単元</span>
+            </div>
+
+            {/* つなげる先カード */}
+            <div style={{ marginTop: 12, fontSize: 10.5, fontWeight: 900, color: GREEN_TX }}>↗ この先（カードを えらぶ）</div>
+            <div style={{ marginTop: 7, display: "flex", gap: 10, flexWrap: "wrap" }}>
+              {NEXT_CARDS.map((c) => {
+                const on = activeCard === c.key;
+                return (
+                  <button key={c.key} onClick={() => setActiveCard(c.key)} style={{
+                    flex: "1 1 160px", minWidth: 150, textAlign: "left", cursor: "pointer",
+                    background: on ? "#fff" : "#ffffffcc", border: `2px solid ${on ? GREEN : "#bfe0d2"}`,
+                    borderRadius: 12, padding: "10px 12px", boxShadow: on ? "0 4px 14px rgba(29,158,117,.25)" : "none",
+                  }}>
+                    <div style={{ fontSize: 9, fontWeight: 800, color: GREEN_TX }}>{c.grade}</div>
+                    <div style={{ fontSize: 14, fontWeight: 900, color: INK, lineHeight: 1.15 }}>{c.title}</div>
+                    <div style={{ fontSize: 9.5, fontWeight: 700, color: SUB, marginTop: 3, lineHeight: 1.35 }}>{c.think}</div>
+                    {c.gen && <div style={{ marginTop: 5, display: "inline-block", fontSize: 9, fontWeight: 900, color: "#fff", background: GREEN, borderRadius: 8, padding: "1px 8px" }}>∞ チャレンジ問題あり</div>}
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ marginTop: "auto", fontSize: 10, fontWeight: 700, color: SUB }}>★中核：生きものは「すがたは ちがう（多様）」けれど「育つ順序・体のつくりは きまっている（共通）」。この『共通性×多様性』の 見かたが、4年（季節と生物）・5年（命の つながり）へ つながる。</div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      {/* ===== 下段 ===== */}
+      {!showBack && showGuide && (
+        <div key={`guide-${openStage}-${openLv}`} style={{ display: "flex", gap: 14, marginTop: 12, alignItems: "flex-start", flexWrap: "wrap", animation: "popUp .32s cubic-bezier(.2,.8,.2,1)" }}>
+          {/* 左＝学習ガイド */}
+          <div style={{ flex: "1 1 420px", minWidth: 360, border: `2px solid ${plan.ready ? AMBER_DK[openLv] : "#cdd8dd"}`, borderRadius: 14, background: "#fff", overflow: "hidden" }}>
+            <div style={{ background: plan.ready ? AMBER_DK[openLv] : "#cdd8dd", color: "#fff", padding: "10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 20 }}>{DEPTH[openLv].badge}</span>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 800, opacity: .9 }}>ステージ{st.n}「{st.title}{st.sub}」</div>
+                <div style={{ fontSize: 16, fontWeight: 900 }}>ふかめる Lv{DEPTH[openLv].lv}：{DEPTH[openLv].name}</div>
+              </div>
+            </div>
+
+            {(plan.ready) ? (
+              <div style={{ padding: "11px 13px" }}>
+                {/* 🎯 クリア条件（目立たせる） */}
+                <div style={{ borderRadius: 13, overflow: "hidden", border: `3px solid ${BLUE}`, boxShadow: "0 4px 0 rgba(46,145,168,.2)" }}>
+                  <div style={{ background: BLUE, color: "#fff", padding: "8px 13px", display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 18 }}>🎯</span>
+                    <span style={{ fontSize: 14, fontWeight: 900, letterSpacing: .5 }}>これが できたら クリア！</span>
+                  </div>
+                  <div style={{ padding: "12px 14px", background: "linear-gradient(180deg,#F4FBFD,#E8F5F8)" }}>
+                    <div style={{ fontSize: 14.5, fontWeight: 800, color: INK, lineHeight: 1.55 }}>{plan.goal}</div>
+
+                    {/* 📍 ここでやる：教科書ページ／計算ドリル */}
+                    {(() => {
+                      const refPage = plan.page || plan.readPage || (plan.explain && plan.explain.page);
+                      const refDrill = plan.drill;
+                      if (!refPage && !refDrill) return null;
+                      return (
+                        <div style={{ marginTop: 9, display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+                          <span style={{ fontSize: 10.5, fontWeight: 900, color: SUB }}>📍 ここで やる：</span>
+                          {refPage && <span style={{ fontSize: 12, fontWeight: 900, color: "#fff", background: BLUE, borderRadius: 9, padding: "4px 11px" }}>📖 {refPage}</span>}
+                          {refDrill && <span style={{ fontSize: 12, fontWeight: 900, color: "#fff", background: GREEN, borderRadius: 9, padding: "4px 11px" }}>📒 {refDrill}</span>}
+                        </div>
+                      );
+                    })()}
+
+                    {/* Lv4＝探究・教材研究（くわしくは 下の 探究セクション） */}
+                    {openLv === 3 && (
+                      <div style={{ marginTop: 8, fontSize: 12, fontWeight: 800, color: AMBER_MAIN, lineHeight: 1.5 }}>↓ 先生・研究者に なって 探究しよう。研究を すすめて、友だちと お互いに 高め合えたら クリア！</div>
+                    )}
+                  </div>
+                </div>
+
+                {/* 📖 読むところ（読む Lv1 だけ） */}
+                {plan.kind === "read" && (
+                  <div style={{ marginTop: 12, border: `2.5px solid ${AMBER[0]}`, borderRadius: 13, overflow: "hidden" }}>
+                    <div style={{ background: AMBER[0], color: "#fff", padding: "8px 13px", display: "flex", alignItems: "center", gap: 7 }}>
+                      <span style={{ fontSize: 17 }}>📖</span>
+                      <span style={{ fontSize: 13.5, fontWeight: 900 }}>読むところ</span>
+                    </div>
+                    <div style={{ padding: "11px 13px" }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 900, color: INK }}>{plan.readPage}</div>
+                      <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 12.5, fontWeight: 900, color: "#fff", background: BLUE, borderRadius: 9, padding: "5px 11px" }}>① まず【問題】</span>
+                        <span style={{ fontSize: 16, fontWeight: 900, color: GRAY }}>→</span>
+                        <span style={{ fontSize: 12.5, fontWeight: 900, color: "#fff", background: GREEN, borderRadius: 9, padding: "5px 11px" }}>② つぎに【まとめ】</span>
+                        <span style={{ fontSize: 11, fontWeight: 800, color: SUB }}>の 順で 音読しよう</span>
+                      </div>
+                      <div style={{ marginTop: 8, fontSize: 11, fontWeight: 700, color: SUB, lineHeight: 1.5 }}>【問題】で「何を するか」、【まとめ】で「大事な考え」を つかんでから、大事なことばに 線を引こう。</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 💡 説明ミッション（せつめい Lv3 だけ） */}
+                {plan.explain && (
+                  <div style={{ marginTop: 12, border: `2.5px solid ${AMBER[2]}`, borderRadius: 13, overflow: "hidden" }}>
+                    <div style={{ background: AMBER[2], color: "#fff", padding: "8px 13px", display: "flex", alignItems: "center", gap: 7 }}>
+                      <span style={{ fontSize: 17 }}>💡</span>
+                      <span style={{ fontSize: 13.5, fontWeight: 900 }}>せつめいミッション — 教科書の この ことを せつめいしよう</span>
+                    </div>
+                    <div style={{ padding: "12px 13px" }}>
+                      <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 22, fontWeight: 900, color: INK, letterSpacing: 1 }}>{plan.explain.problem}</span>
+                        <span style={{ fontSize: 11.5, fontWeight: 800, color: "#fff", background: AMBER[2], borderRadius: 8, padding: "3px 9px" }}>{plan.explain.page}</span>
+                      </div>
+                      <div style={{ marginTop: 10, fontSize: 11, fontWeight: 900, color: AMBER[2] }}>🧠 中心の考え（ここを せつめいする）</div>
+                      <div style={{ marginTop: 4, fontSize: 12.5, fontWeight: 700, color: INK, background: "#fff", border: `1.5px dashed ${AMBER[2]}`, borderRadius: 9, padding: "9px 12px", lineHeight: 1.6 }}>{plan.explain.point}</div>
+                      <div style={{ marginTop: 8, fontSize: 11, fontWeight: 700, color: SUB, lineHeight: 1.5 }}>👉 ことばだけで なく、<b>図や かんさつカード</b>を つかって「<b>なぜ そうなるのか</b>」を せつめいしよう。</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 🔭 探究タイム（高め合う Lv4 だけ） */}
+                {openLv === 3 && (
+                  <div style={{ marginTop: 12, border: `2.5px solid ${AMBER_MAIN}`, borderRadius: 13, overflow: "hidden" }}>
+                    <div style={{ background: AMBER_MAIN, color: "#fff", padding: "8px 13px", display: "flex", alignItems: "center", gap: 7 }}>
+                      <span style={{ fontSize: 17 }}>🔭</span>
+                      <span style={{ fontSize: 13.5, fontWeight: 900 }}>探究タイム — けんきゅうして 高め合おう</span>
+                    </div>
+                    <div style={{ padding: "12px 13px", background: "#FBF8FF" }}>
+                      <div style={{ fontSize: 12, fontWeight: 900, color: AMBER_MAIN, marginBottom: 8 }}>🧪 けんきゅう活動（やってみたい ものから）</div>
+                      <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
+                        {/* ① つまずきレスキュー隊（QNKS＋ミニ授業） */}
+                        <div style={{ flex: "1 1 100%", border: `2.5px solid ${MINI_COLOR}`, borderRadius: 12, background: "#FFF6EE", padding: "12px 13px" }}>
+                          <div style={{ fontSize: 15, fontWeight: 900, color: MINI_COLOR }}>🛟 つまずきレスキュー隊</div>
+                          <div style={{ fontSize: 11.5, fontWeight: 700, color: SUB, marginTop: 4, lineHeight: 1.5 }}>みんなが「むずかしい！」と つまずく ところと その「なぜ」を 見つけて、<b style={{ color: MINI_COLOR }}>QNKS</b> で わかりやすく まとめよう。ミニ先生として 教えて、友だちを レスキュー！</div>
+                          <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                            {[["Q", "どこで つまずく？ なぜ？"], ["N", "大事なところを ぬき出す"], ["K", "わかりやすく 組み立てる"], ["S", "整理して 友だちに 教える"]].map(([q, txt], i) => (
+                              <div key={i} style={{ flex: "1 1 150px", display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 800, color: INK, background: "#fff", border: `1.3px solid ${MINI_COLOR}`, borderRadius: 8, padding: "6px 8px" }}>
+                                <span style={{ width: 18, height: 18, borderRadius: "50%", background: MINI_COLOR, color: "#fff", fontSize: 11, fontWeight: 900, display: "grid", placeItems: "center", flex: "none" }}>{q}</span>{txt}
+                              </div>
+                            ))}
+                          </div>
+                          <div style={{ marginTop: 8, fontSize: 10, fontWeight: 700, color: MINI_COLOR, background: "#fff", border: `1.3px dashed ${MINI_COLOR}`, borderRadius: 8, padding: "6px 9px", lineHeight: 1.5 }}>💡 まとめは 画用紙や まとめシートに。友だちには 黒板や 口で せつめいしよう。</div>
+                        </div>
+                        {/* ② 生きものの育ちマップ */}
+                        <div style={{ flex: "1 1 230px", border: `2px solid ${GREEN}`, borderRadius: 11, background: "#F3FBF7", padding: "10px 12px" }}>
+                          <div style={{ fontSize: 13.5, fontWeight: 900, color: GREEN_TX }}>🗺️ {EXPLORE.mapTitle}を つくる</div>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: SUB, marginTop: 4, lineHeight: 1.45 }}>この単元（<b style={{ color: GREEN_TX }}>たね・植物・チョウ</b>）で わかった ことを、矢印・図で 1まいの マップに まとめよう。</div>
+                          <div style={{ marginTop: 7, fontSize: 10, fontWeight: 700, color: GREEN_TX, background: "#fff", border: `1.3px dashed ${GREEN}`, borderRadius: 8, padding: "6px 9px", lineHeight: 1.5 }}>{EXPLORE.mapHint}</div>
+                        </div>
+                        {/* ③ みんプリ作り */}
+                        <div style={{ flex: "1 1 230px", border: "2px solid #C0567E", borderRadius: 11, background: "#FCEEF4", padding: "10px 12px" }}>
+                          <div style={{ fontSize: 13.5, fontWeight: 900, color: "#A33765" }}>📄 みんプリ作り</div>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: SUB, marginTop: 4, lineHeight: 1.45 }}>みんなの ための プリント「<b style={{ color: "#A33765" }}>みんプリ</b>」を 作ろう。自分で クイズや 問題を つくって、友だちに といて もらう。作ると いちばん 力が つく。</div>
+                          <div style={{ marginTop: 7, fontSize: 10, fontWeight: 700, color: "#A33765", background: "#fff", border: "1.3px dashed #C0567E", borderRadius: 8, padding: "6px 9px", lineHeight: 1.5 }}>{EXPLORE.minpriHint}</div>
+                        </div>
+                      </div>
+                      <div style={{ marginTop: 10, fontSize: 10.5, fontWeight: 700, color: SUB }}>けんきゅうを すすめたら ↓の「<b style={{ color: AMBER_MAIN }}>できたら ぬる</b>」で マスに 色を つけよう！ お互いに 見せ合って 高め合おう。</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* プリント運用フロー（せつめい） */}
+                {plan.flow && (
+                  <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    {plan.flow.map((f, i) => (
+                      <div key={i} style={{ flex: "1 1 150px", fontSize: 11.5, fontWeight: 800, color: "#7a2f54", background: "#FCEEF4", border: "1.5px solid #d98cb0", borderRadius: 9, padding: "7px 9px", lineHeight: 1.4 }}>{f}</div>
+                    ))}
+                  </div>
+                )}
+                <SectionTitle color={SUB} icon="🎒" text="じゅんびするもの" mt />
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {plan.prep.map((x, i) => <span key={i} style={{ fontSize: 11, fontWeight: 800, color: "#4a5560", background: "#f1f5f7", border: "1.4px solid #d3dde1", borderRadius: 11, padding: "3px 10px" }}>{x}</span>)}
+                </div>
+
+                {/* 問いかけサポート */}
+                <SectionTitle color={AMBER_MAIN} icon="💭" text="考えを ふかめる しつもん（自分に きいてみよう）" mt />
+                <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                  {plan.asks.map((q, i) => (
+                    <div key={i} style={{ fontSize: 12.5, fontWeight: 700, color: INK, background: "#F3EDFB", borderLeft: `3px solid ${AMBER_MAIN}`, borderRadius: 6, padding: "6px 10px", lineHeight: 1.45 }}>{q}</div>
+                  ))}
+                </div>
+
+                {/* クリア（ぬる） */}
+                <div style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", borderTop: "1px dashed #d3dde1", paddingTop: 12 }}>
+                  <button onClick={() => toggleDone(st.n, openLv)} style={{
+                    flex: "1 1 200px", fontSize: 14, fontWeight: 900, cursor: "pointer",
+                    color: done[`${st.n}-${openLv}`] ? INK : AMBER_DK[openLv],
+                    background: done[`${st.n}-${openLv}`] ? AMBER[openLv] : "#fff",
+                    border: `2px solid ${AMBER_DK[openLv]}`, borderRadius: 10, padding: "10px 0",
+                  }}>{done[`${st.n}-${openLv}`] ? `✓ ${DEPTH[openLv].badge} ${DEPTH[openLv].name} ぬれた！` : `できたら ぬる（${DEPTH[openLv].badge}${DEPTH[openLv].name}）`}</button>
+                </div>
+
+              </div>
+            ) : (
+              <div style={{ padding: "26px 18px", textAlign: "center" }}>
+                <div style={{ fontSize: 30, marginBottom: 8 }}>🚧</div>
+                <div style={{ fontSize: 14, fontWeight: 900, color: SUB }}>このマスは じゅんび中です</div>
+                <div style={{ fontSize: 11.5, fontWeight: 700, color: SUB, marginTop: 6, lineHeight: 1.6 }}>
+                  ほかの マスを タップして、できる ところから すすめてね。<br />
+                  （先生へ：このマスの 内容は <b style={{ color: BLUE }}>PLAN</b> に <code>ready:true</code> で 追加できます）
+                </div>
+                <button onClick={() => { setOpenStage(1); setOpenLv(0); }} style={{ marginTop: 12, fontSize: 12.5, fontWeight: 900, cursor: "pointer", color: "#fff", background: BLUE, border: "none", borderRadius: 11, padding: "8px 16px" }}>はじめの マスを 見る →</button>
+              </div>
+            )}
+          </div>
+
+          {/* 右＝教材リンク置き場 */}
+          <div style={{ flex: "1 1 320px", minWidth: 300, border: `2px solid ${AQUA}`, borderRadius: 14, background: "#fff", overflow: "hidden", alignSelf: "flex-start" }}>
+            <div style={{ background: AQUA, color: "#fff", padding: "10px 14px" }}>
+              <div style={{ fontSize: 11, fontWeight: 800, opacity: .9 }}>このマスで つかう</div>
+              <div style={{ fontSize: 16, fontWeight: 900 }}>📚 つかう どうぐ・リンク</div>
+            </div>
+            <div style={{ padding: "11px 13px" }}>
+              {plan.ready ? (
+                <>
+                  <SectionTitle color={AQUA} icon="🔖" text={`このマス（${DEPTH[openLv].badge}${DEPTH[openLv].name}）で つかう もの`} />
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    {plan.links.map((l, i) => <LinkChip key={i} item={l} block />)}
+                  </div>
+                </>
+              ) : (
+                <div style={{ fontSize: 11.5, fontWeight: 700, color: SUB, lineHeight: 1.6 }}>この マスは じゅんび中。下の リンクは つかえます。</div>
+              )}
+
+              <SectionTitle color={GREEN} icon="🟢" text="いつでも つかえる リンク" mt />
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {COMMON_LINKS.map((l, i) => <LinkChip key={i} item={l} block />)}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* つなげる先：下段（裏面表示中） */}
+      {showBack && (() => {
+        const c = NEXT_CARDS.find((x) => x.key === activeCard);
+        return (
+          <div key={`card-${activeCard}`} style={{ display: "flex", gap: 14, marginTop: 12, alignItems: "flex-start", flexWrap: "wrap", animation: "popUp .32s cubic-bezier(.2,.8,.2,1)" }}>
+            {/* 左：系統の解説＋リンク */}
+            <div style={{ flex: "1 1 360px", minWidth: 320, border: `2px solid ${GREEN}`, borderRadius: 14, background: "#fff", overflow: "hidden" }}>
+              <div style={{ background: GREEN, color: "#fff", padding: "10px 14px" }}>
+                <div style={{ fontSize: 11, fontWeight: 800, opacity: .9 }}>つなげる先 ／ {c.grade}</div>
+                <div style={{ fontSize: 17, fontWeight: 900 }}>{c.title}</div>
+              </div>
+              <div style={{ padding: "11px 13px" }}>
+                <SectionTitle color={GRAY} icon="←" text="どこから つながってきた？" />
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {FROM_CHAIN.map((f, i) => (
+                    <div key={i} style={{ border: "1.5px dashed #9aa7ad", borderRadius: 8, padding: "6px 10px", background: "#f7f8f9" }}>
+                      <div style={{ fontSize: 9.5, fontWeight: 800, color: GRAY }}>{f.grade}</div>
+                      <div style={{ fontSize: 12, fontWeight: 900, color: INK }}>{f.label}</div>
+                      <div style={{ fontSize: 10, fontWeight: 800, color: GRAY, marginTop: 2 }}>🧠 {f.think}</div>
+                    </div>
+                  ))}
+                  <div style={{ border: `2px solid ${BLUE}`, borderRadius: 8, padding: "6px 10px", background: "rgba(58,123,213,.08)" }}>
+                    <div style={{ fontSize: 9.5, fontWeight: 800, color: BLUE }}>● 3年・この単元</div>
+                    <div style={{ fontSize: 12, fontWeight: 900, color: INK }}>生きものの 育ちと つくり（たね・植物・チョウ）</div>
+                    <div style={{ fontSize: 10, fontWeight: 800, color: BLUE, marginTop: 2 }}>🧠 すがたは ちがう（多様）／育つ順序・体のつくりは きまっている（共通）</div>
+                  </div>
+                </div>
+
+                <SectionTitle color={GREEN} icon="🧠" text="この先への つなぐ考え方" mt />
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#1c5a45", background: "#F3FBF7", border: `1.5px solid ${GREEN}`, borderRadius: 9, padding: "9px 12px", lineHeight: 1.55 }}>{c.think}</div>
+
+                {c.concept && (<>
+                  <SectionTitle color={GREEN} icon="📘" text="くわしく（3年生にも わかる せつめい）" mt />
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: INK, background: "#fff", border: `1.5px dashed ${GREEN}`, borderRadius: 9, padding: "9px 12px", lineHeight: 1.6 }}>{c.concept}</div>
+                </>)}
+
+                <SectionTitle color="#c0392b" icon="🎬" text="動画" mt />
+                {c.video
+                  ? <a href={c.video.url} target="_blank" rel="noreferrer" style={{ display: "block", fontSize: 12, fontWeight: 800, color: "#fff", background: "#c0392b", borderRadius: 9, padding: "10px 12px", textDecoration: "none", lineHeight: 1.4 }}>▶ {c.video.t}</a>
+                  : <div style={{ fontSize: 11.5, fontWeight: 800, color: SUB, background: "#f7f8f9", borderRadius: 8, padding: "10px 12px", textAlign: "center" }}>（動画リンク：後で）</div>}
+
+                <SectionTitle color={GREEN} icon="🔗" text="リンク" mt />
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {c.links.map((l, i) => <LinkChip key={i} item={l} />)}
+                </div>
+              </div>
+            </div>
+
+            {/* 右：この単元の 中核（いちばん大事な 考え＝共通性×多様性） */}
+            <div style={{ flex: "1 1 320px", minWidth: 300, border: `2px solid ${AMBER_MAIN}`, borderRadius: 14, background: "#fff", overflow: "hidden" }}>
+              <div style={{ background: AMBER_MAIN, color: "#fff", padding: "10px 14px" }}>
+                <div style={{ fontSize: 11, fontWeight: 800, opacity: .9 }}>この単元の 中核（ぜんぶに つながる 考え）</div>
+                <div style={{ fontSize: 16, fontWeight: 900 }}>🔑 共通性 × 多様性</div>
+              </div>
+              <div style={{ padding: "14px 15px" }}>
+                <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+                  <div style={{ flex: 1, border: `2px solid ${BLUE}`, borderRadius: 10, padding: "8px 10px", background: "rgba(58,123,213,.06)" }}>
+                    <div style={{ fontSize: 11, fontWeight: 900, color: BLUE }}>🟰 同じ（共通）</div>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: INK, marginTop: 4, lineHeight: 1.5 }}>育ち方には きまった じゅんばん。体は きまった つくり（こん虫＝頭・むね・はら＋あし6本／植物＝根・くき・葉）。</div>
+                  </div>
+                  <div style={{ flex: 1, border: `2px solid ${GREEN}`, borderRadius: 10, padding: "8px 10px", background: "#F3FBF7" }}>
+                    <div style={{ fontSize: 11, fontWeight: 900, color: GREEN_TX }}>🔀 ちがう（多様）</div>
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: INK, marginTop: 4, lineHeight: 1.5 }}>色・形・大きさ、すみか、さなぎに なる/ならない…生きものに よって いろいろ。</div>
+                  </div>
+                </div>
+                <div style={{ fontSize: 12, fontWeight: 800, color: "#8A6D1B", background: NOTE_BG, border: `1.5px solid ${NOTE_BD}`, borderRadius: 9, padding: "9px 11px", lineHeight: 1.6 }}>
+                  💡 よく見て・くらべて・きろくすると、生きものの「<b>同じ</b>」と「<b>ちがう</b>」が 見えてくる。これが 理科の いちばん 大事な 見かた。たね・植物・チョウ、ぜんぶ この 見かたで つながっているよ。
+                </div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: SUB, marginTop: 9, lineHeight: 1.55 }}>📚 もとになる 考え：小学校 学習指導要領 理科（生命りょういき）の 見かた＝「共通性・多様性」。3年で この見かたを はじめて 学び、4年・5年・6年へ 育てていく。</div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ===== 探究ミッション オーバーレイ ===== */}
+      {showOrder && <OrderQuiz onClose={() => setShowOrder(false)} />}
+      {showInsect && <InsectQuiz onClose={() => setShowInsect(false)} />}
+      {showKansatsu && <KansatsuMission onClose={() => setShowKansatsu(false)} />}
+
+    </div>
+  );
+}
+
+/* ╔══════════════════════════════════════════════════════════════════╗
+   ║  探究ミッション（理科版）＝ 算数の計算ゲームを 理科の探究に 置換     ║
+   ╚══════════════════════════════════════════════════════════════════╝
+   正解時だけ ○表示／まちがいは「もう一回」で 答えは 見えない（自己採点・写し防止）。 */
+
+/* つなげる裏の ∞チャレンジは 理科では未使用（NEXT_CARDS に gen を指定しない）。
+   必要になったら ここに キー:コンポーネント を登録して カードに gen:"キー" を付ける。 */
+const GENERATORS = {};
+
+const ORDER_COLOR = "#C98A1E";    // 🦋 育ちのじゅんばんクイズ
+const INSECT_COLOR = "#3C8C5A";   // 🐛 これはこん虫？
+const KANSATSU_COLOR = "#2E91A8"; // 🔍 かんさつ名人ミッション
+
+/* 共通：探究ミッションの 外わく（モーダル） */
+function Overlay({ color, gradFrom, icon, sub, title, onClose, children }) {
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,30,35,.5)", display: "grid", placeItems: "center", zIndex: 50, padding: 16 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "min(660px, 96vw)", maxHeight: "92vh", overflowY: "auto", background: "#fff", borderRadius: 18, boxShadow: "0 18px 50px rgba(0,0,0,.3)" }}>
+        <div style={{ background: `linear-gradient(180deg, ${gradFrom}, ${color})`, color: "#fff", padding: "14px 18px", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", position: "sticky", top: 0, zIndex: 2 }}>
+          <span style={{ fontSize: 26 }}>{icon}</span>
+          <div style={{ flex: 1, minWidth: 160 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, opacity: .92 }}>{sub}</div>
+            <div style={{ fontSize: 20, fontWeight: 900 }}>{title}</div>
+          </div>
+          <button onClick={onClose} style={{ fontSize: 12.5, fontWeight: 900, cursor: "pointer", color: color, background: "#fff", border: "none", borderRadius: 11, padding: "7px 14px" }}>とじる ✕</button>
+        </div>
+        <div style={{ padding: "16px 18px" }}>{children}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ===== 探究①：育ちの じゅんばんクイズ（並べかえ） ===== */
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function OrderQuiz({ onClose }) {
+  const makeOrder = (qi) => {
+    const n = LIFE_CYCLES[qi].stages.length;
+    let o = shuffle(Array.from({ length: n }, (_, i) => i));
+    // たまたま 正解で 始まらないように
+    if (o.every((v, i) => v === i)) o = o.reverse();
+    return o;
+  };
+  const [qi, setQi] = useState(() => Math.floor(Math.random() * LIFE_CYCLES.length));
+  const [order, setOrder] = useState(() => makeOrder(qi));
+  const [checked, setChecked] = useState(false);
+  const cyc = LIFE_CYCLES[qi];
+  const correct = order.every((v, i) => v === i);
+
+  const newQ = () => { const ni = Math.floor(Math.random() * LIFE_CYCLES.length); setQi(ni); setOrder(makeOrder(ni)); setChecked(false); };
+  const move = (pos, dir) => {
+    const np = pos + dir;
+    if (np < 0 || np >= order.length) return;
+    const o = order.slice(); [o[pos], o[np]] = [o[np], o[pos]]; setOrder(o); setChecked(false);
+  };
+
+  return (
+    <Overlay color={ORDER_COLOR} gradFrom="#E2A93D" icon="🦋" sub="育ちの じゅんを 正しく ならべよう" title="育ちの じゅんばんクイズ" onClose={onClose}>
+      <div style={{ background: "#FBF3DF", border: `2px solid ${ORDER_COLOR}`, borderRadius: 12, padding: "11px 14px", marginBottom: 14, fontSize: 13, fontWeight: 700, color: INK, lineHeight: 1.6 }}>
+        🎯 <b style={{ color: ORDER_COLOR }}>{cyc.emoji} {cyc.name}</b> の 育ちを、はやい じゅんに ならべよう。<br />カードの ▲▼ で 上下を 入れかえて、「こたえ合わせ」を おそう。
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {order.map((stageIdx, pos) => {
+          const ok = checked ? (stageIdx === pos) : null;
+          const border = ok === null ? "#e0e8ea" : ok ? GREEN : "#D85A30";
+          return (
+            <div key={pos} style={{ display: "flex", alignItems: "center", gap: 10, background: "#fff", border: `2px solid ${border}`, borderRadius: 11, padding: "9px 12px" }}>
+              <span style={{ width: 26, height: 26, borderRadius: "50%", background: ORDER_COLOR, color: "#fff", fontSize: 13, fontWeight: 900, display: "grid", placeItems: "center", flex: "none" }}>{pos + 1}</span>
+              <span style={{ flex: 1, fontSize: 15, fontWeight: 900, color: INK }}>{cyc.stages[stageIdx]}</span>
+              {checked && <span style={{ fontSize: 18, fontWeight: 900, color: ok ? GREEN : "#D85A30", flex: "none" }}>{ok ? "○" : "×"}</span>}
+              <div style={{ display: "flex", flexDirection: "column", gap: 3, flex: "none" }}>
+                <button onClick={() => move(pos, -1)} disabled={pos === 0} style={{ fontSize: 13, fontWeight: 900, cursor: pos === 0 ? "default" : "pointer", opacity: pos === 0 ? .3 : 1, color: "#fff", background: ORDER_COLOR, border: "none", borderRadius: 7, padding: "2px 10px" }}>▲</button>
+                <button onClick={() => move(pos, 1)} disabled={pos === order.length - 1} style={{ fontSize: 13, fontWeight: 900, cursor: pos === order.length - 1 ? "default" : "pointer", opacity: pos === order.length - 1 ? .3 : 1, color: "#fff", background: ORDER_COLOR, border: "none", borderRadius: 7, padding: "2px 10px" }}>▼</button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {checked && correct ? (
+        <div style={{ marginTop: 14, textAlign: "center", border: `2px solid ${GREEN}`, borderRadius: 14, padding: "14px", background: "#EAF7F1" }}>
+          <div style={{ fontSize: 26 }}>🎉</div>
+          <div style={{ fontSize: 17, fontWeight: 900, color: GREEN_TX }}>正かい！ じゅんばん 名人！</div>
+          <div style={{ fontSize: 11.5, fontWeight: 700, color: SUB, marginTop: 4 }}>{cyc.note}</div>
+          <button onClick={newQ} style={{ marginTop: 12, fontSize: 14, fontWeight: 900, cursor: "pointer", color: "#fff", background: ORDER_COLOR, border: "none", borderRadius: 11, padding: "10px 22px" }}>つぎの 生きもの →</button>
+        </div>
+      ) : (
+        <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <button onClick={() => setChecked(true)} style={{ flex: "1 1 200px", fontSize: 15, fontWeight: 900, cursor: "pointer", color: "#fff", background: ORDER_COLOR, border: "none", borderRadius: 11, padding: "11px 0" }}>こたえ合わせ</button>
+          <button onClick={newQ} style={{ flex: "0 0 auto", fontSize: 12.5, fontWeight: 800, cursor: "pointer", color: SUB, background: "#fff", border: "1.5px solid #cdd8dd", borderRadius: 11, padding: "11px 16px" }}>べつの 生きもの</button>
+        </div>
+      )}
+      {checked && !correct && <div style={{ marginTop: 10, fontSize: 12, fontWeight: 800, color: "#D85A30", textAlign: "center" }}>× の ところを ▲▼で 直して、もう一回！（答えは 自分で 考えよう）</div>}
+    </Overlay>
+  );
+}
+
+/* ===== 探究②：これは こん虫？クイズ（なかま分け） ===== */
+function InsectQuiz({ onClose }) {
+  const pick = () => Math.floor(Math.random() * CREATURES.length);
+  const [ci, setCi] = useState(pick);
+  const [ans, setAns] = useState(null);   // 子どもが えらんだ true/false
+  const [score, setScore] = useState(0);
+  const [tries, setTries] = useState(0);
+  const c = CREATURES[ci];
+  const judged = ans !== null;
+  const right = judged && ans === c.insect;
+
+  const choose = (v) => {
+    if (judged) return;
+    setAns(v); setTries((t) => t + 1);
+    if (v === c.insect) setScore((s) => s + 1);
+  };
+  const next = () => { setCi(pick()); setAns(null); };
+
+  return (
+    <Overlay color={INSECT_COLOR} gradFrom="#56B07A" icon="🐛" sub="体の つくりで なかま分け" title="これは こん虫？" onClose={onClose}>
+      <div style={{ background: "#EAF6EE", border: `2px solid ${INSECT_COLOR}`, borderRadius: 12, padding: "11px 14px", marginBottom: 14, fontSize: 12.5, fontWeight: 700, color: INK, lineHeight: 1.6 }}>
+        🎯 <b style={{ color: INSECT_COLOR }}>こん虫</b>＝体が「頭・むね・はら」の 3つ＆あしが <b>6本</b>（むねから）。あしの数を ヒントに 見分けよう！
+      </div>
+
+      <div style={{ textAlign: "center", border: "2px solid #e0e8ea", borderRadius: 14, padding: "16px", background: "#fff" }}>
+        <div style={{ fontSize: 64, lineHeight: 1 }}>{c.emoji}</div>
+        <div style={{ fontSize: 20, fontWeight: 900, color: INK, marginTop: 6 }}>{c.name}</div>
+        <div style={{ fontSize: 12.5, fontWeight: 800, color: SUB, marginTop: 4 }}>あしの数：<b style={{ color: INK }}>{c.legs}本</b></div>
+      </div>
+
+      {!judged ? (
+        <div style={{ marginTop: 14, display: "flex", gap: 10 }}>
+          <button onClick={() => choose(true)} style={{ flex: 1, fontSize: 15, fontWeight: 900, cursor: "pointer", color: "#fff", background: INSECT_COLOR, border: "none", borderRadius: 12, padding: "13px 0" }}>こん虫！</button>
+          <button onClick={() => choose(false)} style={{ flex: 1, fontSize: 15, fontWeight: 900, cursor: "pointer", color: INSECT_COLOR, background: "#fff", border: `2px solid ${INSECT_COLOR}`, borderRadius: 12, padding: "13px 0" }}>こん虫じゃない</button>
+        </div>
+      ) : (
+        <div style={{ marginTop: 14, textAlign: "center", border: `2px solid ${right ? GREEN : "#D85A30"}`, borderRadius: 14, padding: "14px", background: right ? "#EAF7F1" : "#FDEEEA" }}>
+          <div style={{ fontSize: 22 }}>{right ? "⭕ 正かい！" : "❌ ざんねん"}</div>
+          <div style={{ fontSize: 15, fontWeight: 900, color: right ? GREEN_TX : "#B5482C", marginTop: 2 }}>
+            {c.name} は {c.insect ? "こん虫" : "こん虫では ない"}
+          </div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: SUB, marginTop: 6, lineHeight: 1.5 }}>
+            {c.insect ? "あし6本・体は 頭・むね・はらの 3つ。" : (c.why || "こん虫の めじるしに 合わない。")}
+          </div>
+          <button onClick={next} style={{ marginTop: 12, fontSize: 14, fontWeight: 900, cursor: "pointer", color: "#fff", background: INSECT_COLOR, border: "none", borderRadius: 11, padding: "10px 22px" }}>つぎの 生きもの →</button>
+        </div>
+      )}
+      <div style={{ marginTop: 12, fontSize: 12, fontWeight: 800, color: SUB, textAlign: "center" }}>せいせき：{score} / {tries} もん 正かい</div>
+    </Overlay>
+  );
+}
+
+/* ===== 探究③：かんさつ名人ミッション（観点チェック） ===== */
+function KansatsuMission({ onClose }) {
+  const [ti, setTi] = useState(() => Math.floor(Math.random() * KANSATSU_TARGETS.length));
+  const [picked, setPicked] = useState({});
+  const t = KANSATSU_TARGETS[ti];
+  const count = Object.values(picked).filter(Boolean).length;
+  const master = count >= 4;
+
+  const toggle = (p) => setPicked((o) => ({ ...o, [p]: !o[p] }));
+  const newT = () => { setTi(Math.floor(Math.random() * KANSATSU_TARGETS.length)); setPicked({}); };
+
+  return (
+    <Overlay color={KANSATSU_COLOR} gradFrom="#4DB6C7" icon="🔍" sub="いくつの 見かたで 書けるかな" title="かんさつ名人ミッション" onClose={onClose}>
+      <div style={{ background: "#E8F5F8", border: `2px solid ${KANSATSU_COLOR}`, borderRadius: 12, padding: "11px 14px", marginBottom: 14, fontSize: 12.5, fontWeight: 700, color: INK, lineHeight: 1.6 }}>
+        🎯 <b style={{ color: KANSATSU_COLOR }}>{t.emoji} {t.name}</b> を かんさつカードに 書こう。書けた <b>見かた</b>に チェックを つけてね。<b>4つ いじょう</b>で かんさつ名人！
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {KANSATSU_POINTS.map((p) => {
+          const on = !!picked[p];
+          return (
+            <button key={p} onClick={() => toggle(p)} style={{ display: "flex", alignItems: "center", gap: 10, textAlign: "left", cursor: "pointer", background: on ? "#E8F5F8" : "#fff", border: `2px solid ${on ? KANSATSU_COLOR : "#e0e8ea"}`, borderRadius: 11, padding: "11px 13px" }}>
+              <span style={{ width: 24, height: 24, borderRadius: 7, background: on ? KANSATSU_COLOR : "#fff", border: `2px solid ${on ? KANSATSU_COLOR : "#cdd8dd"}`, color: "#fff", fontSize: 14, fontWeight: 900, display: "grid", placeItems: "center", flex: "none" }}>{on ? "✓" : ""}</span>
+              <span style={{ fontSize: 14.5, fontWeight: 800, color: INK }}>{p} を 書いた</span>
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ marginTop: 14, textAlign: "center", border: `2px solid ${master ? GREEN : "#cdd8dd"}`, borderRadius: 14, padding: "13px", background: master ? "#EAF7F1" : "#f7fafb" }}>
+        <div style={{ fontSize: 13, fontWeight: 900, color: master ? GREEN_TX : SUB }}>{master ? "🏆 かんさつ名人！" : `あと ${4 - count} つで 名人`}（いま {count} つ）</div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: SUB, marginTop: 5, lineHeight: 1.5 }}>たくさんの 見かたで 書けるほど、くわしい かんさつに なるよ。</div>
+        <button onClick={newT} style={{ marginTop: 11, fontSize: 13.5, fontWeight: 900, cursor: "pointer", color: "#fff", background: KANSATSU_COLOR, border: "none", borderRadius: 11, padding: "9px 20px" }}>べつの ものを かんさつ →</button>
+      </div>
+    </Overlay>
+  );
+}
+
+function AnsField({ label, unit, value, onChange, ok }) {
+  const border = ok === null ? "#cdd8dd" : ok ? GREEN : "#D85A30";
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <span style={{ fontSize: 12.5, fontWeight: 800, color: INK, width: 70, flex: "none" }}>{label}</span>
+      <input type="number" value={value} onChange={(e) => onChange(e.target.value)} placeholder="答え"
+        style={{ flex: 1, minWidth: 0, fontSize: 17, fontWeight: 900, color: INK, textAlign: "right", border: `2px solid ${border}`, borderRadius: 9, padding: "6px 9px", outline: "none" }} />
+      <span style={{ fontSize: 13, fontWeight: 900, flex: "none" }}>{unit}</span>
+      {ok !== null && <span style={{ fontSize: 17, fontWeight: 900, color: ok ? GREEN : "#D85A30", width: 18, flex: "none" }}>{ok ? "○" : "×"}</span>}
+    </div>
+  );
+}
+function Row({ label, value, color, big }) {
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: big ? "3px 0" : "2px 0" }}>
+      <span style={{ fontSize: big ? 12.5 : 11, fontWeight: 800, color: color }}>{label}</span>
+      <span style={{ fontSize: big ? 19 : 13, fontWeight: 900, color: color }}>{value}</span>
+    </div>
+  );
+}
+
+/* 「つまずきレスキュー隊」カードの色（旧ミニ授業ボード由来の名残） */
+const MINI_COLOR = "#E8731C";
+
+
+/* ===== 小物 ===== */
+function LinkChip({ item, block }) {
+  const base = { fontSize: 11, fontWeight: 800, borderRadius: 11, padding: "5px 11px", textDecoration: "none", display: block ? "block" : "inline-block" };
+  const has = item && item.url;
+  if (has) {
+    return <a href={item.url} target="_blank" rel="noreferrer" style={{ ...base, color: "#fff", background: GREEN, border: `1.5px solid ${GREEN}` }}>{item.t} ↗</a>;
+  }
+  return <span style={{ ...base, color: SUB, border: "1.5px dashed #cdd8dd", background: "#fff" }}>{item.t}</span>;
+}
+function SectionTitle({ color, icon, text, mt }) {
+  return <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 900, color, margin: mt ? "12px 0 6px" : "0 0 6px" }}><span>{icon}</span>{text}</div>;
+}
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+</script>
+</body>
+</html>

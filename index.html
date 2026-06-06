@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D 自由進度表 ポータル</title>
+<meta name="description" content="すすむ×ふかめる×つなげる の3軸でつくる「3D自由進度表」。算数・社会・理科の単元から選んでスタート。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Noto Sans JP','Hiragino Kaku Gothic ProN',sans-serif;
+    color:#2A3B40;
+    background:radial-gradient(1200px 700px at 78% -8%, #E6F5F7 0%, #EEF6F7 45%, #E8F0F1 100%);
+    min-height:100vh;
+    padding:28px 18px 60px;
+  }
+  .wrap{max-width:980px;margin:0 auto;}
+  .head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .logo{width:54px;height:54px;border-radius:14px;background:#2E91A8;color:#fff;font-weight:900;font-size:18px;
+    display:grid;place-items:center;flex:none;box-shadow:0 6px 0 rgba(46,145,168,.3);}
+  .title{font-size:26px;font-weight:900;color:#2E91A8;line-height:1.1;}
+  .sub{font-size:13px;font-weight:800;color:#5b6a72;margin-top:3px;}
+  .axes{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;font-size:12px;font-weight:900;}
+  .axes span{border-radius:999px;padding:5px 12px;}
+  .ax1{background:#E3F2F5;color:#2E91A8;}
+  .ax2{background:#FBF1D6;color:#B58A1B;}
+  .ax3{background:#E3F4EE;color:#1f7a5f;}
+  .lead{margin-top:16px;font-size:13.5px;font-weight:700;color:#3a4a52;line-height:1.7;
+    background:#fff;border:1px solid #e1e8ea;border-radius:14px;padding:14px 16px;}
+  .grid{margin-top:22px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;}
+  .card{display:block;text-decoration:none;color:inherit;background:#fff;border:2px solid #e1e8ea;border-radius:18px;
+    overflow:hidden;transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;}
+  .card:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(46,145,168,.18);}
+  .card .top{padding:16px 16px 12px;color:#fff;}
+  .card .emoji{font-size:30px;}
+  .card .subj{font-size:12px;font-weight:900;opacity:.95;margin-top:6px;}
+  .card .unit{font-size:18px;font-weight:900;line-height:1.25;margin-top:2px;}
+  .card .body{padding:13px 16px 16px;}
+  .card .core{font-size:12px;font-weight:700;color:#5b6a72;line-height:1.6;}
+  .card .go{margin-top:12px;display:inline-block;font-size:13px;font-weight:900;color:#fff;border-radius:11px;padding:8px 16px;}
+  .c-sansu .top{background:linear-gradient(180deg,#3FA0B5,#2E91A8);} .c-sansu .go{background:#2E91A8;} .c-sansu:hover{border-color:#2E91A8;}
+  .c-shakai .top{background:linear-gradient(180deg,#46B58E,#2F9E78);} .c-shakai .go{background:#2F9E78;} .c-shakai:hover{border-color:#2F9E78;}
+  .c-rika .top{background:linear-gradient(180deg,#E08A4F,#D8731C);} .c-rika .go{background:#D8731C;} .c-rika:hover{border-color:#D8731C;}
+  .foot{margin-top:30px;font-size:11px;font-weight:700;color:#8a97a0;line-height:1.7;text-align:center;}
+  .foot b{color:#5b6a72;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div class="logo">3D</div>
+    <div>
+      <div class="title">3D 自由進度表 ポータル</div>
+      <div class="sub">単元をえらんで スタート — 自分のペースで すすめる学び</div>
+    </div>
+  </div>
+
+  <div class="axes">
+    <span class="ax1">━ すすむ（ステージ）</span>
+    <span class="ax2">━ ふかめる（読む→つかう→せつめい→高め合う）</span>
+    <span class="ax3">━ つなげる（前後の単元へ）</span>
+  </div>
+
+  <div class="lead">
+    「すすむ × ふかめる × つなげる」の3つの じくで、単元を 立体的に 見える化した 自由進度表です。
+    各マスに「これが できたら クリア」「つかうどうぐ・リンク（NHK for School など）」「無限れんしゅう問題」「探究タイム」がそろっています。
+    やりたい教科を えらんでください。
+  </div>
+
+  <div class="grid">
+    <a class="card c-sansu" href="./sansu/">
+      <div class="top">
+        <div class="emoji">🧮</div>
+        <div class="subj">算数 3年（東京書籍）</div>
+        <div class="unit">たし算とひき算の筆算</div>
+      </div>
+      <div class="body">
+        <div class="core">いちばん大事：位をそろえて 同じ位どうしで 計算する（くらいのしくみ）。お買いもの・モンスターバトル・暗号たんていのPBLつき。</div>
+        <span class="go">ひらく →</span>
+      </div>
+    </a>
+
+    <a class="card c-shakai" href="./shakai/">
+      <div class="top">
+        <div class="emoji">🗺️</div>
+        <div class="subj">社会 3年（青葉出版・奈良市版）</div>
+        <div class="unit">わたしたちの奈良市<br>（方位・地図記号）</div>
+      </div>
+      <div class="body">
+        <div class="core">いちばん大事：方位と地図記号という“だれにでも伝わるルール”で 土地のようすを 読む。絵地図・方位じしんの読み取りPBLつき。</div>
+        <span class="go">ひらく →</span>
+      </div>
+    </a>
+
+    <a class="card c-rika" href="./rika/">
+      <div class="top">
+        <div class="emoji">🌱</div>
+        <div class="subj">理科 3年（啓林館）</div>
+        <div class="unit">生きものの育ちとつくり<br>（たね・植物・チョウ）</div>
+      </div>
+      <div class="body">
+        <div class="core">いちばん大事：生きものは きまった じゅんばんで 育ち、からだの つくりには 共通点がある。育ちのじゅんばん・こん虫クイズの探究つき。</div>
+        <span class="go">ひらく →</span>
+      </div>
+    </a>
+  </div>
+
+  <div class="foot">
+    制作：<b>紺谷 隆</b>（奈良市立東登美ヶ丘小学校）／ けテぶれ・QNKS・SRL の考えをベースにした自作教材<br>
+    進度（色ぬり）は つかっている端末に 自動保存されます。
+  </div>
+</div>
+</body>
+</html>
