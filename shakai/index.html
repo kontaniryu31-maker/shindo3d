@@ -113,8 +113,8 @@ const STAGES = [
 ];
 const DEPTH = [
   { lv: 1, name: "読む", desc: "音読→線引き", badge: "📖", badgeName: "読破" },
-  { lv: 2, name: "つかう", desc: "地図を読み取る", badge: "✏️", badgeName: "できた" },
-  { lv: 3, name: "せつめい", desc: "なぜ？図で", badge: "💡", badgeName: "説明できた" },
+  { lv: 2, name: "つかう", desc: "もんだいを とく", badge: "✏️", badgeName: "とけた" },
+  { lv: 3, name: "せつめい", desc: "QNKSで せつめい", badge: "💡", badgeName: "QNKSできた" },
   { lv: 4, name: "高め合う", desc: "友だちと", badge: "🤝", badgeName: "高め合い" },
 ];
 
@@ -792,15 +792,23 @@ function App() {
                   <div style={{ marginTop: 12, border: `2.5px solid ${AMBER[2]}`, borderRadius: 13, overflow: "hidden" }}>
                     <div style={{ background: AMBER[2], color: INK, padding: "8px 13px", display: "flex", alignItems: "center", gap: 7 }}>
                       <span style={{ fontSize: 17 }}>💡</span>
-                      <span style={{ fontSize: 13.5, fontWeight: 900 }}>せつめいミッション — この「問い」を せつめいしよう</span>
+                      <span style={{ fontSize: 13.5, fontWeight: 900 }}>QNKSで せつめい — 問い→ぬき出し→組み立て→整理</span>
                     </div>
                     <div style={{ padding: "12px 13px" }}>
                       <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
                         <span style={{ fontSize: 22, fontWeight: 900, color: INK, letterSpacing: 1 }}>{plan.explain.problem}</span>
                         <span style={{ fontSize: 11.5, fontWeight: 800, color: INK, background: AMBER[2], borderRadius: 8, padding: "3px 9px" }}>{plan.explain.page}</span>
                       </div>
-                      <div style={{ marginTop: 10, fontSize: 11, fontWeight: 900, color: AMBER[2] }}>🧠 中心の考え（ここを せつめいする）</div>
-                      <div style={{ marginTop: 4, fontSize: 12.5, fontWeight: 700, color: INK, background: "#fff", border: `1.5px dashed ${AMBER[2]}`, borderRadius: 9, padding: "9px 12px", lineHeight: 1.6 }}>{plan.explain.point}</div>
+                      <div style={{ marginTop: 10, fontSize: 11, fontWeight: 900, color: AMBER_DK[2] }}>🧠 中心の考え（ここを せつめいする）</div>
+                      <div style={{ marginTop: 4, fontSize: 12.5, fontWeight: 700, color: INK, background: "#fff", border: `1.5px dashed ${AMBER_DK[2]}`, borderRadius: 9, padding: "9px 12px", lineHeight: 1.6 }}>{plan.explain.point}</div>
+                      <div style={{ marginTop: 10, fontSize: 11, fontWeight: 900, color: AMBER_DK[2] }}>🧩 QNKS で せつめいする（この じゅんばん）</div>
+                      <div style={{ marginTop: 6, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                        {[["Q", "「なぜ？」の 問いを たてる"], ["N", "教科書・地図・しりょうから ぬき出す"], ["K", "図と ことばで 組み立てる"], ["S", "整理して だれにでも わかるように せつめい"]].map(([qq, txt], i) => (
+                          <div key={i} style={{ flex: "1 1 160px", display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 800, color: INK, background: "#fff", border: `1.3px solid ${AMBER_DK[2]}`, borderRadius: 8, padding: "6px 8px" }}>
+                            <span style={{ width: 18, height: 18, borderRadius: "50%", background: AMBER_DK[2], color: "#fff", fontSize: 11, fontWeight: 900, display: "grid", placeItems: "center", flex: "none" }}>{qq}</span>{txt}
+                          </div>
+                        ))}
+                      </div>
                       <div style={{ marginTop: 8, fontSize: 11, fontWeight: 700, color: SUB, lineHeight: 1.5 }}>👉 答えを 言うだけで なく、<b>図とことば</b>で「<b>なぜ そう言えるのか</b>」を せつめいしよう。</div>
                     </div>
                   </div>
@@ -861,11 +869,11 @@ function App() {
                   return (
                     <div style={{ marginTop: 12, border: `2.5px solid ${AMBER_MAIN}`, borderRadius: 13, overflow: "hidden" }}>
                       <div style={{ background: AMBER_MAIN, color: INK, padding: "8px 13px", display: "flex", alignItems: "center", gap: 7 }}>
-                        <span style={{ fontSize: 18, fontWeight: 900 }}>∞</span>
-                        <span style={{ fontSize: 13.5, fontWeight: 900 }}>この単元の れんしゅう問題 — {st.genLabel}</span>
+                        <span style={{ fontSize: 18, fontWeight: 900 }}>✏️</span>
+                        <span style={{ fontSize: 13.5, fontWeight: 900 }}>もんだいを とく — {st.genLabel}（∞）</span>
                       </div>
                       <div style={{ padding: "12px 13px", background: "#FBF8FF" }}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: SUB, marginBottom: 8, lineHeight: 1.5 }}>何回でも ちょうせんできるよ。れんぞく正かいを のばそう！</div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: SUB, marginBottom: 8, lineHeight: 1.5 }}>「つかう」は <b>問題を とく</b> こと。何回でも ちょうせんして、れんぞく正かいを のばそう！</div>
                         <Gen />
                       </div>
                     </div>

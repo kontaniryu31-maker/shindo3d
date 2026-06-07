@@ -33,8 +33,8 @@ if (typeof window !== "undefined" && !window.storage) {
 const AQUA = "#4DB6C7";          // ヘッダー帯など装飾の水色
 const BLUE = "#2E91A8";          // 進度＝落ち着いた水色
 // 深度（ふかめる）＝金1色の濃淡4段（読む→高め合う で 淡→濃）。色相を1つに絞り 認知負荷を下げる。
-const AMBER = ["#FBF3DA", "#F6E8B6", "#F0D98E", "#E8C75F"];    // 塗り（淡い金→濃い金）
-const AMBER_DK = ["#9E7C24", "#917324", "#856A22", "#74591B"]; // 枠線・文字・帯（白文字が読める濃い金）
+const AMBER = ["#DCE7EC", "#F2DDC8", "#E7E1F2", "#F5E6B4"];    // 深度＝錆浅葱→銅→藤→金（上品な宝石の段階）
+const AMBER_DK = ["#5E7E8C", "#B16A3C", "#6E5DA8", "#B58A2A"]; // 同・濃いめ（枠線・文字・見出し用）
 const AMBER_MAIN = "#8A6A1E";    // 深度の代表色＝濃い金
 const GREEN = "#3FA98C";          // 伸度＝緑（線・面・帯用）
 const GREEN_TX = "#1f7a5f";       // 伸度の文字用（濃い緑＝白地で読める）
@@ -85,7 +85,7 @@ const STAGES = [
 const DEPTH = [
   { lv: 1, name: "読む", desc: "音読→線引き", badge: "📖", badgeName: "読破" },
   { lv: 2, name: "つかう", desc: "問題をとく", badge: "✏️", badgeName: "できた" },
-  { lv: 3, name: "せつめい", desc: "なぜ？図で", badge: "💡", badgeName: "説明できた" },
+  { lv: 3, name: "せつめい", desc: "QNKSで せつめい", badge: "💡", badgeName: "QNKSできた" },
   { lv: 4, name: "高め合う", desc: "友だちと", badge: "🤝", badgeName: "高め合い" },
 ];
 
@@ -370,6 +370,7 @@ function App() {
   const [showPBL, setShowPBL] = useState(false);   // PBL画面（お買いもの）
   const [showBattle, setShowBattle] = useState(false); // PBL（モンスターバトル）
   const [showCipher, setShowCipher] = useState(false); // PBL（暗号たんてい）
+  const [showTest, setShowTest] = useState(false); // たしかめテスト（まとめ）
   const [budget, setBudget] = useState(5000);       // 予算（自分で設定）
   const [cart, setCart] = useState({});             // {itemId: 個数}
   const [loaded, setLoaded] = useState(false);
@@ -634,6 +635,20 @@ function App() {
         </div>
       </div>
 
+      {/* ===== たしかめテストゾーン（まとめ＝ステージ5のとき） ===== */}
+      {!showBack && openStage === 5 && (
+        <div style={{ marginTop: 12, borderRadius: 16, overflow: "hidden", border: "2.5px solid #8A5A2B", boxShadow: "0 6px 0 rgba(138,90,43,.22)" }}>
+          <div style={{ background: "linear-gradient(180deg,#A56B33,#8A5A2B)", color: "#fff", padding: "14px 18px", display: "flex", alignItems: "center", gap: 13, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 28 }}>🏁</span>
+            <div style={{ flex: "1 1 240px", minWidth: 220 }}>
+              <div style={{ fontSize: 17, fontWeight: 900 }}>たしかめテストゾーン（この単元の まとめ）</div>
+              <div style={{ fontSize: 12.5, fontWeight: 800, opacity: .95, marginTop: 3, lineHeight: 1.6 }}>たし算・ひき算の筆算 ぜんぶから 10問。じぶんの 力を たしかめよう！</div>
+            </div>
+            <button onClick={() => { setShowTest(true); setShowBack(false); }} style={{ fontSize: 15, fontWeight: 900, cursor: "pointer", color: "#8A5A2B", background: "#fff", border: "none", borderRadius: 12, padding: "11px 20px", boxShadow: "0 3px 0 rgba(0,0,0,.15)", whiteSpace: "nowrap" }}>📝 テストを はじめる →</button>
+          </div>
+        </div>
+      )}
+
       {/* ===== 下段 ===== */}
       {!showBack && showGuide && (
         <div key={`guide-${openStage}-${openLv}`} style={{ display: "flex", gap: 14, marginTop: 12, alignItems: "flex-start", flexWrap: "wrap", animation: "popUp .32s cubic-bezier(.2,.8,.2,1)" }}>
@@ -682,7 +697,7 @@ function App() {
                 {/* 📖 読むところ（読む Lv1 だけ） */}
                 {plan.kind === "read" && (
                   <div style={{ marginTop: 12, border: `2.5px solid ${AMBER[0]}`, borderRadius: 13, overflow: "hidden" }}>
-                    <div style={{ background: AMBER[0], color: "#fff", padding: "8px 13px", display: "flex", alignItems: "center", gap: 7 }}>
+                    <div style={{ background: AMBER[0], color: INK, padding: "8px 13px", display: "flex", alignItems: "center", gap: 7 }}>
                       <span style={{ fontSize: 17 }}>📖</span>
                       <span style={{ fontSize: 13.5, fontWeight: 900 }}>読むところ</span>
                     </div>
@@ -702,17 +717,25 @@ function App() {
                 {/* 💡 説明ミッション（せつめい Lv3 だけ） */}
                 {plan.explain && (
                   <div style={{ marginTop: 12, border: `2.5px solid ${AMBER[2]}`, borderRadius: 13, overflow: "hidden" }}>
-                    <div style={{ background: AMBER[2], color: "#fff", padding: "8px 13px", display: "flex", alignItems: "center", gap: 7 }}>
+                    <div style={{ background: AMBER[2], color: INK, padding: "8px 13px", display: "flex", alignItems: "center", gap: 7 }}>
                       <span style={{ fontSize: 17 }}>💡</span>
-                      <span style={{ fontSize: 13.5, fontWeight: 900 }}>せつめいミッション — 教科書の この問題を せつめいしよう</span>
+                      <span style={{ fontSize: 13.5, fontWeight: 900 }}>QNKSで せつめい — 問い→ぬき出し→組み立て→整理</span>
                     </div>
                     <div style={{ padding: "12px 13px" }}>
                       <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
                         <span style={{ fontSize: 22, fontWeight: 900, color: INK, letterSpacing: 1 }}>{plan.explain.problem}</span>
-                        <span style={{ fontSize: 11.5, fontWeight: 800, color: "#fff", background: AMBER[2], borderRadius: 8, padding: "3px 9px" }}>{plan.explain.page}</span>
+                        <span style={{ fontSize: 11.5, fontWeight: 800, color: INK, background: AMBER[2], borderRadius: 8, padding: "3px 9px" }}>{plan.explain.page}</span>
                       </div>
-                      <div style={{ marginTop: 10, fontSize: 11, fontWeight: 900, color: AMBER[2] }}>🧠 中心の考え（ここを せつめいする）</div>
-                      <div style={{ marginTop: 4, fontSize: 12.5, fontWeight: 700, color: INK, background: "#fff", border: `1.5px dashed ${AMBER[2]}`, borderRadius: 9, padding: "9px 12px", lineHeight: 1.6 }}>{plan.explain.point}</div>
+                      <div style={{ marginTop: 10, fontSize: 11, fontWeight: 900, color: AMBER_DK[2] }}>🧠 中心の考え（ここを せつめいする）</div>
+                      <div style={{ marginTop: 4, fontSize: 12.5, fontWeight: 700, color: INK, background: "#fff", border: `1.5px dashed ${AMBER_DK[2]}`, borderRadius: 9, padding: "9px 12px", lineHeight: 1.6 }}>{plan.explain.point}</div>
+                      <div style={{ marginTop: 10, fontSize: 11, fontWeight: 900, color: AMBER_DK[2] }}>🧩 QNKS で せつめいする（この じゅんばん）</div>
+                      <div style={{ marginTop: 6, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                        {[["Q", "「なぜ そう計算するの？」の 問いを たてる"], ["N", "教科書・式・図から ぬき出す"], ["K", "図と式で 組み立てる（位取り・くり上がり）"], ["S", "整理して だれにでも わかるように せつめい"]].map(([qq, txt], i) => (
+                          <div key={i} style={{ flex: "1 1 160px", display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 800, color: INK, background: "#fff", border: `1.3px solid ${AMBER_DK[2]}`, borderRadius: 8, padding: "6px 8px" }}>
+                            <span style={{ width: 18, height: 18, borderRadius: "50%", background: AMBER_DK[2], color: "#fff", fontSize: 11, fontWeight: 900, display: "grid", placeItems: "center", flex: "none" }}>{qq}</span>{txt}
+                          </div>
+                        ))}
+                      </div>
                       <div style={{ marginTop: 8, fontSize: 11, fontWeight: 700, color: SUB, lineHeight: 1.5 }}>👉 答えを 出すだけで なく、<b>図とことば</b>で「<b>なぜ そう計算するのか</b>」を せつめいしよう。</div>
                     </div>
                   </div>
@@ -920,6 +943,9 @@ function App() {
       {/* ===== PBL：暗号たんてい ===== */}
       {showCipher && <CipherDetective onClose={() => setShowCipher(false)} />}
 
+      {/* ===== たしかめテスト（まとめ・全分野ミックス10問） ===== */}
+      {showTest && <CalcTest onClose={() => setShowTest(false)} />}
+
     </div>
   );
 }
@@ -1060,6 +1086,75 @@ function makeIntMix() {
   return { display: `${a} − ${b} ＝`, ans: a - b, ansText: String(a - b) };
 }
 function InfiniteIntMix() { return <InfiniteQuiz make={makeIntMix} mode="numeric" hint="位をそろえて 一の位から 計算しよう" />; }
+
+/* ===== たしかめテスト（まとめ）：この単元（たし算・ひき算の筆算）の出題 ===== */
+const TEST_COLOR = "#8A5A2B";   // たしかめテスト（まとめ＝深い金茶／ゴール）
+function tri(n) { return Math.floor(Math.random() * n); }
+function makeTAdd() { const a = tri(900) + 100, b = tri(900) + 100; return { display: `${a} ＋ ${b} ＝`, ans: a + b, ansText: String(a + b) }; }
+function makeTSub() { let a = tri(900) + 100, b = tri(900) + 100; if (b > a) { const t = a; a = b; b = t; } return { display: `${a} − ${b} ＝`, ans: a - b, ansText: String(a - b) }; }
+function makeTSubZero() { const a = (tri(8) + 2) * 100 + tri(10); let b = tri(a - 100) + 50; if (b >= a) b = a - 1; if (b < 1) b = 1; return { display: `${a} − ${b} ＝`, ans: a - b, ansText: String(a - b) }; }
+function makeT4() { if (Math.random() < 0.5) { const a = tri(9000) + 1000, b = tri(9000) + 1000; return { display: `${a} ＋ ${b} ＝`, ans: a + b, ansText: String(a + b) }; } let a = tri(9000) + 1000, b = tri(9000) + 1000; if (b > a) { const t = a; a = b; b = t; } return { display: `${a} − ${b} ＝`, ans: a - b, ansText: String(a - b) }; }
+function makeTestMix() { const r = tri(4); return r === 0 ? makeTAdd() : r === 1 ? makeTSub() : r === 2 ? makeTSubZero() : makeT4(); }
+
+function CalcTest({ onClose }) {
+  const TOTAL = 10;
+  const [q, setQ] = useState(makeTestMix);
+  const [val, setVal] = useState("");
+  const [judge, setJudge] = useState(null);
+  const [n, setN] = useState(1);
+  const [score, setScore] = useState(0);
+  const [finished, setFinished] = useState(false);
+  const inputRef = useRef(null);
+  const check = () => { if (val.trim() === "") return; const ok = Math.abs(parseFloat(val) - q.ans) < 1e-9; setJudge(ok ? "ok" : "ng"); if (ok) setScore((s) => s + 1); };
+  const next = () => { if (n >= TOTAL) { setFinished(true); return; } setN(n + 1); setQ(makeTestMix()); setVal(""); setJudge(null); if (inputRef.current) inputRef.current.focus(); };
+  const onKey = (e) => { if (e.key === "Enter") { judge ? next() : check(); } };
+  const star = score >= 9 ? "★★★" : score >= 7 ? "★★☆" : score >= 5 ? "★☆☆" : "☆☆☆";
+  const msg = score >= 9 ? "かんぺき！筆算マスター！" : score >= 7 ? "よくできました！" : score >= 5 ? "もう一歩！まちがいを 見直そう" : "もう一回 ちょうせん！";
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(20,40,45,.45)", zIndex: 50, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: 18, overflow: "auto" }}>
+      <div style={{ width: "min(560px,100%)", background: "#fff", borderRadius: 18, overflow: "hidden", marginTop: 24 }}>
+        <div style={{ background: `linear-gradient(180deg,#A56B33,${TEST_COLOR})`, color: "#fff", padding: "13px 18px", display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 22 }}>📝</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 17, fontWeight: 900 }}>たしかめテスト</div>
+            <div style={{ fontSize: 12, fontWeight: 800, opacity: .95 }}>たし算・ひき算の筆算 ぜんぶから 10問</div>
+          </div>
+          <button onClick={onClose} style={{ fontSize: 13, fontWeight: 900, cursor: "pointer", color: "#fff", background: "rgba(255,255,255,.25)", border: "none", borderRadius: 10, padding: "8px 14px" }}>✕ とじる</button>
+        </div>
+        <div style={{ padding: "16px 18px" }}>
+          {!finished ? (
+            <>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 900, color: SUB, marginBottom: 10 }}>
+                <span>第 {n} / {TOTAL} もん</span><span>せいかい：{score}</span>
+              </div>
+              <div style={{ background: "#FBF6EE", border: `2px solid ${TEST_COLOR}`, borderRadius: 12, padding: "18px 14px", textAlign: "center" }}>
+                <div style={{ fontSize: 28, fontWeight: 900, color: INK, letterSpacing: 1 }}>{q.display}</div>
+                <input ref={inputRef} value={val} onChange={(e) => setVal(e.target.value)} onKeyDown={onKey} inputMode="numeric" placeholder="答え"
+                  style={{ marginTop: 12, width: 150, fontSize: 24, fontWeight: 900, textAlign: "center", color: INK, border: `2px solid ${judge === "ok" ? GREEN : judge === "ng" ? "#D85A30" : "#cdd8dd"}`, borderRadius: 10, padding: "7px 8px", outline: "none" }} />
+                <div style={{ marginTop: 8, fontSize: 10.5, fontWeight: 700, color: SUB }}>位をそろえて 一の位から 計算しよう</div>
+              </div>
+              {judge && <div style={{ marginTop: 10, textAlign: "center", fontSize: 15, fontWeight: 900, color: judge === "ok" ? GREEN : "#D85A30" }}>{judge === "ok" ? "⭕ せいかい！" : `❌ おしい… 答えは ${q.ansText}`}</div>}
+              <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+                {!judge ? <button onClick={check} style={btnMain(TEST_COLOR)}>こたえあわせ</button>
+                  : <button onClick={next} style={btnMain(GREEN)}>{n >= TOTAL ? "けっか を 見る →" : "つぎの問題 →"}</button>}
+              </div>
+            </>
+          ) : (
+            <div style={{ textAlign: "center", padding: "10px 0 6px" }}>
+              <div style={{ fontSize: 32, letterSpacing: 4 }}>{star}</div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: INK, marginTop: 6 }}>{score} / {TOTAL} もん せいかい！</div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: SUB, marginTop: 6 }}>{msg}</div>
+              <div style={{ marginTop: 14, display: "flex", gap: 8 }}>
+                <button onClick={() => { setQ(makeTestMix()); setVal(""); setJudge(null); setN(1); setScore(0); setFinished(false); }} style={btnMain(TEST_COLOR)}>もう一回</button>
+                <button onClick={onClose} style={btnMain(GREEN)}>とじる</button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /* ===== ∞チャレンジ問題：ジェネレータ登録制 =====
    新しい無限問題を 足すとき：
