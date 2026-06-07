@@ -32,9 +32,10 @@ if (typeof window !== "undefined" && !window.storage) {
 /* ===== カラー（水色=すすむ／紫=ふかめる／緑=つなげる） ===== */
 const AQUA = "#4DB6C7";          // ヘッダー帯など装飾の水色
 const BLUE = "#2E91A8";          // 進度＝落ち着いた水色
-const AMBER = ["#B7CBEA", "#F4C8A6", "#CDD6E0", "#F7E29A"];    // 深度＝金銀銅鉄（パステル塗り：鉄→銅→銀→金）
-const AMBER_DK = ["#4F79C4", "#DB8442", "#6E8CA6", "#D7A91E"]; // 同・濃いめ（枠線・文字・見出し用）
-const AMBER_MAIN = "#D7A91E";    // 深度の代表色＝金（濃いめ）
+// 深度（ふかめる）＝金1色の濃淡4段（読む→高め合う で 淡→濃）。色相を1つに絞り 認知負荷を下げる。
+const AMBER = ["#FBF3DA", "#F6E8B6", "#F0D98E", "#E8C75F"];    // 塗り（淡い金→濃い金）
+const AMBER_DK = ["#9E7C24", "#917324", "#856A22", "#74591B"]; // 枠線・文字・帯（白文字が読める濃い金）
+const AMBER_MAIN = "#8A6A1E";    // 深度の代表色＝濃い金
 const GREEN = "#3FA98C";          // 伸度＝緑（線・面・帯用）
 const GREEN_TX = "#1f7a5f";       // 伸度の文字用（濃い緑＝白地で読める）
 const GRAY = "#8a97a0";
@@ -468,45 +469,44 @@ const KANSATSU_POINTS = ["色", "形", "大きさ（長さ）", "数", "さわ�
 /* ===== 探究ミッション④：一問一答（たしかめ）用データ =====
    テスト範囲（たね・植物・チョウ・こん虫）の 一問一答。q=問い a=答え cat=分野。 */
 const IQ_QA = [
-  { cat: "こん虫", q: "こん虫の 体は いくつの 部分に 分かれている？", a: "頭・むね・はら の 3つ" },
-  { cat: "こん虫", q: "こん虫の あしは 何本？ どこから 出ている？", a: "6本。むね から 出ている" },
-  { cat: "チョウ", q: "チョウは どんな じゅんに 育つ？", a: "たまご → よう虫 → さなぎ → せい虫" },
-  { cat: "こん虫", q: "さなぎに ならずに 育つ こん虫は？（れい）", a: "バッタ・トンボ など" },
-  { cat: "植物", q: "植物の 体は どの 3つから できている？", a: "根・くき・葉" },
-  { cat: "植物", q: "たねを まいて いちばん はじめに 出てくる 葉は？", a: "子葉（ふた葉）" },
-  { cat: "植物", q: "ホウセンカの たねは どこに できる？", a: "花が さいた あとの 実の 中" },
-  { cat: "植物", q: "根の はたらきは？（2つ）", a: "体を ささえる／水を すいあげる" },
-  { cat: "かんさつ", q: "かんさつカードに 書く ことを 3つ いうと？", a: "色・形・大きさ（ほかに 数・長さ など）" },
-  { cat: "チョウ", q: "モンシロチョウの よう虫は 何を 食べる？", a: "キャベツ などの 葉" },
-  { cat: "こん虫", q: "こん虫の なかま では ない 生きものは？（れい）", a: "クモ（あし8本）・ダンゴムシ など" },
-  { cat: "こん虫", q: "トンボの よう虫の 名前は？", a: "ヤゴ" },
-  { cat: "植物", q: "植物が 育つと、高さや 葉の 数は どう なる？", a: "高く なり、数は ふえる" },
-  { cat: "チョウ", q: "さなぎの ときは 食べたり 動いたり する？", a: "しない（中で 体を つくりかえている）" },
-  { cat: "かんさつ", q: "虫めがねで 動かせない ものを 見る ときは？", a: "虫めがねを 目に 近づけ、顔（体）を 見る ものに 近づける" },
-  { cat: "こん虫", q: "こん虫の すみかは どんな ところ？", a: "食べ物が あり、かくれられる ところ" },
-  { cat: "植物", q: "ヒマワリと ホウセンカ、育ちの じゅんは 同じ？ ちがう？", a: "同じ（子葉→葉→花→実〔たね〕）" },
-  { cat: "中核", q: "こん虫の 体の つくりは、生きものの『共通』『多様』どっち？", a: "共通（どれも 頭・むね・はら＋あし6本）" },
-  { cat: "こん虫", q: "テントウムシは こん虫？", a: "こん虫（あし6本）" },
-  { cat: "こん虫", q: "カブトムシの 育ち方は チョウと 同じ？", a: "同じ（さなぎに なる 育ち方）" },
-  // --- 追加分（2026-06-06） ---
-  { cat: "植物", q: "たねを まく きせつは いつごろ？", a: "春（あたたかく なってから）" },
-  { cat: "植物", q: "子葉の つぎに 出てくる 葉を 何という？", a: "本葉（ほんば）" },
-  { cat: "植物", q: "葉は どこに ついている？", a: "くき に ついている" },
-  { cat: "植物", q: "くきの はたらきを ひとつ いうと？", a: "葉や 花を ささえ、水の とおり道に なる" },
-  { cat: "植物", q: "ヒマワリは 育つと、どれくらいの 高さに なる？", a: "1メートル いじょうに 高く なる" },
-  { cat: "チョウ", q: "モンシロチョウの たまごは どこに ある？", a: "キャベツ などの 葉の うら" },
-  { cat: "チョウ", q: "アゲハの よう虫は 何を 食べる？", a: "ミカンや サンショウの 葉" },
-  { cat: "チョウ", q: "さなぎから 出てくるのは 何？", a: "せい虫（チョウ）" },
-  { cat: "チョウ", q: "チョウの せい虫は 何を 食べる？", a: "花の みつ" },
-  { cat: "こん虫", q: "こん虫の はね は 体の どこに ついている？", a: "むね（あしも はねも むねから）" },
-  { cat: "こん虫", q: "こん虫の 目や 口は 体の どこに ある？", a: "頭" },
-  { cat: "こん虫", q: "クモの あしは 何本？ こん虫？", a: "8本。こん虫では ない" },
-  { cat: "こん虫", q: "ダンゴムシの あしは 何本？ こん虫？", a: "14本。こん虫では ない（エビ・カニの なかま）" },
-  { cat: "こん虫", q: "カブトムシは どんな ところに いる？", a: "クヌギ などの 木の みつ（林）" },
-  { cat: "かんさつ", q: "かんさつカードに 日づけや 天気を 書くのは なぜ？", a: "あとで くらべられる ように するため" },
-  { cat: "かんさつ", q: "植物の 高さを はかる どうぐは？", a: "ものさし（まきじゃく）" },
-  { cat: "中核", q: "生きものの『すがたが ちがう』ことを 何という？", a: "多様（たようせい）" },
-  { cat: "中核", q: "生きものに 見られる『同じ つくり・きまり』を 何という？", a: "共通（きょうつうせい）" },
+  { cat: "こん虫", q: "こん虫の 体は いくつの 部分に 分かれている？", a: "頭・むね・はら の 3つ", c: ["頭・はら の 2つ", "頭・むね・はら・あし の 4つ", "1つ（分かれていない）"] },
+  { cat: "こん虫", q: "こん虫の あしは 何本？ どこから 出ている？", a: "6本。むね から 出ている", c: ["4本。はら から", "8本。頭 から", "6本。はら から"] },
+  { cat: "チョウ", q: "チョウは どんな じゅんに 育つ？", a: "たまご→よう虫→さなぎ→せい虫", c: ["たまご→さなぎ→よう虫→せい虫", "よう虫→たまご→さなぎ→せい虫", "たまご→よう虫→せい虫"] },
+  { cat: "こん虫", q: "さなぎに ならずに 育つ こん虫は？（れい）", a: "バッタ・トンボ", c: ["チョウ・カブトムシ", "カイコ・アゲハ", "テントウムシ・ハチ"] },
+  { cat: "植物", q: "植物の 体は どの 3つから できている？", a: "根・くき・葉", c: ["根・葉・花", "くき・葉・実", "根・くき・たね"] },
+  { cat: "植物", q: "たねを まいて いちばん はじめに 出てくる 葉は？", a: "子葉（ふた葉）", c: ["本葉", "花びら", "くき"] },
+  { cat: "植物", q: "ホウセンカの たねは どこに できる？", a: "花が さいた あとの 実の 中", c: ["根の 先", "葉の うら", "くきの 中"] },
+  { cat: "植物", q: "根の はたらきは？", a: "体を ささえる／水を すいあげる", c: ["日光を 集める", "花を さかせる", "たねを つくる"] },
+  { cat: "かんさつ", q: "かんさつカードに 書く こと（れい）は？", a: "色・形・大きさ・数", c: ["ねだん・名前・かった日", "すききらい・気もち", "おと・あじ・ねだん"] },
+  { cat: "チョウ", q: "モンシロチョウの よう虫は 何を 食べる？", a: "キャベツ などの 葉", c: ["花の みつ", "木の しる", "土の 中の もの"] },
+  { cat: "こん虫", q: "こん虫の なかま では ない 生きものは？（れい）", a: "クモ（あし8本）・ダンゴムシ", c: ["アリ・ハチ", "バッタ・トンボ", "カブトムシ・テントウムシ"] },
+  { cat: "こん虫", q: "トンボの よう虫の 名前は？", a: "ヤゴ", c: ["おたまじゃくし", "あおむし", "ぼうふら"] },
+  { cat: "植物", q: "植物が 育つと、高さや 葉の 数は どう なる？", a: "高く なり、数は ふえる", c: ["低く なり、数は へる", "ぜんぜん かわらない", "高く なるが 数は へる"] },
+  { cat: "チョウ", q: "さなぎの ときは 食べたり 動いたり する？", a: "しない（中で 体を つくりかえている）", c: ["よく 動いて たくさん 食べる", "歩いて 葉を 食べる", "とびまわって みつを すう"] },
+  { cat: "かんさつ", q: "虫めがねで 動かせない ものを 見る ときは？", a: "虫めがねを 目に 近づけ、体を 見る ものに 近づける", c: ["虫めがねを 遠くに はなす", "太陽を 見る", "ものを 虫めがねに のせる"] },
+  { cat: "こん虫", q: "こん虫の すみかは どんな ところ？", a: "食べ物が あり、かくれられる ところ", c: ["水の 中だけ", "高い 空の 上", "どこでも 同じ 数 いる"] },
+  { cat: "植物", q: "ヒマワリと ホウセンカ、育ちの じゅんは？", a: "同じ（子葉→葉→花→実）", c: ["まったく ちがう", "ヒマワリだけ 花が さく", "たねからでは ない"] },
+  { cat: "中核", q: "こん虫の 体の つくりは『共通』『多様』どっち？", a: "共通（どれも 頭むね腹＋あし6本）", c: ["多様（ばらばら）", "こん虫だけ ちがう", "きまっていない"] },
+  { cat: "こん虫", q: "テントウムシは こん虫？", a: "こん虫（あし6本）", c: ["こん虫では ない", "クモの なかま", "貝の なかま"] },
+  { cat: "こん虫", q: "カブトムシの 育ち方は チョウと 同じ？", a: "同じ（さなぎに なる）", c: ["ちがう（さなぎに ならない）", "たまごを うまない", "よう虫が いない"] },
+  { cat: "植物", q: "たねを まく きせつは いつごろ？", a: "春（あたたかく なってから）", c: ["冬", "秋", "真夏"] },
+  { cat: "植物", q: "子葉の つぎに 出てくる 葉を 何という？", a: "本葉（ほんば）", c: ["花びら", "もう一度 子葉", "くき"] },
+  { cat: "植物", q: "葉は どこに ついている？", a: "くき に ついている", c: ["根 に ついている", "土の 中", "花の 中"] },
+  { cat: "植物", q: "くきの はたらきは？", a: "葉や 花を ささえ、水の とおり道に なる", c: ["たねを つくる", "日光を さえぎる", "虫を よぶ"] },
+  { cat: "植物", q: "ヒマワリは 育つと どれくらいの 高さに なる？", a: "1メートル いじょうに 高く なる", c: ["10センチくらい", "高さは かわらない", "5メートルを こえる"] },
+  { cat: "チョウ", q: "モンシロチョウの たまごは どこに ある？", a: "キャベツ などの 葉の うら", c: ["葉の おもて", "土の 中", "木の みき"] },
+  { cat: "チョウ", q: "アゲハの よう虫は 何を 食べる？", a: "ミカンや サンショウの 葉", c: ["キャベツ", "花の みつ", "草の 根"] },
+  { cat: "チョウ", q: "さなぎから 出てくるのは 何？", a: "せい虫（チョウ）", c: ["よう虫", "たまご", "新しい さなぎ"] },
+  { cat: "チョウ", q: "チョウの せい虫は 何を 食べる？", a: "花の みつ", c: ["キャベツの 葉", "木の しる", "小さな 虫"] },
+  { cat: "こん虫", q: "こん虫の はね は 体の どこに ついている？", a: "むね", c: ["頭", "はら", "あし"] },
+  { cat: "こん虫", q: "こん虫の 目や 口は 体の どこに ある？", a: "頭", c: ["むね", "はら", "あし"] },
+  { cat: "こん虫", q: "クモの あしは 何本？ こん虫？", a: "8本。こん虫では ない", c: ["6本。こん虫", "4本。こん虫では ない", "10本。こん虫"] },
+  { cat: "こん虫", q: "ダンゴムシの あしは 何本？ こん虫？", a: "14本。こん虫では ない", c: ["6本。こん虫", "8本。クモの なかま", "0本"] },
+  { cat: "こん虫", q: "カブトムシは どんな ところに いる？", a: "クヌギ などの 木の みつ（林）", c: ["川の 中", "花の 上", "土の 中だけ"] },
+  { cat: "かんさつ", q: "かんさつカードに 日づけや 天気を 書くのは なぜ？", a: "あとで くらべられる ように するため", c: ["絵を かざる ため", "名前を おぼえる ため", "天気よほうの ため"] },
+  { cat: "かんさつ", q: "植物の 高さを はかる どうぐは？", a: "ものさし（まきじゃく）", c: ["温度計", "虫めがね", "ほうい じしん"] },
+  { cat: "中核", q: "生きものの『すがたが ちがう』ことを 何という？", a: "多様（たようせい）", c: ["共通（きょうつうせい）", "へんしん", "せいちょう"] },
+  { cat: "中核", q: "生きものに 見られる『同じ つくり・きまり』を 何という？", a: "共通（きょうつうせい）", c: ["多様（たようせい）", "ばらばら", "ぐうぜん"] },
 ];
 
 /* ╔══════════════════════════════════════════════════════════════════╗
@@ -628,20 +628,20 @@ function App() {
           <div style={{ display: "flex", gap: 6 }}>
             <button onClick={() => { setShowOrder(true); setShowBack(false); }} style={{
               fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "5px 13px", borderRadius: 13,
-              color: "#fff", background: ORDER_COLOR, border: "none",
-              boxShadow: "0 2px 0 rgba(180,120,30,.3)",
+              color: ORDER_COLOR, background: "#fff", border: `1.5px solid ${ORDER_COLOR}`,
+              boxShadow: "0 1px 2px rgba(20,40,60,.06)",
             }}>🦋 育ちのじゅんばんクイズ</button>
             <button onClick={() => { setShowInsect(true); setShowBack(false); }} style={{
               fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "5px 13px", borderRadius: 13,
-              color: "#fff", background: INSECT_COLOR, border: "none", boxShadow: "0 2px 0 rgba(60,140,90,.3)",
+              color: INSECT_COLOR, background: "#fff", border: `1.5px solid ${INSECT_COLOR}`, boxShadow: "0 1px 2px rgba(20,40,60,.06)",
             }}>🐛 これはこん虫？</button>
             <button onClick={() => { setShowKansatsu(true); setShowBack(false); }} style={{
               fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "5px 13px", borderRadius: 13,
-              color: "#fff", background: KANSATSU_COLOR, border: "none", boxShadow: "0 2px 0 rgba(50,120,150,.3)",
+              color: KANSATSU_COLOR, background: "#fff", border: `1.5px solid ${KANSATSU_COLOR}`, boxShadow: "0 1px 2px rgba(20,40,60,.06)",
             }}>🔍 かんさつ名人</button>
             <button onClick={() => { setShowIchimon(true); setShowBack(false); }} style={{
               fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "5px 13px", borderRadius: 13,
-              color: "#fff", background: IQ_COLOR, border: "none", boxShadow: "0 2px 0 rgba(122,87,194,.3)",
+              color: IQ_COLOR, background: "#fff", border: `1.5px solid ${IQ_COLOR}`, boxShadow: "0 1px 2px rgba(20,40,60,.06)",
             }}>⚡ 一問一答</button>
             <button onClick={() => { setShowBack((v) => !v); }} style={{
               fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "5px 13px", borderRadius: 13,
@@ -738,15 +738,16 @@ function App() {
                 return (
                   <div key={`${s.n}-${k}-${isDone ? 1 : 0}`} onClick={() => { setOpenStage(s.n); setOpenLv(k); }} style={{
                     position: "absolute", ...p, width: CW, height: CH - 6,
-                    background: isDone ? AMBER[k] : "#fff", border: `2px solid ${AMBER_DK[k]}`,
-                    outline: isOpenCell ? `3px solid ${AMBER_DK[k]}` : "none",
-                    borderRadius: 7, cursor: "pointer", boxSizing: "border-box", display: "flex", alignItems: "center", gap: 2,
+                    background: isDone ? AMBER[k] : "#fff", border: `1.5px solid ${isDone ? AMBER_DK[k] : "#E4E9EB"}`,
+                    outline: isOpenCell ? `2.5px solid ${AMBER_DK[k]}` : "none", outlineOffset: 1,
+                    borderRadius: 9, cursor: "pointer", boxSizing: "border-box", display: "flex", alignItems: "center", gap: 2,
+                    boxShadow: isDone ? "none" : "0 1px 2px rgba(20,40,60,.05)",
                     animation: isDone ? "cellPop .3s ease" : "none",
                   }}>
-                    <span style={{ width: 7, height: "100%", background: AMBER_DK[k], borderRadius: "5px 0 0 5px", flex: "none" }} />
-                    <span style={{ fontSize: 12, flex: "none", marginLeft: 1 }}>{d.badge}</span>
-                    <span style={{ fontSize: 11.5, fontWeight: 900, color: isDone ? INK : AMBER_DK[k], flex: 1, whiteSpace: "nowrap", overflow: "hidden", letterSpacing: "-0.3px" }}>{d.name}</span>
-                    <span style={{ fontSize: 8, fontWeight: 800, color: isDone ? INK : AMBER_DK[k], paddingRight: 4, flex: "none" }}>L{d.lv}</span>
+                    <span style={{ width: 6, height: "100%", background: AMBER_DK[k], borderRadius: "5px 0 0 5px", flex: "none", opacity: isDone ? 1 : .85 }} />
+                    <span style={{ fontSize: 12, flex: "none", marginLeft: 2 }}>{d.badge}</span>
+                    <span style={{ fontSize: 11.5, fontWeight: 900, color: INK, flex: 1, whiteSpace: "nowrap", overflow: "hidden", letterSpacing: "-0.3px" }}>{d.name}</span>
+                    <span style={{ fontSize: 8, fontWeight: 900, color: AMBER_DK[k], paddingRight: 5, flex: "none" }}>L{d.lv}</span>
                   </div>
                 );
               })
@@ -1318,27 +1319,27 @@ function KansatsuMission({ onClose }) {
 /* ===== 探究④：一問一答（たしかめテスト用・フラッシュカード） ===== */
 const CAT_COLOR = { "こん虫": "#3C8C5A", "チョウ": "#C98A1E", "植物": "#2E9E6B", "かんさつ": "#2E91A8", "中核": "#D7A91E" };
 function IchimonQuiz({ onClose }) {
-  const shuffle = () => {
-    const a = IQ_QA.map((_, i) => i);
-    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
-    return a;
-  };
-  const [order, setOrder] = useState(shuffle);
+  const shuf = (arr) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const newOrder = () => shuf(IQ_QA.map((_, i) => i));
+  const [order, setOrder] = useState(newOrder);
   const [pos, setPos] = useState(0);
-  const [reveal, setReveal] = useState(false);
+  const [picked, setPicked] = useState(null);
   const [got, setGot] = useState(0);
   const [done, setDone] = useState(0);
   const q = IQ_QA[order[pos]];
   const last = pos >= order.length - 1;
+  const options = React.useMemo(() => shuf([q.a, ...(q.c || [])]), [order, pos]);
+  const judged = picked !== null;
+  const correct = judged && picked === q.a;
 
-  const mark = (ok) => { if (ok) setGot((g) => g + 1); setDone((d) => d + 1); };
-  const next = () => { setReveal(false); if (last) { setOrder(shuffle()); setPos(0); } else setPos((p) => p + 1); };
-  const restart = () => { setOrder(shuffle()); setPos(0); setReveal(false); setGot(0); setDone(0); };
+  const pick = (opt) => { if (judged) return; setPicked(opt); setDone((d) => d + 1); if (opt === q.a) setGot((g) => g + 1); };
+  const next = () => { setPicked(null); if (last) { setOrder(newOrder()); setPos(0); } else setPos((p) => p + 1); };
+  const restart = () => { setOrder(newOrder()); setPos(0); setPicked(null); setGot(0); setDone(0); };
 
   return (
-    <Overlay color={IQ_COLOR} gradFrom="#9B7BD4" icon="⚡" sub="たね・植物・チョウの たしかめ" title="一問一答テスト" onClose={onClose}>
+    <Overlay color={IQ_COLOR} gradFrom="#9B7BD4" icon="⚡" sub="たね・植物・チョウの たしかめ" title="一問一答（4たく）テスト" onClose={onClose}>
       <div style={{ background: "#F1ECFA", border: `2px solid ${IQ_COLOR}`, borderRadius: 12, padding: "10px 13px", marginBottom: 12, fontSize: 12, fontWeight: 700, color: INK, lineHeight: 1.55 }}>
-        🎯 問いを 読んで 答えを 考える → <b>「答えを 見る」</b>で たしかめ → できたら ⭕、まだなら ❌。ぜんぶで {IQ_QA.length}問！
+        🎯 問いを 読んで、正しい 答えを <b>4つから 1つ</b> えらぼう！ ぜんぶで {IQ_QA.length}問。
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
@@ -1346,28 +1347,43 @@ function IchimonQuiz({ onClose }) {
         <span style={{ fontSize: 11.5, fontWeight: 800, color: SUB }}>{pos + 1} / {order.length} 問め</span>
       </div>
 
-      <div style={{ border: "2px solid #e0e8ea", borderRadius: 14, padding: "18px 16px", background: "#fff", textAlign: "center" }}>
+      <div style={{ border: "2px solid #e0e8ea", borderRadius: 14, padding: "16px 16px", background: "#fff", textAlign: "center", marginBottom: 12 }}>
         <div style={{ fontSize: 12, fontWeight: 800, color: IQ_COLOR }}>Q.</div>
-        <div style={{ fontSize: 18, fontWeight: 900, color: INK, marginTop: 4, lineHeight: 1.5 }}>{q.q}</div>
-        {!reveal ? (
-          <button onClick={() => setReveal(true)} style={{ marginTop: 16, fontSize: 14, fontWeight: 900, cursor: "pointer", color: "#fff", background: IQ_COLOR, border: "none", borderRadius: 12, padding: "11px 26px" }}>答えを 見る 👀</button>
-        ) : (
-          <div style={{ marginTop: 14, borderTop: "2px dashed #e0e8ea", paddingTop: 12 }}>
-            <div style={{ fontSize: 12, fontWeight: 800, color: GREEN_TX }}>A.</div>
-            <div style={{ fontSize: 18, fontWeight: 900, color: GREEN_TX, marginTop: 3, lineHeight: 1.5 }}>{q.a}</div>
-          </div>
-        )}
+        <div style={{ fontSize: 17.5, fontWeight: 900, color: INK, marginTop: 4, lineHeight: 1.5 }}>{q.q}</div>
       </div>
 
-      {reveal && (
-        <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
-          <button onClick={() => { mark(true); next(); }} style={{ flex: 1, fontSize: 15, fontWeight: 900, cursor: "pointer", color: "#fff", background: GREEN, border: "none", borderRadius: 12, padding: "12px 0" }}>⭕ できた → つぎ</button>
-          <button onClick={() => { mark(false); next(); }} style={{ flex: 1, fontSize: 15, fontWeight: 900, cursor: "pointer", color: "#D85A30", background: "#fff", border: "2px solid #D85A30", borderRadius: 12, padding: "12px 0" }}>❌ まだ → つぎ</button>
+      <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+        {options.map((opt, i) => {
+          const isAns = opt === q.a;
+          const isPick = opt === picked;
+          let bg = "#fff", bd = "#dbe3e6", ink = INK, mark = String.fromCharCode(0x2460 + i); // ①②③④
+          if (judged) {
+            if (isAns) { bg = "#EAF7F1"; bd = GREEN; ink = GREEN_TX; mark = "⭕"; }
+            else if (isPick) { bg = "#FDEEEA"; bd = "#D85A30"; ink = "#B5482C"; mark = "❌"; }
+            else { bg = "#f7f8f9"; bd = "#e6ebed"; ink = "#9aa7ad"; }
+          }
+          return (
+            <button key={i} onClick={() => pick(opt)} disabled={judged} style={{
+              display: "flex", alignItems: "center", gap: 11, textAlign: "left", width: "100%",
+              cursor: judged ? "default" : "pointer", background: bg, border: `2px solid ${bd}`, borderRadius: 12, padding: "12px 14px",
+            }}>
+              <span style={{ width: 26, height: 26, borderRadius: "50%", flex: "none", display: "grid", placeItems: "center", fontSize: 14, fontWeight: 900, color: judged && (isAns || isPick) ? ink : "#fff", background: judged && (isAns || isPick) ? "transparent" : (CAT_COLOR[q.cat] || IQ_COLOR) }}>{mark}</span>
+              <span style={{ fontSize: 14.5, fontWeight: 800, color: ink, lineHeight: 1.4 }}>{opt}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {judged && (
+        <div style={{ marginTop: 12, textAlign: "center", border: `2px solid ${correct ? GREEN : "#D85A30"}`, borderRadius: 13, padding: "12px", background: correct ? "#EAF7F1" : "#FDEEEA" }}>
+          <div style={{ fontSize: 16, fontWeight: 900, color: correct ? GREEN_TX : "#B5482C" }}>{correct ? "⭕ 正かい！" : "❌ ざんねん…"}</div>
+          {!correct && <div style={{ fontSize: 13, fontWeight: 800, color: INK, marginTop: 4 }}>正しい答え：<b style={{ color: GREEN_TX }}>{q.a}</b></div>}
+          <button onClick={next} style={{ marginTop: 10, fontSize: 14, fontWeight: 900, cursor: "pointer", color: "#fff", background: IQ_COLOR, border: "none", borderRadius: 11, padding: "9px 24px" }}>{last ? "もう一回 さいしょから →" : "つぎの 問題 →"}</button>
         </div>
       )}
 
       <div style={{ marginTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span style={{ fontSize: 12.5, fontWeight: 800, color: SUB }}>せいせき：<b style={{ color: INK }}>{got} / {done}</b> 問 できた</span>
+        <span style={{ fontSize: 12.5, fontWeight: 800, color: SUB }}>せいせき：<b style={{ color: INK }}>{got} / {done}</b> 問 正かい</span>
         <button onClick={restart} style={{ fontSize: 11, fontWeight: 800, cursor: "pointer", color: SUB, background: "#fff", border: "1.5px solid #cdd8dd", borderRadius: 10, padding: "5px 12px" }}>さいしょから</button>
       </div>
     </Overlay>
