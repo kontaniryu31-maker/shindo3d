@@ -9,9 +9,13 @@
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<!-- 本物の地図（国土地理院 地理院地図）を表示するための Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
+  ruby rt { font-size: .52em; font-weight: 700; color: inherit; }
 </style>
 </head>
 <body>
@@ -30,11 +34,13 @@ if (typeof window !== "undefined" && !window.storage) {
 
 /* ===== カラー（ポンチ絵系・現行踏襲） ===== */
 /* ===== カラー（水色=すすむ／紫=ふかめる／緑=つなげる） ===== */
-const AQUA = "#4DB6C7";          // ヘッダー帯など装飾の水色
-const BLUE = "#2E91A8";          // 進度＝落ち着いた水色
-const AMBER = ["#B7CBEA", "#F4C8A6", "#CDD6E0", "#F7E29A"];    // 深度＝金銀銅鉄（パステル塗り：鉄→銅→銀→金）
-const AMBER_DK = ["#4F79C4", "#DB8442", "#6E8CA6", "#D7A91E"]; // 同・濃いめ（枠線・文字・見出し用）
-const AMBER_MAIN = "#D7A91E";    // 深度の代表色＝金（濃いめ）
+const AQUA = "#A86B33";          // 右パネル装飾＝濃いめ暖色タン（白文字が読める社会テーマ）
+const BLUE = "#A55B2C";          // 進度（すすむ）＝古都の朱（白文字4.9:1・社会テーマ）
+// 深度（ふかめる）＝金1色の濃淡4段（読む→高め合う で 淡→濃）。色相を1つに絞り 認知負荷を下げる。
+const AMBER = ["#FBF3DA", "#F6E8B6", "#F0D98E", "#E8C75F"];    // 塗り（淡い金→濃い金）
+const AMBER_DK = ["#9E7C24", "#917324", "#856A22", "#74591B"]; // 枠線・文字・帯（白文字が読める濃い金）
+const AMBER_MAIN = "#8A6A1E";    // 深度の代表色＝濃い金
+const AMBER_TX = "#74591B";      // 金の「文字」用＝白地で読めるくすみ金
 const GREEN = "#3FA98C";          // 伸度＝緑（線・面・帯用）
 const GREEN_TX = "#1f7a5f";       // 伸度の文字用（濃い緑＝白地で読める）
 const GRAY = "#8a97a0";
@@ -46,6 +52,29 @@ const THEME = { accent: "#B26836", bg: "radial-gradient(1200px 700px at 78% -8%,
 const NOTE_BG = "#FCF3D6";        // 黄色の注記帯
 const NOTE_BD = "#E6C34D";
 const NOTE_INK = "#8A6D1B";
+
+/* ===== ふりがな：必須語だけ 自動でルビを振る（データは素のまま＝取りこぼし無し） ===== */
+const FURI = {
+  "地図記号": "ちずきごう", "東西南北": "とうざいなんぼく", "読み取る": "よみとる", "高め合う": "たかめあう",
+  "奈良市": "ならし", "色分け": "いろわけ", "地いき": "ちいき", "線引き": "せんびき", "音読": "おんどく",
+  "発見": "はっけん", "学校": "がっこう", "方位": "ほうい", "地図": "ちず", "土地": "とち", "場所": "ばしょ",
+  "出版": "しゅっぱん", "社会": "しゃかい", "上": "じょう", "伝わる": "つたわる", "表して": "あらわして",
+  "読む": "よむ", "友": "とも", "図": "ず",
+};
+const FURI_RE = new RegExp(Object.keys(FURI).sort((a, b) => b.length - a.length).join("|"), "g");
+function furi(s) {
+  if (s == null) return s;
+  s = String(s);
+  const out = []; let last = 0, m, i = 0; FURI_RE.lastIndex = 0;
+  while ((m = FURI_RE.exec(s))) {
+    const w = m[0];
+    if (m.index > last) out.push(s.slice(last, m.index));
+    out.push(<ruby key={i++}>{w}<rt>{FURI[w]}</rt></ruby>);
+    last = m.index + w.length;
+  }
+  if (last < s.length) out.push(s.slice(last));
+  return out;
+}
 
 /* ╔══════════════════════════════════════════════════════════════════╗
    ║  ★★★ 単元データ（ここを差し替えれば 別単元の3D自由進度表になる）★★★  ║
@@ -349,12 +378,26 @@ const NARA_AREAS = [
   { name: "月ヶ瀬・都祁", houi: "東のはし（標高が高い）", feature: "標高が高く すずしい。広い 茶畑、梅林、高原野菜。名阪国道・針テラスが ある。", job: "茶作り・梅・高原野菜づくり" },
 ];
 
+/* ===== 奈良市の実在地点（本物の地図＝地理院地図で つかう。lat=北緯 lng=東経。先生が追加・修正できる） ===== */
+const NARA_PLACES = [
+  { name: "近鉄奈良駅", emoji: "🚉", lat: 34.6829, lng: 135.8285 },
+  { name: "JR奈良駅", emoji: "🚉", lat: 34.6792, lng: 135.8190 },
+  { name: "東大寺（大仏）", emoji: "🦌", lat: 34.6890, lng: 135.8398 },
+  { name: "興福寺（五重塔）", emoji: "🏯", lat: 34.6809, lng: 135.8318 },
+  { name: "春日大社", emoji: "⛩", lat: 34.6815, lng: 135.8483 },
+  { name: "奈良公園", emoji: "🦌", lat: 34.6851, lng: 135.8430 },
+  { name: "平城宮跡", emoji: "🏛", lat: 34.6913, lng: 135.7956 },
+  { name: "奈良市役所", emoji: "🏢", lat: 34.6850, lng: 135.8048 },
+  { name: "唐招提寺", emoji: "卍", lat: 34.6757, lng: 135.7847 },
+  { name: "薬師寺", emoji: "🗼", lat: 34.6680, lng: 135.7843 },
+];
+
 /* ╔══════════════════════════════════════════════════════════════════╗
    ║  ↓↓↓ ここから下は「エンジン」：基本さわらない（色・立体・App本体）↓↓↓  ║
    ╚══════════════════════════════════════════════════════════════════╝ */
 
 /* ===== 立体（アイソメ） ===== */
-const CW = 130, CH = 54, GX = 4, HEADER = 58, DEEP = 120;
+const CW = 134, CH = 60, GX = 4, HEADER = 76, DEEP = 120;
 const N = STAGES.length;
 const FW = N * CW + (N - 1) * GX;
 const FH = HEADER + DEPTH.length * CH;
@@ -363,7 +406,7 @@ const px = (x, y, z) => ({ left: x + z * ZX, top: y + z * ZY });
 const OX = 180, OY = 116;
 // 実際の描画域（左の深度ラベル px(-150) 〜 右の奥行き/ラベルまで）。これで縮小率を計算する
 // 中身の実寸（横≒30〜940 / 縦≒40〜402）に合わせて余白を切り詰め、箱を大きく見せる
-const DRAW_W = 980, DRAW_H = 430;
+const DRAW_W = 1000, DRAW_H = 492;
 const wrap = (p) => ({ left: OX + p.left, top: OY + p.top });
 
 const STORE_KEY = "shindo3d_shakai_nara_v1"; // ★単元ごとに変える（別単元へ流用時は名前を変えて 保存の混在を防ぐ）
@@ -387,12 +430,19 @@ function App() {
   const [showBattle, setShowBattle] = useState(false); // PBL（モンスターバトル）
   const [showCipher, setShowCipher] = useState(false); // PBL（奈良市たんけん）
   const [showMap, setShowMap] = useState(false);   // PBL（絵地図の読み取り）
+  const [showTest, setShowTest] = useState(false); // たしかめテスト（まとめ）
   const [budget, setBudget] = useState(5000);       // 予算（自分で設定）
   const [cart, setCart] = useState({});             // {itemId: 個数}
   const [loaded, setLoaded] = useState(false);
 
   // 立体シーンをコンテナ幅に合わせて自動縮小（はみ出し防止）
   const sceneBoxRef = useRef(null);
+  const guideRef = useRef(null);
+  // マスを選んだら 下の「やること」ガイドへ スッと スクロール
+  const goGuide = (st, lv) => {
+    setOpenStage(st); setOpenLv(lv);
+    setTimeout(() => { try { guideRef.current && guideRef.current.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (e) {} }, 90);
+  };
   const [fit, setFit] = useState(1);
   useEffect(() => {
     const el = sceneBoxRef.current;
@@ -461,29 +511,29 @@ function App() {
         <div style={{ flex: 1, minWidth: 240 }}>
           <div style={{ fontSize: 22, fontWeight: 900, color: THEME.accent, lineHeight: 1.05 }}>3D 自由進度表</div>
           <div style={{ fontSize: 12.5, fontWeight: 800, marginTop: 2 }}>たんげん：<span style={{ color: THEME.accent }}>{UNIT}</span></div>
-          <div style={{ fontSize: 10, fontWeight: 700, color: SUB, marginTop: 1 }}>{BOOK}　／　いちばん大事：{CORE}</div>
+          <div style={{ fontSize: 11.5, fontWeight: 700, color: SUB, marginTop: 2, lineHeight: 1.7 }}>{furi(BOOK)}　／　いちばん大事：{furi(CORE)}</div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
           <div style={{ fontSize: 11, fontWeight: 800, color: SUB, textAlign: "right", lineHeight: 1.5 }}>
             <span style={{ color: BLUE }}>━</span>すすむ　<span style={{ color: AMBER_MAIN }}>━</span>ふかめる（わかりの ふかさ）　<span style={{ color: GREEN_TX }}>━</span>つなげる
           </div>
-          <div style={{ display: "flex", gap: 6 }}>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end", rowGap: 6 }}>
             <button onClick={() => { setShowPBL(true); setShowBack(false); }} style={{
               fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "5px 13px", borderRadius: 13,
-              color: "#fff", background: SYM_COLOR, border: "none",
-              boxShadow: "0 2px 0 rgba(126,84,196,.3)",
+              color: SYM_COLOR, background: "#fff", border: `1.5px solid ${SYM_COLOR}`,
+              boxShadow: "0 1px 2px rgba(20,40,60,.06)",
             }}>🗺️ 地図記号マスター</button>
             <button onClick={() => { setShowBattle(true); setShowBack(false); }} style={{
               fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "5px 13px", borderRadius: 13,
-              color: "#fff", background: HOUI_COLOR, border: "none", boxShadow: "0 2px 0 rgba(46,145,168,.3)",
+              color: HOUI_COLOR, background: "#fff", border: `1.5px solid ${HOUI_COLOR}`, boxShadow: "0 1px 2px rgba(20,40,60,.06)",
             }}>🧭 方位ナビ</button>
             <button onClick={() => { setShowCipher(true); setShowBack(false); }} style={{
               fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "5px 13px", borderRadius: 13,
-              color: "#fff", background: CHIIKI_COLOR, border: "none", boxShadow: "0 2px 0 rgba(63,169,140,.3)",
+              color: CHIIKI_COLOR, background: "#fff", border: `1.5px solid ${CHIIKI_COLOR}`, boxShadow: "0 1px 2px rgba(20,40,60,.06)",
             }}>🏯 奈良市たんけん</button>
             <button onClick={() => { setShowMap(true); setShowBack(false); }} style={{
               fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "5px 13px", borderRadius: 13,
-              color: "#fff", background: MAP_COLOR, border: "none", boxShadow: "0 2px 0 rgba(216,115,28,.3)",
+              color: MAP_COLOR, background: "#fff", border: `1.5px solid ${MAP_COLOR}`, boxShadow: "0 1px 2px rgba(20,40,60,.06)",
             }}>🔍 絵地図の読み取り</button>
             <button onClick={() => { setShowBack((v) => !v); }} style={{
               fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "5px 13px", borderRadius: 13,
@@ -497,7 +547,7 @@ function App() {
       {/* ===== 上段：立体ビュー ===== */}
       <div ref={sceneBoxRef} style={{
         marginTop: 10, height: DRAW_H * fit, borderRadius: 16, border: "1px solid #e1e8ea",
-        background: "linear-gradient(180deg,#FBFEFE,#E9F4F6)", position: "relative", overflow: "hidden", perspective: 1500,
+        background: "linear-gradient(180deg,#FFFDFA,#F4E8D8)", position: "relative", overflow: "hidden", perspective: 1500,
       }}>
         {/* fitスケール用ラッパ（実描画域 DRAW_W×DRAW_H を中央に置いて縮小） */}
         <div style={{ position: "absolute", left: "50%", top: 0, width: DRAW_W, height: DRAW_H, transform: `translateX(-50%) scale(${fit})`, transformOrigin: "top center" }}>
@@ -535,17 +585,17 @@ function App() {
               const ox = wrap(px(FW - 82, -64, 0));        // すすむ：線の上・右寄り
               const oy = wrap(px(-122, FH + 12, 0));        // ふかめる：線の左下
               const oz = wrap(px(-30, -44, DEEP * 0.5));    // つなげる：短い線の先
-              const base = { position: "absolute", fontSize: 13, fontWeight: 900, whiteSpace: "nowrap", textShadow: labelShadow };
+              const base = { position: "absolute", fontSize: 15, fontWeight: 900, whiteSpace: "nowrap", textShadow: labelShadow };
               return (<>
                 <div style={{ ...base, ...ox, color: BLUE }}>すすむ →</div>
-                <div style={{ ...base, ...oy, color: AMBER_MAIN }}>ふかめる ↓</div>
+                <div style={{ ...base, ...oy, color: AMBER_TX }}>ふかめる ↓</div>
                 <div style={{ ...base, ...oz, color: GREEN_TX }}>つなげる ↗</div>
               </>);
             })()}
             {/* 上面・右側面 */}
             <svg width="100%" height="100%" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
               {(() => { const tl = px(-20, -20, 0), tr = px(FW + 20, -20, 0), tr2 = px(FW + 20, -20, DEEP), tl2 = px(-20, -20, DEEP);
-                return <polygon points={[tl, tr, tr2, tl2].map(p => `${OX + p.left},${OY + p.top}`).join(" ")} fill="rgba(58,123,213,.06)" stroke="#bcd0d7" strokeWidth="1.4" />; })()}
+                return <polygon points={[tl, tr, tr2, tl2].map(p => `${OX + p.left},${OY + p.top}`).join(" ")} fill="rgba(178,104,54,.06)" stroke="#bcd0d7" strokeWidth="1.4" />; })()}
               {(() => { const a = px(FW + 20, -20, 0), b = px(FW + 20, FH + 20, 0), c = px(FW + 20, FH + 20, DEEP), d = px(FW + 20, -20, DEEP);
                 return <polygon points={[a, b, c, d].map(p => `${OX + p.left},${OY + p.top}`).join(" ")} fill="rgba(120,140,150,.10)" stroke="#bcd0d7" strokeWidth="1.4" />; })()}
             </svg>
@@ -556,17 +606,17 @@ function App() {
               const isOpen = openStage === s.n;
               const built = !!(PLAN[s.n] && PLAN[s.n][0] && PLAN[s.n][0].ready);
               return (
-                <button key={s.n} onClick={() => { setOpenStage(s.n); setOpenLv(0); }} style={{
+                <button key={s.n} onClick={() => goGuide(s.n, 0)} style={{
                   position: "absolute", ...p, width: CW, height: HEADER - 6,
-                  background: isOpen ? BLUE : "#EAF2FC", color: isOpen ? "#fff" : INK,
+                  background: isOpen ? BLUE : "#F7ECDF", color: isOpen ? "#fff" : INK,
                   border: `2px solid ${BLUE}`, borderRadius: 8, cursor: "pointer", padding: "5px 8px", boxSizing: "border-box", textAlign: "left",
-                  boxShadow: isOpen ? "0 4px 12px rgba(58,123,213,.35)" : "none",
+                  boxShadow: isOpen ? "0 4px 12px rgba(178,104,54,.32)" : "none",
                 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ width: 19, height: 19, borderRadius: "50%", background: isOpen ? "#fff" : BLUE, color: isOpen ? BLUE : "#fff", fontSize: 10.5, fontWeight: 900, display: "grid", placeItems: "center", flex: "none" }}>{s.n}</span>
-                    <span style={{ fontSize: 11.5, fontWeight: 900, lineHeight: 1.0 }}>{s.title}<br /><span style={{ fontSize: 8.5, opacity: .85, fontWeight: 800 }}>{s.sub}</span></span>
+                    <span style={{ width: 20, height: 20, borderRadius: "50%", background: isOpen ? "#fff" : BLUE, color: isOpen ? BLUE : "#fff", fontSize: 11, fontWeight: 900, display: "grid", placeItems: "center", flex: "none" }}>{s.n}</span>
+                    <span style={{ fontSize: 12, fontWeight: 900, lineHeight: 1.25 }}>{furi(s.title)}<br /><span style={{ fontSize: 9, opacity: .9, fontWeight: 800 }}>{furi(s.sub)}</span></span>
                   </div>
-                  <div style={{ fontSize: 8, fontWeight: 800, color: isOpen ? "#cfe0ff" : (built ? GREEN : SUB), textAlign: "right", marginTop: 1 }}>{built ? "✓つかえる" : "じゅんび中"}</div>
+                  <div style={{ fontSize: 10.5, fontWeight: 900, color: isOpen ? "#FFE9D8" : (built ? GREEN_TX : SUB), textAlign: "right", marginTop: 3 }}>{built ? "✓つかえる" : "じゅんび中"}</div>
                 </button>
               );
             })}
@@ -578,17 +628,18 @@ function App() {
                 const isDone = !!done[`${s.n}-${k}`];
                 const isOpenCell = openStage === s.n && openLv === k;
                 return (
-                  <div key={`${s.n}-${k}-${isDone ? 1 : 0}`} onClick={() => { setOpenStage(s.n); setOpenLv(k); }} style={{
+                  <div key={`${s.n}-${k}-${isDone ? 1 : 0}`} onClick={() => goGuide(s.n, k)} style={{
                     position: "absolute", ...p, width: CW, height: CH - 6,
-                    background: isDone ? AMBER[k] : "#fff", border: `2px solid ${AMBER_DK[k]}`,
-                    outline: isOpenCell ? `3px solid ${AMBER_DK[k]}` : "none",
-                    borderRadius: 7, cursor: "pointer", boxSizing: "border-box", display: "flex", alignItems: "center", gap: 2,
+                    background: isDone ? AMBER[k] : "#fff", border: `1.5px solid ${isDone ? AMBER_DK[k] : "#E4E9EB"}`,
+                    outline: isOpenCell ? `2.5px solid ${AMBER_DK[k]}` : "none", outlineOffset: 1,
+                    borderRadius: 9, cursor: "pointer", boxSizing: "border-box", display: "flex", alignItems: "center", gap: 2,
+                    boxShadow: isDone ? "none" : "0 1px 2px rgba(20,40,60,.05)",
                     animation: isDone ? "cellPop .3s ease" : "none",
                   }}>
-                    <span style={{ width: 7, height: "100%", background: AMBER_DK[k], borderRadius: "5px 0 0 5px", flex: "none" }} />
-                    <span style={{ fontSize: 12, flex: "none", marginLeft: 1 }}>{d.badge}</span>
-                    <span style={{ fontSize: 11.5, fontWeight: 900, color: isDone ? INK : AMBER_DK[k], flex: 1, whiteSpace: "nowrap", overflow: "hidden", letterSpacing: "-0.3px" }}>{d.name}</span>
-                    <span style={{ fontSize: 8, fontWeight: 800, color: isDone ? INK : AMBER_DK[k], paddingRight: 4, flex: "none" }}>L{d.lv}</span>
+                    <span style={{ width: 6, height: "100%", background: AMBER_DK[k], borderRadius: "5px 0 0 5px", flex: "none", opacity: isDone ? 1 : .85 }} />
+                    <span style={{ fontSize: 14, flex: "none", marginLeft: 2 }}>{d.badge}</span>
+                    <span style={{ fontSize: 13, fontWeight: 900, color: INK, flex: 1, whiteSpace: "nowrap", overflow: "hidden", letterSpacing: 0 }}>{furi(d.name)}</span>
+                    <span style={{ fontSize: 9.5, fontWeight: 800, color: isDone ? INK : AMBER_DK[k], paddingRight: 4, flex: "none" }}>L{d.lv}</span>
                   </div>
                 );
               })
@@ -599,14 +650,14 @@ function App() {
               return (
                 <div key={"dl" + k} style={{ position: "absolute", ...p, width: 140, height: CH - 6, display: "flex", flexDirection: "column", justifyContent: "center" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ fontSize: 14 }}>{d.badge}</span>
-                    <span style={{ fontSize: 11.5, fontWeight: 900 }}>Lv{d.lv} {d.name}</span>
+                    <span style={{ fontSize: 16 }}>{d.badge}</span>
+                    <span style={{ fontSize: 13, fontWeight: 900 }}>Lv{d.lv} {furi(d.name)}</span>
                   </div>
-                  <span style={{ fontSize: 9, fontWeight: 700, color: SUB, marginLeft: 20 }}>{d.desc}</span>
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: SUB, marginLeft: 22 }}>{furi(d.desc)}</span>
                 </div>
               );
             })}
-            <div style={{ position: "absolute", right: 14, bottom: 10, fontSize: 10, fontWeight: 800, color: SUB }}>マスを タップ → 下に「やるべきこと」</div>
+            <div style={{ position: "absolute", right: 14, bottom: 10, fontSize: 12.5, fontWeight: 900, color: INK }}>👆 マスを タップ → 下に「やること」が でるよ</div>
           </div>
 
           {/* ---------- うら面（つなげる） ---------- */}
@@ -626,7 +677,7 @@ function App() {
                   {c.grade}：{c.label}
                 </span>
               ))}
-              <span style={{ fontSize: 11, fontWeight: 900, color: BLUE, background: "rgba(58,123,213,.1)", border: `2px solid ${BLUE}`, borderRadius: 10, padding: "3px 10px" }}>● 3年：この単元</span>
+              <span style={{ fontSize: 11, fontWeight: 900, color: BLUE, background: "rgba(178,104,54,.12)", border: `2px solid ${BLUE}`, borderRadius: 10, padding: "3px 10px" }}>● 3年：この単元</span>
             </div>
 
             {/* つなげる先カード */}
@@ -654,9 +705,23 @@ function App() {
         </div>
       </div>
 
+      {/* ===== たしかめテストゾーン（まとめ＝ステージ5のとき） ===== */}
+      {!showBack && openStage === 5 && (
+        <div style={{ marginTop: 12, borderRadius: 16, overflow: "hidden", border: `2.5px solid ${TEST_COLOR}`, boxShadow: "0 6px 0 rgba(138,90,43,.22)" }}>
+          <div style={{ background: "linear-gradient(180deg,#A56B33,#8A5A2B)", color: "#fff", padding: "14px 18px", display: "flex", alignItems: "center", gap: 13, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 28 }}>🏁</span>
+            <div style={{ flex: "1 1 240px", minWidth: 220 }}>
+              <div style={{ fontSize: 17, fontWeight: 900 }}>たしかめテストゾーン（この単元の まとめ）</div>
+              <div style={{ fontSize: 12.5, fontWeight: 800, opacity: .95, marginTop: 3, lineHeight: 1.6 }}>方位・地図記号・地いき・本物の地図 ぜんぶから 10問。じぶんの 力を たしかめよう！</div>
+            </div>
+            <button onClick={() => setShowTest(true)} style={{ fontSize: 15, fontWeight: 900, cursor: "pointer", color: TEST_COLOR, background: "#fff", border: "none", borderRadius: 12, padding: "11px 20px", boxShadow: "0 3px 0 rgba(0,0,0,.15)", whiteSpace: "nowrap" }}>📝 テストを はじめる →</button>
+          </div>
+        </div>
+      )}
+
       {/* ===== 下段 ===== */}
       {!showBack && showGuide && (
-        <div key={`guide-${openStage}-${openLv}`} style={{ display: "flex", gap: 14, marginTop: 12, alignItems: "flex-start", flexWrap: "wrap", animation: "popUp .32s cubic-bezier(.2,.8,.2,1)" }}>
+        <div ref={guideRef} key={`guide-${openStage}-${openLv}`} style={{ display: "flex", gap: 14, marginTop: 12, alignItems: "flex-start", flexWrap: "wrap", animation: "popUp .32s cubic-bezier(.2,.8,.2,1)", scrollMarginTop: 12 }}>
           {/* 左＝学習ガイド */}
           <div style={{ flex: "1 1 420px", minWidth: 360, border: `2px solid ${plan.ready ? AMBER_DK[openLv] : "#cdd8dd"}`, borderRadius: 14, background: "#fff", overflow: "hidden" }}>
             <div style={{ background: plan.ready ? AMBER_DK[openLv] : "#cdd8dd", color: "#fff", padding: "10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
@@ -670,12 +735,12 @@ function App() {
             {(plan.ready) ? (
               <div style={{ padding: "11px 13px" }}>
                 {/* 🎯 クリア条件（目立たせる） */}
-                <div style={{ borderRadius: 13, overflow: "hidden", border: `3px solid ${BLUE}`, boxShadow: "0 4px 0 rgba(46,145,168,.2)" }}>
+                <div style={{ borderRadius: 13, overflow: "hidden", border: `3px solid ${BLUE}`, boxShadow: "0 4px 0 rgba(178,104,54,.22)" }}>
                   <div style={{ background: BLUE, color: "#fff", padding: "8px 13px", display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ fontSize: 18 }}>🎯</span>
                     <span style={{ fontSize: 14, fontWeight: 900, letterSpacing: .5 }}>これが できたら クリア！</span>
                   </div>
-                  <div style={{ padding: "12px 14px", background: "linear-gradient(180deg,#F4FBFD,#E8F5F8)" }}>
+                  <div style={{ padding: "12px 14px", background: "linear-gradient(180deg,#FCF6EE,#F3E7D6)" }}>
                     <div style={{ fontSize: 14.5, fontWeight: 800, color: INK, lineHeight: 1.55 }}>{plan.goal}</div>
 
                     {/* 📍 ここでやる：教科書ページ／計算ドリル */}
@@ -694,7 +759,7 @@ function App() {
 
                     {/* Lv4＝探究・教材研究（くわしくは 下の 探究セクション） */}
                     {openLv === 3 && (
-                      <div style={{ marginTop: 8, fontSize: 12, fontWeight: 800, color: AMBER_MAIN, lineHeight: 1.5 }}>↓ 先生・研究者に なって 探究しよう。研究を すすめて、友だちと お互いに 高め合えたら クリア！</div>
+                      <div style={{ marginTop: 8, fontSize: 12, fontWeight: 800, color: AMBER_TX, lineHeight: 1.5 }}>↓ 先生・研究者に なって 探究しよう。研究を すすめて、友だちと お互いに 高め合えたら クリア！</div>
                     )}
                   </div>
                 </div>
@@ -702,7 +767,7 @@ function App() {
                 {/* 📖 読むところ（読む Lv1 だけ） */}
                 {plan.kind === "read" && (
                   <div style={{ marginTop: 12, border: `2.5px solid ${AMBER[0]}`, borderRadius: 13, overflow: "hidden" }}>
-                    <div style={{ background: AMBER[0], color: "#fff", padding: "8px 13px", display: "flex", alignItems: "center", gap: 7 }}>
+                    <div style={{ background: AMBER[0], color: INK, padding: "8px 13px", display: "flex", alignItems: "center", gap: 7 }}>
                       <span style={{ fontSize: 17 }}>📖</span>
                       <span style={{ fontSize: 13.5, fontWeight: 900 }}>読むところ</span>
                     </div>
@@ -722,14 +787,14 @@ function App() {
                 {/* 💡 説明ミッション（せつめい Lv3 だけ） */}
                 {plan.explain && (
                   <div style={{ marginTop: 12, border: `2.5px solid ${AMBER[2]}`, borderRadius: 13, overflow: "hidden" }}>
-                    <div style={{ background: AMBER[2], color: "#fff", padding: "8px 13px", display: "flex", alignItems: "center", gap: 7 }}>
+                    <div style={{ background: AMBER[2], color: INK, padding: "8px 13px", display: "flex", alignItems: "center", gap: 7 }}>
                       <span style={{ fontSize: 17 }}>💡</span>
                       <span style={{ fontSize: 13.5, fontWeight: 900 }}>せつめいミッション — この「問い」を せつめいしよう</span>
                     </div>
                     <div style={{ padding: "12px 13px" }}>
                       <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
                         <span style={{ fontSize: 22, fontWeight: 900, color: INK, letterSpacing: 1 }}>{plan.explain.problem}</span>
-                        <span style={{ fontSize: 11.5, fontWeight: 800, color: "#fff", background: AMBER[2], borderRadius: 8, padding: "3px 9px" }}>{plan.explain.page}</span>
+                        <span style={{ fontSize: 11.5, fontWeight: 800, color: INK, background: AMBER[2], borderRadius: 8, padding: "3px 9px" }}>{plan.explain.page}</span>
                       </div>
                       <div style={{ marginTop: 10, fontSize: 11, fontWeight: 900, color: AMBER[2] }}>🧠 中心の考え（ここを せつめいする）</div>
                       <div style={{ marginTop: 4, fontSize: 12.5, fontWeight: 700, color: INK, background: "#fff", border: `1.5px dashed ${AMBER[2]}`, borderRadius: 9, padding: "9px 12px", lineHeight: 1.6 }}>{plan.explain.point}</div>
@@ -741,12 +806,12 @@ function App() {
                 {/* 🔭 探究タイム（高め合う Lv4 だけ） */}
                 {openLv === 3 && (
                   <div style={{ marginTop: 12, border: `2.5px solid ${AMBER_MAIN}`, borderRadius: 13, overflow: "hidden" }}>
-                    <div style={{ background: AMBER_MAIN, color: "#fff", padding: "8px 13px", display: "flex", alignItems: "center", gap: 7 }}>
+                    <div style={{ background: AMBER_MAIN, color: INK, padding: "8px 13px", display: "flex", alignItems: "center", gap: 7 }}>
                       <span style={{ fontSize: 17 }}>🔭</span>
                       <span style={{ fontSize: 13.5, fontWeight: 900 }}>探究タイム — けんきゅうして 高め合おう</span>
                     </div>
                     <div style={{ padding: "12px 13px", background: "#FBF8FF" }}>
-                      <div style={{ fontSize: 12, fontWeight: 900, color: AMBER_MAIN, marginBottom: 8 }}>🧪 けんきゅう活動（やってみたい ものから）</div>
+                      <div style={{ fontSize: 12, fontWeight: 900, color: AMBER_TX, marginBottom: 8 }}>🧪 けんきゅう活動（やってみたい ものから）</div>
                       <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
                         {/* ① つまずきレスキュー隊（QNKS＋ミニ授業） */}
                         <div style={{ flex: "1 1 100%", border: `2.5px solid ${MINI_COLOR}`, borderRadius: 12, background: "#FFF6EE", padding: "12px 13px" }}>
@@ -774,7 +839,7 @@ function App() {
                           <div style={{ marginTop: 7, fontSize: 10, fontWeight: 700, color: "#A33765", background: "#fff", border: "1.3px dashed #C0567E", borderRadius: 8, padding: "6px 9px", lineHeight: 1.5 }}>れい：地図記号クイズや 方位クイズ、奈良市の 地いきクイズを 自分で 作って、みんなで チャレンジ！</div>
                         </div>
                       </div>
-                      <div style={{ marginTop: 10, fontSize: 10.5, fontWeight: 700, color: SUB }}>けんきゅうを すすめたら ↓の「<b style={{ color: AMBER_MAIN }}>できたら ぬる</b>」で マスに 色を つけよう！ お互いに 見せ合って 高め合おう。</div>
+                      <div style={{ marginTop: 10, fontSize: 10.5, fontWeight: 700, color: SUB }}>けんきゅうを すすめたら ↓の「<b style={{ color: AMBER_TX }}>できたら ぬる</b>」で マスに 色を つけよう！ お互いに 見せ合って 高め合おう。</div>
                     </div>
                   </div>
                 )}
@@ -792,7 +857,7 @@ function App() {
                   const Gen = GENERATORS[st.gen];
                   return (
                     <div style={{ marginTop: 12, border: `2.5px solid ${AMBER_MAIN}`, borderRadius: 13, overflow: "hidden" }}>
-                      <div style={{ background: AMBER_MAIN, color: "#fff", padding: "8px 13px", display: "flex", alignItems: "center", gap: 7 }}>
+                      <div style={{ background: AMBER_MAIN, color: INK, padding: "8px 13px", display: "flex", alignItems: "center", gap: 7 }}>
                         <span style={{ fontSize: 18, fontWeight: 900 }}>∞</span>
                         <span style={{ fontSize: 13.5, fontWeight: 900 }}>この単元の れんしゅう問題 — {st.genLabel}</span>
                       </div>
@@ -889,7 +954,7 @@ function App() {
                       <div style={{ fontSize: 10, fontWeight: 800, color: GRAY, marginTop: 2 }}>🧠 {f.think}</div>
                     </div>
                   ))}
-                  <div style={{ border: `2px solid ${BLUE}`, borderRadius: 8, padding: "6px 10px", background: "rgba(58,123,213,.08)" }}>
+                  <div style={{ border: `2px solid ${BLUE}`, borderRadius: 8, padding: "6px 10px", background: "rgba(178,104,54,.1)" }}>
                     <div style={{ fontSize: 9.5, fontWeight: 800, color: BLUE }}>● 3年・この単元</div>
                     <div style={{ fontSize: 12, fontWeight: 900, color: INK }}>わたしたちの奈良市（方位・地図記号）</div>
                     <div style={{ fontSize: 10, fontWeight: 800, color: BLUE, marginTop: 2 }}>🧠 方位と記号で 土地のようすを 読む</div>
@@ -918,7 +983,7 @@ function App() {
 
             {/* 右：チャレンジ問題（無限生成） */}
             <div style={{ flex: "1 1 320px", minWidth: 300, border: `2px solid ${AMBER_MAIN}`, borderRadius: 14, background: "#fff", overflow: "hidden" }}>
-              <div style={{ background: AMBER_MAIN, color: "#fff", padding: "10px 14px" }}>
+              <div style={{ background: AMBER_MAIN, color: INK, padding: "10px 14px" }}>
                 <div style={{ fontSize: 11, fontWeight: 800, opacity: .9 }}>チャレンジ問題（できる子は やってみよう）</div>
                 <div style={{ fontSize: 16, fontWeight: 900 }}>∞ {c.genLabel}</div>
               </div>
@@ -945,7 +1010,7 @@ function App() {
       {showPBL && (
         <SocialGame
           title="地図記号マスター" emoji="🗺️" color={SYM_COLOR}
-          subtitle="地図記号の せつめい（由来）から 名前を あてよう"
+          subtitle="本物の 地図記号を 見て、何を 表すか あてよう"
           goal="だれが見ても 分かる『地図記号』を おぼえる PBL（探究）"
           make={makeSymbolQ}
           onClose={() => setShowPBL(false)}
@@ -956,9 +1021,9 @@ function App() {
       {showBattle && (
         <SocialGame
           title="方位ナビ" emoji="🧭" color={HOUI_COLOR}
-          subtitle="方位じしんを 読む＋東西南北を 答えよう（北を上に！）"
-          goal="地図を 読む ルール『方位』を つかいこなす PBL（探究）"
-          make={makeHouiMix}
+          subtitle="本物の 奈良市の地図で、東西南北を 読み取ろう（北が上）"
+          goal="本物の地図を 読む ルール『方位』を つかいこなす PBL（探究）"
+          make={makeHouiMapQ}
           onClose={() => setShowBattle(false)}
         />
       )}
@@ -978,10 +1043,21 @@ function App() {
       {showMap && (
         <SocialGame
           title="絵地図の読み取り" emoji="🔍" color={MAP_COLOR}
-          subtitle="線路や 地図記号の 地図から、方位を 読み取ろう"
-          goal="地図（資料）を “読む” 力を きたえる PBL（探究）"
-          make={makeMapQ}
+          subtitle="本物の 奈良市の地図で、場所の 位置（方位）を 読み取ろう"
+          goal="本物の地図（資料）を “読む” 力を きたえる PBL（探究）"
+          make={makeMapReadQ}
           onClose={() => setShowMap(false)}
+        />
+      )}
+
+      {/* ===== たしかめテスト（まとめ・全単元ミックス10問） ===== */}
+      {showTest && (
+        <SocialGame
+          title="たしかめテスト" emoji="📝" color={TEST_COLOR}
+          subtitle="この単元の 力を ぜんぶ ためす（方位・地図記号・地いき・本物の地図）"
+          goal="単元の まとめ＝たしかめテスト（10問）"
+          make={makeMixAll}
+          onClose={() => setShowTest(false)}
         />
       )}
 
@@ -1004,13 +1080,117 @@ const randInt = (n) => Math.floor(Math.random() * n);
 
 /* ===== 問題メーカー（{display, choices, ansIndex, explain} を返す） ===== */
 /* 地図記号：由来の せつめい → 記号の名前を 4択で あてる */
+/* ===== 本物の地図（国土地理院 地理院地図）コンポーネント ===== */
+function RealMap({ center, zoom = 13, markers = [], height = 290 }) {
+  const elRef = useRef(null);
+  // 問題が変わったら（マーカーが変われば）地図を作り直す。同じ問題内の再描画では作り直さない。
+  const sig = JSON.stringify({ c: center, z: zoom, m: markers.map((m) => [m.lat, m.lng, m.label, m.color]) });
+  useEffect(() => {
+    if (!elRef.current || typeof L === "undefined") return;
+    const map = L.map(elRef.current, { zoomControl: true, scrollWheelZoom: false });
+    L.tileLayer("https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png", {
+      maxZoom: 18,
+      attribution: "出典：<a href='https://maps.gsi.go.jp/development/ichiran.html' target='_blank' rel='noopener'>国土地理院</a>",
+    }).addTo(map);
+    const pts = [];
+    markers.forEach((m) => {
+      const bg = m.color || "#A55B2C";
+      const icon = L.divIcon({
+        className: "",
+        html: `<div style="transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;"><div style="background:${bg};color:#fff;font-size:12px;font-weight:900;white-space:nowrap;padding:3px 9px;border-radius:11px;box-shadow:0 1px 5px rgba(0,0,0,.35);border:2px solid #fff;">${m.label || ""}</div><div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:9px solid ${bg};"></div></div>`,
+        iconSize: [0, 0], iconAnchor: [0, 0],
+      });
+      L.marker([m.lat, m.lng], { icon }).addTo(map);
+      pts.push([m.lat, m.lng]);
+    });
+    if (pts.length > 1) map.fitBounds(pts, { padding: [50, 50], maxZoom: 15 });
+    else map.setView(center || pts[0] || [34.685, 135.82], zoom);
+    setTimeout(() => { try { map.invalidateSize(); } catch (e) {} }, 60);
+    return () => { try { map.remove(); } catch (e) {} };
+  }, [sig]);
+  return <div ref={elRef} style={{ width: "100%", height, borderRadius: 12, overflow: "hidden", border: "2px solid #cdd8dd", zIndex: 0 }} />;
+}
+
+/* 本物の地図：北緯・東経から「2地点の方位（北上・主軸）」を計算 */
+function houiOf(a, b) {
+  const x = (b.lng - a.lng) * Math.cos(34.7 * Math.PI / 180), y = b.lat - a.lat;
+  return Math.abs(x) >= Math.abs(y) ? (x > 0 ? "東" : "西") : (y > 0 ? "北" : "南");
+}
+function makeHouiMapQ() {
+  const clear = (a, b) => { const x = (b.lng - a.lng) * Math.cos(34.7 * Math.PI / 180), y = b.lat - a.lat; return Math.abs(Math.abs(x) - Math.abs(y)) > 0.004; };
+  let a, b, t = 0;
+  do { a = NARA_PLACES[randInt(NARA_PLACES.length)]; b = NARA_PLACES[randInt(NARA_PLACES.length)]; t++; } while (t < 80 && (a === b || !clear(a, b)));
+  const ans = houiOf(a, b);
+  const opts = shuffle(["東", "西", "南", "北"]);
+  return {
+    scene: <RealMap height={300} markers={[
+      { lat: a.lat, lng: a.lng, label: `${a.emoji}${a.name}`, color: "#2E7D32" },
+      { lat: b.lat, lng: b.lng, label: `${b.emoji}${b.name}`, color: "#C0392B" },
+    ]} />,
+    display: `本物の 地図で、${a.emoji}${a.name}から 見て ${b.emoji}${b.name}は どの方位？（地図は 北が 上）`,
+    choices: opts, ansIndex: opts.indexOf(ans),
+    explain: `${a.name}から 見て ${b.name}は「${ans}」がわ。本物の地図でも 北が上だよ。`,
+  };
+}
+
+/* 本物の地図：「Cの〇方位にあるのは どれ？」（位置の読み取り） */
+function makeMapReadQ() {
+  for (let t = 0; t < 80; t++) {
+    const sh = shuffle(NARA_PLACES);
+    const C = sh[0], cand = [sh[1], sh[2], sh[3]];
+    const hs = cand.map((p) => houiOf(C, p));
+    for (const dir of shuffle(["東", "西", "南", "北"])) {
+      const idx = hs.map((h, i) => (h === dir ? i : -1)).filter((i) => i >= 0);
+      if (idx.length === 1) {
+        const ans = cand[idx[0]];
+        const opts = shuffle(cand);
+        return {
+          scene: <RealMap height={300} markers={[
+            { lat: C.lat, lng: C.lng, label: `★${C.emoji}${C.name}`, color: "#2E7D32" },
+            ...cand.map((p) => ({ lat: p.lat, lng: p.lng, label: `${p.emoji}${p.name}`, color: "#C0392B" })),
+          ]} />,
+          display: `本物の 地図で、★${C.emoji}${C.name}から 見て「${dir}」がわに あるのは どれ？`,
+          choices: opts.map((p) => `${p.emoji}${p.name}`),
+          ansIndex: opts.indexOf(ans),
+          explain: `${C.name}から 見て「${dir}」がわは ${ans.name}。地図は 北が上、右が東だよ。`,
+        };
+      }
+    }
+  }
+  return makeHouiMapQ();
+}
+
+/* ===== 本物の地図記号（国土地理院の標準記号を SVG で描く） ===== */
+function symbolSvg(name, size = 78) {
+  const ink = INK, sw = 7;
+  const L = (x1, y1, x2, y2, w) => <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={ink} strokeWidth={w || sw} strokeLinecap="round" />;
+  let inner;
+  if (name.includes("学校")) inner = <text x="50" y="76" fontSize="80" fontWeight="900" textAnchor="middle" fill={ink} fontFamily="serif">文</text>;
+  else if (name.includes("図書")) inner = <g fill="none" stroke={ink} strokeWidth="5" strokeLinejoin="round"><path d="M50 34 C40 28 24 28 16 34 L16 72 C24 66 40 66 50 72 C60 66 76 66 84 72 L84 34 C76 28 60 28 50 34 Z" /><line x1="50" y1="34" x2="50" y2="72" stroke={ink} strokeWidth="5" /></g>;
+  else if (name.includes("寺")) inner = <text x="50" y="75" fontSize="78" fontWeight="900" textAnchor="middle" fill={ink} fontFamily="serif">卍</text>;
+  else if (name.includes("神社")) inner = <g>{L(16, 30, 84, 30, 9)}{L(26, 46, 74, 46, 7)}{L(34, 30, 34, 84)}{L(66, 30, 66, 84)}</g>;
+  else if (name.includes("ゆうびん") || name.includes("郵便")) inner = <g><circle cx="50" cy="50" r="40" fill="none" stroke={ink} strokeWidth="6" /><text x="50" y="67" fontSize="48" fontWeight="900" textAnchor="middle" fill={ink}>〒</text></g>;
+  else if (name.includes("病院")) inner = <g>{L(50, 20, 50, 80, 15)}{L(20, 50, 80, 50, 15)}</g>;
+  else if (name.includes("けいさつ") || name.includes("警察")) inner = <g><circle cx="50" cy="50" r="38" fill="none" stroke={ink} strokeWidth="6" />{L(33, 33, 67, 67, 8)}{L(67, 33, 33, 67, 8)}</g>;
+  else if (name.includes("消防")) inner = <g fill="none" stroke={ink} strokeWidth="7" strokeLinecap="round"><path d="M28 54 L28 40 A22 22 0 0 1 72 40 L72 54" />{L(50, 50, 50, 84, 7)}</g>;
+  else if (name.includes("工場")) inner = <g>{[0, 45, 90, 135, 180, 225, 270, 315].map((d, k) => { const r = Math.PI * d / 180, x1 = 50 + 24 * Math.cos(r), y1 = 50 + 24 * Math.sin(r), x2 = 50 + 38 * Math.cos(r), y2 = 50 + 38 * Math.sin(r); return <line key={k} x1={x1} y1={y1} x2={x2} y2={y2} stroke={ink} strokeWidth="9" strokeLinecap="round" />; })}<circle cx="50" cy="50" r="20" fill="none" stroke={ink} strokeWidth="6" /><circle cx="50" cy="50" r="7" fill={ink} /></g>;
+  else if (name.includes("市役所")) inner = <g><circle cx="50" cy="50" r="38" fill="none" stroke={ink} strokeWidth="6" /><circle cx="50" cy="50" r="13" fill={ink} /></g>;
+  else if (name === "田") inner = <g>{L(40, 28, 40, 72, 9)}{L(60, 28, 60, 72, 9)}</g>;
+  else if (name === "畑") inner = <g>{[38, 62].map((x, k) => <g key={k}>{L(x, 72, x, 46, 6)}{L(x, 48, x - 9, 38, 6)}{L(x, 48, x + 9, 38, 6)}</g>)}</g>;
+  else if (name.includes("かじゅ") || name.includes("果樹")) inner = <g><circle cx="50" cy="56" r="24" fill="none" stroke={ink} strokeWidth="7" />{L(50, 32, 58, 22, 5)}</g>;
+  else if (name.includes("老人")) inner = <g fill="none" stroke={ink} strokeWidth="6" strokeLinejoin="round"><path d="M22 52 L50 28 L78 52" /><rect x="30" y="52" width="40" height="30" /><path d="M48 60 q10 0 10 9 L58 76" strokeWidth="5" /></g>;
+  else inner = <text x="50" y="64" fontSize="30" textAnchor="middle" fill={ink}>?</text>;
+  return <svg width={size} height={size} viewBox="0 0 100 100" style={{ background: "#fff", border: "2px solid #cdd8dd", borderRadius: 12 }}>{inner}</svg>;
+}
+
 function makeSymbolQ() {
   const i = randInt(MAP_SYMBOLS.length);
   const ans = MAP_SYMBOLS[i];
   const others = shuffle(MAP_SYMBOLS.filter((_, k) => k !== i)).slice(0, 3);
   const opts = shuffle([ans, ...others]);
   return {
-    display: `この せつめいの 地図記号は どれ？\n「${ans.yurai}」`,
+    scene: <div style={{ display: "flex", justifyContent: "center" }}>{symbolSvg(ans.name, 88)}</div>,
+    display: `この 本物の 地図記号は 何を 表している？`,
     choices: opts.map((o) => o.name),
     ansIndex: opts.indexOf(ans),
     explain: `${ans.name}　…${ans.yurai}`,
@@ -1170,11 +1350,11 @@ function makeMapQ() {
 }
 
 /* ミックス：方位（ことば＋方位じしん） */
-function makeHouiMix() { return Math.random() < 0.5 ? makeHouiQ() : makeCompassQ(); }
+function makeHouiMix() { const r = randInt(3); return r === 0 ? makeHouiMapQ() : r === 1 ? makeHouiQ() : makeCompassQ(); }
 /* ミックス：学校のまわり（絵地図の読み取り＋地図記号＋方位） */
-function makeMapMix() { const r = randInt(3); return r === 0 ? makeMapQ() : r === 1 ? makeSymbolQ() : makeHouiQ(); }
+function makeMapMix() { const r = randInt(3); return r === 0 ? makeMapReadQ() : r === 1 ? makeSymbolQ() : makeHouiMapQ(); }
 /* ミックス：この単元 まるごと（方位・記号・地いき・絵地図・方位じしん） */
-function makeMixAll() { const r = randInt(5); return r === 0 ? makeHouiQ() : r === 1 ? makeSymbolQ() : r === 2 ? makeChiikiQ() : r === 3 ? makeMapQ() : makeCompassQ(); }
+function makeMixAll() { const r = randInt(5); return r === 0 ? makeHouiMapQ() : r === 1 ? makeSymbolQ() : r === 2 ? makeChiikiQ() : r === 3 ? makeMapReadQ() : makeCompassQ(); }
 
 /* ===== 無限：選択式クイズ（つなげる裏面の ∞チャレンジ用） ===== */
 function InfiniteChoiceQuiz({ make, hint }) {
@@ -1243,10 +1423,11 @@ const GENERATORS = {
 };
 
 /* ===== PBL ゲームの色 ===== */
-const SYM_COLOR = "#7E54C4";    // 地図記号マスター（紫）
-const HOUI_COLOR = "#2E91A8";   // 方位ナビ（水色）
-const CHIIKI_COLOR = "#3FA98C"; // 奈良市たんけん（緑）
-const MAP_COLOR = "#D8731C";    // 絵地図の読み取り（だいだい）
+const SYM_COLOR = "#6E5DA8";    // 地図記号マスター（藤むらさき＝宝石パレット）
+const HOUI_COLOR = "#4E7A8B";   // 方位ナビ（錆浅葱）
+const CHIIKI_COLOR = "#2F8B68"; // 奈良市たんけん（深緑）
+const MAP_COLOR = "#B05E32";    // 絵地図の読み取り（銅・赤錆）
+const TEST_COLOR = "#8A5A2B";   // たしかめテスト（まとめ＝深い金茶／ゴール）
 
 /* ===== PBL：選択式ゲーム（記号マスター／方位ナビ／奈良市たんけん 共通エンジン） ===== */
 function SocialGame({ title, emoji, color, subtitle, goal, make, onClose }) {

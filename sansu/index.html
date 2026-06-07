@@ -32,9 +32,10 @@ if (typeof window !== "undefined" && !window.storage) {
 /* ===== カラー（水色=すすむ／紫=ふかめる／緑=つなげる） ===== */
 const AQUA = "#4DB6C7";          // ヘッダー帯など装飾の水色
 const BLUE = "#2E91A8";          // 進度＝落ち着いた水色
-const AMBER = ["#B7CBEA", "#F4C8A6", "#CDD6E0", "#F7E29A"];    // 深度＝金銀銅鉄（パステル塗り：鉄→銅→銀→金）
-const AMBER_DK = ["#4F79C4", "#DB8442", "#6E8CA6", "#D7A91E"]; // 同・濃いめ（枠線・文字・見出し用）
-const AMBER_MAIN = "#D7A91E";    // 深度の代表色＝金（濃いめ）
+// 深度（ふかめる）＝金1色の濃淡4段（読む→高め合う で 淡→濃）。色相を1つに絞り 認知負荷を下げる。
+const AMBER = ["#FBF3DA", "#F6E8B6", "#F0D98E", "#E8C75F"];    // 塗り（淡い金→濃い金）
+const AMBER_DK = ["#9E7C24", "#917324", "#856A22", "#74591B"]; // 枠線・文字・帯（白文字が読める濃い金）
+const AMBER_MAIN = "#8A6A1E";    // 深度の代表色＝濃い金
 const GREEN = "#3FA98C";          // 伸度＝緑（線・面・帯用）
 const GREEN_TX = "#1f7a5f";       // 伸度の文字用（濃い緑＝白地で読める）
 const GRAY = "#8a97a0";
@@ -449,16 +450,16 @@ function App() {
           <div style={{ display: "flex", gap: 6 }}>
             <button onClick={() => { setShowPBL(true); setShowBack(false); }} style={{
               fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "5px 13px", borderRadius: 13,
-              color: "#fff", background: "#7E54C4", border: "none",
-              boxShadow: "0 2px 0 rgba(126,84,196,.3)",
+              color: "#7E54C4", background: "#fff", border: "1.5px solid #7E54C4",
+              boxShadow: "0 1px 2px rgba(20,40,60,.06)",
             }}>🛒 お買いもの大さくせん</button>
             <button onClick={() => { setShowBattle(true); setShowBack(false); }} style={{
               fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "5px 13px", borderRadius: 13,
-              color: "#fff", background: BATTLE_COLOR, border: "none", boxShadow: "0 2px 0 rgba(180,60,45,.3)",
+              color: BATTLE_COLOR, background: "#fff", border: `1.5px solid ${BATTLE_COLOR}`, boxShadow: "0 1px 2px rgba(20,40,60,.06)",
             }}>⚔️ モンスターバトル</button>
             <button onClick={() => { setShowCipher(true); setShowBack(false); }} style={{
               fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "5px 13px", borderRadius: 13,
-              color: "#fff", background: DETECTIVE_COLOR, border: "none", boxShadow: "0 2px 0 rgba(50,65,120,.3)",
+              color: DETECTIVE_COLOR, background: "#fff", border: `1.5px solid ${DETECTIVE_COLOR}`, boxShadow: "0 1px 2px rgba(20,40,60,.06)",
             }}>🕵️ 暗号たんてい</button>
             <button onClick={() => { setShowBack((v) => !v); }} style={{
               fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "5px 13px", borderRadius: 13,
@@ -555,14 +556,15 @@ function App() {
                 return (
                   <div key={`${s.n}-${k}-${isDone ? 1 : 0}`} onClick={() => { setOpenStage(s.n); setOpenLv(k); }} style={{
                     position: "absolute", ...p, width: CW, height: CH - 6,
-                    background: isDone ? AMBER[k] : "#fff", border: `2px solid ${AMBER_DK[k]}`,
-                    outline: isOpenCell ? `3px solid ${AMBER_DK[k]}` : "none",
-                    borderRadius: 7, cursor: "pointer", boxSizing: "border-box", display: "flex", alignItems: "center", gap: 2,
+                    background: isDone ? AMBER[k] : "#fff", border: `1.5px solid ${isDone ? AMBER_DK[k] : "#E4E9EB"}`,
+                    outline: isOpenCell ? `2.5px solid ${AMBER_DK[k]}` : "none", outlineOffset: 1,
+                    borderRadius: 9, cursor: "pointer", boxSizing: "border-box", display: "flex", alignItems: "center", gap: 2,
+                    boxShadow: isDone ? "none" : "0 1px 2px rgba(20,40,60,.05)",
                     animation: isDone ? "cellPop .3s ease" : "none",
                   }}>
-                    <span style={{ width: 7, height: "100%", background: AMBER_DK[k], borderRadius: "5px 0 0 5px", flex: "none" }} />
-                    <span style={{ fontSize: 12, flex: "none", marginLeft: 1 }}>{d.badge}</span>
-                    <span style={{ fontSize: 11.5, fontWeight: 900, color: isDone ? INK : AMBER_DK[k], flex: 1, whiteSpace: "nowrap", overflow: "hidden", letterSpacing: "-0.3px" }}>{d.name}</span>
+                    <span style={{ width: 6, height: "100%", background: AMBER_DK[k], borderRadius: "5px 0 0 5px", flex: "none", opacity: isDone ? 1 : .85 }} />
+                    <span style={{ fontSize: 12, flex: "none", marginLeft: 2 }}>{d.badge}</span>
+                    <span style={{ fontSize: 11.5, fontWeight: 900, color: INK, flex: 1, whiteSpace: "nowrap", overflow: "hidden", letterSpacing: "-0.3px" }}>{d.name}</span>
                     <span style={{ fontSize: 8, fontWeight: 800, color: isDone ? INK : AMBER_DK[k], paddingRight: 4, flex: "none" }}>L{d.lv}</span>
                   </div>
                 );
