@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D 自由進度表 ポータル</title>
+<meta name="description" content="すすむ×ふかめる×つなげる の3軸でつくる「3D自由進度表」。算数・社会・理科の単元から選んでスタート。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Noto Sans JP','Hiragino Kaku Gothic ProN',sans-serif;
+    color:#2A3B40;
+    background:radial-gradient(1200px 700px at 78% -8%, #E6F5F7 0%, #EEF6F7 45%, #E8F0F1 100%);
+    min-height:100vh;
+    padding:24px 18px 60px;
+  }
+  .wrap{max-width:980px;margin:0 auto;}
+  body.big .wrap{zoom:1.18;}
+  .topbar{display:flex;justify-content:flex-end;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+  .pref{font-size:12px;font-weight:900;cursor:pointer;border:1.5px solid #cfe0e4;background:#fff;color:#5b6a72;border-radius:999px;padding:6px 13px;}
+  .pref.on{background:#2E91A8;color:#fff;border-color:#2E91A8;}
+  .head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .logo{width:54px;height:54px;border-radius:14px;background:#2E91A8;color:#fff;font-weight:900;font-size:18px;
+    display:grid;place-items:center;flex:none;box-shadow:0 6px 0 rgba(46,145,168,.3);}
+  .title{font-size:26px;font-weight:900;color:#2E91A8;line-height:1.1;}
+  .sub{font-size:13px;font-weight:800;color:#5b6a72;margin-top:3px;}
+  .axes{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;font-size:12px;font-weight:900;}
+  .axes span{border-radius:999px;padding:5px 12px;}
+  .ax1{background:#E3F2F5;color:#2E91A8;}
+  .ax2{background:#FBF1D6;color:#B58A1B;}
+  .ax3{background:#E3F4EE;color:#1f7a5f;}
+  .lead{margin-top:16px;font-size:13.5px;font-weight:700;color:#3a4a52;line-height:1.8;
+    background:#fff;border:1px solid #e1e8ea;border-radius:14px;padding:14px 16px;}
+  .total{margin-top:16px;background:#fff;border:2px solid #cfe6ea;border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .total .t-emoji{font-size:24px;}
+  .total .t-txt{font-size:13px;font-weight:900;color:#2E91A8;}
+  .total .t-bar{flex:1;min-width:160px;height:12px;border-radius:999px;background:#eef2f4;overflow:hidden;}
+  .total .t-bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2E91A8,#2F9E78,#D8731C);border-radius:999px;transition:width .7s cubic-bezier(.2,.8,.2,1);}
+  /* きょうの学習デザイン */
+  .design{margin-top:16px;background:#fff;border:2px solid #cfe6ea;border-radius:16px;overflow:hidden;}
+  .design .d-head{background:linear-gradient(180deg,#3FA0B5,#2E91A8);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .design .d-head .d-ttl{font-size:16px;font-weight:900;}
+  .design .d-head .d-date{font-size:11px;font-weight:800;opacity:.92;margin-left:auto;}
+  .design .d-body{padding:14px 16px;}
+  .drow{margin-bottom:13px;}
+  .drow:last-child{margin-bottom:0;}
+  .drow .q{font-size:13px;font-weight:900;color:#2E91A8;margin-bottom:7px;}
+  .drow .q small{color:#5b6a72;font-weight:800;font-size:11px;margin-left:4px;}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;}
+  .chip{font-size:13px;font-weight:800;cursor:pointer;border:2px solid #d3dde1;background:#fff;color:#3a4a52;border-radius:999px;padding:7px 14px;line-height:1.3;}
+  .chip.on{background:#2E91A8;color:#fff;border-color:#2E91A8;}
+  .drow input.task{width:100%;font-size:14px;font-weight:700;color:#2A3B40;border:2px solid #d3dde1;border-radius:11px;padding:10px 12px;outline:none;font-family:inherit;}
+  .drow input.task:focus{border-color:#2E91A8;}
+  .d-summary{margin-top:6px;background:#F2FAFB;border:1.5px dashed #8ec7d2;border-radius:12px;padding:11px 14px;font-size:13.5px;font-weight:800;color:#1f6a7a;line-height:1.7;}
+  .d-reset{margin-top:10px;font-size:11.5px;font-weight:800;cursor:pointer;color:#5b6a72;background:#fff;border:1.5px solid #cdd8dd;border-radius:999px;padding:6px 14px;}
+  .grid{margin-top:22px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;}
+  .card{display:block;text-decoration:none;color:inherit;background:#fff;border:2px solid #e1e8ea;border-radius:18px;
+    overflow:hidden;transition:transform .15s ease, box-shadow .15s ease;}
+  .card:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(46,145,168,.18);}
+  .card .top{padding:16px 16px 12px;color:#fff;}
+  .card .emoji{font-size:30px;}
+  .card .subj{font-size:12px;font-weight:900;opacity:.95;margin-top:6px;}
+  .card .unit{font-size:18px;font-weight:900;line-height:1.3;margin-top:2px;}
+  .card .body{padding:13px 16px 16px;}
+  .card .core{font-size:12px;font-weight:700;color:#5b6a72;line-height:1.7;}
+  .card .prog{margin-top:12px;}
+  .card .prog .meta{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;font-weight:900;color:#5b6a72;margin-bottom:4px;}
+  .card .prog .meta b{font-size:14px;}
+  .card .bar{height:10px;border-radius:999px;background:#eef2f4;overflow:hidden;}
+  .card .bar>i{display:block;height:100%;width:0;border-radius:999px;transition:width .6s cubic-bezier(.2,.8,.2,1);}
+  .card .go{margin-top:12px;display:inline-block;font-size:13px;font-weight:900;color:#fff;border-radius:11px;padding:9px 16px;}
+  ruby rt{font-size:.55em;font-weight:700;}
+  .hide-furi rt{display:none;}
+  .foot{margin-top:30px;font-size:11px;font-weight:700;color:#8a97a0;line-height:1.7;text-align:center;}
+  .foot b{color:#5b6a72;}
+  .err{margin-top:20px;background:#FDECEC;border:1.5px solid #E2A0A0;color:#9a3b3b;border-radius:12px;padding:12px 16px;font-size:13px;font-weight:800;}
+</style>
+</head>
+<body class="hide-furi">
+<div class="wrap">
+  <div class="topbar">
+    <button class="pref" id="pf-furi">ふりがな</button>
+    <button class="pref" id="pf-big">大きい文字</button>
+  </div>
+
+  <div class="head">
+    <div class="logo">3D</div>
+    <div>
+      <div class="title">3D 自由進度表 ポータル</div>
+      <div class="sub" data-furi>単元《たんげん》をえらんで スタート ― 自分《じぶん》のペースで すすめる学《まな》び</div>
+    </div>
+  </div>
+
+  <div class="axes">
+    <span class="ax1">━ すすむ（ステージ）</span>
+    <span class="ax2" data-furi>━ ふかめる（読《よ》む→つかう→せつめい→高《たか》め合《あ》う）</span>
+    <span class="ax3" data-furi>━ つなげる（前後《ぜんご》の単元《たんげん》へ）</span>
+  </div>
+
+  <div class="lead" data-furi>
+    「すすむ × ふかめる × つなげる」の3つの じくで、単元《たんげん》を 立体的《りったいてき》に 見《み》える化《か》した 自由進度表《じゆうしんどひょう》です。
+    各《かく》マスに「これが できたら クリア」「つかうどうぐ・リンク（NHK for School など）」「無限《むげん》れんしゅう問題《もんだい》」「探究《たんきゅう》タイム」がそろっています。
+    やりたい教科《きょうか》を えらんでください。じぶんの ペースで OK！ やった ぶんだけ いろが つくよ。
+  </div>
+
+  <div class="design" id="design">
+    <div class="d-head">
+      <span style="font-size:20px">📋</span>
+      <span class="d-ttl" data-furi>きょうの 学習《がくしゅう》デザイン</span>
+      <span class="d-date" id="d-date"></span>
+    </div>
+    <div class="d-body">
+      <div class="drow">
+        <div class="q" data-furi>📌 きょうの 課題《かだい》 <small>（なにを・どこまで）</small></div>
+        <input class="task" id="d-task" type="text" maxlength="60" placeholder="れい：たし算の ひっ算を p46まで／地図記号を おぼえる">
+      </div>
+      <div class="drow">
+        <div class="q" data-furi>📍 どこで <small>（場所《ばしょ》）</small></div>
+        <div class="chips" id="d-where"></div>
+      </div>
+      <div class="drow">
+        <div class="q" data-furi>👥 だれと <small>（🌙ひとり＝月《つき》／☀みんな＝太陽《たいよう》）</small></div>
+        <div class="chips" id="d-who"></div>
+      </div>
+      <div class="drow">
+        <div class="q" data-furi>🛠️ どのように <small>（学《まな》び方《かた》・えらべる）</small></div>
+        <div class="chips" id="d-how"></div>
+      </div>
+      <div class="d-summary" id="d-summary" data-furi>えらぶと、ここに きょうの さくせんが まとまるよ。</div>
+      <button class="d-reset" id="d-reset" data-furi>あたらしく する</button>
+    </div>
+  </div>
+
+  <div class="total" id="total" style="display:none">
+    <span class="t-emoji">🌟</span>
+    <span class="t-txt" id="total-txt">きみの がくしゅう</span>
+    <span class="t-bar"><i id="total-bar"></i></span>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <div id="err"></div>
+
+  <div class="foot" data-furi>
+    制作《せいさく》：<b>紺谷 隆《こんたに たかし》</b>（奈良市立東登美ヶ丘小学校《ならしりつ ひがしとみがおか しょうがっこう》）／ けテぶれ・QNKS・SRL の考《かんが》えをベースにした自作教材《じさくきょうざい》<br>
+    進度《しんど》（色《いろ》ぬり）は つかっている端末《たんまつ》に 自動保存《じどうほぞん》されます。
+  </div>
+</div>
+
+<script>
+(function(){
+  /* ===== ふりがな：漢字《よみ》 → ruby に変換／OFFは ruby を隠す ===== */
+  var RUBY = /([一-鿿々〇ヶ々ヶ]+)《([^》]+)》/g;
+  function toRuby(s){ return String(s).replace(RUBY, "<ruby>$1<rt>$2</rt></ruby>"); }
+  // 固定テキスト（data-furi）も ruby 化しておく（表示/非表示は CSS で切替）
+  function rubifyStatic(){
+    var els = document.querySelectorAll("[data-furi]");
+    els.forEach(function(el){ el.innerHTML = toRuby(el.innerHTML); });
+  }
+
+  /* ===== 進度（各ツールの localStorage を読む） ===== */
+  function doneCount(key){
+    try{
+      var raw = localStorage.getItem(key); if(!raw) return 0;
+      var obj = JSON.parse(raw); var d = (obj && obj.done) ? obj.done : {};
+      var n=0; for(var k in d){ if(d[k]) n++; } return n;
+    }catch(e){ return 0; }
+  }
+
+  function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+  // 漢字《よみ》記法は許可しつつ、それ以外はそのまま（信頼できる自作データ前提）
+  function disp(s){ return toRuby(s); }
+
+  function renderCards(units){
+    var grid = document.getElementById("grid");
+    var sum=0, max=0, html="";
+    units.forEach(function(u){
+      var c = Math.min(doneCount(u.storeKey), u.total);
+      sum += c; max += u.total;
+      var pct = Math.round(c / u.total * 100);
+      var go = c >= u.total ? "クリア！🎉 もう一回 →" : (c > 0 ? "つづきから →" : "はじめる →");
+      html +=
+        '<a class="card" href="' + esc(u.path) + '">' +
+          '<div class="top" style="background:' + esc(u.top) + '">' +
+            '<div class="emoji">' + esc(u.emoji) + '</div>' +
+            '<div class="subj">' + disp(u.subject) + '</div>' +
+            '<div class="unit">' + disp(u.unit) + '</div>' +
+          '</div>' +
+          '<div class="body">' +
+            '<div class="core">' + disp(u.core) + '</div>' +
+            '<div class="prog"><div class="meta"><span>すすみぐあい</span><span><b>' + c + '</b> / ' + u.total + ' マス</span></div>' +
+              '<div class="bar"><i data-pct="' + pct + '" style="background:' + esc(u.color) + '"></i></div></div>' +
+            '<span class="go" style="background:' + esc(u.color) + '">' + go + '</span>' +
+          '</div>' +
+        '</a>';
+    });
+    grid.innerHTML = html;
+    // バーをアニメ
+    setTimeout(function(){
+      document.querySelectorAll(".card .bar > i").forEach(function(i){ i.style.width = (i.getAttribute("data-pct")||0) + "%"; });
+    }, 80);
+    // 全体
+    var total = document.getElementById("total");
+    total.style.display = "flex";
+    var pct = max ? Math.round(sum / max * 100) : 0;
+    var txt = document.getElementById("total-txt");
+    txt.textContent = sum === 0
+      ? "きみの がくしゅう：ここから スタート！（ぜんぶで " + max + " マス）"
+      : (sum >= max ? "ぜんぶ クリア！すごい！🎉（" + sum + " / " + max + " マス）"
+                    : "きみの がくしゅう：" + sum + " / " + max + " マス（" + pct + "％）");
+    setTimeout(function(){ document.getElementById("total-bar").style.width = pct + "%"; }, 120);
+  }
+
+  /* ===== こども向け設定（ふりがな・文字サイズ）を保存 ===== */
+  var PREF_KEY = "portal_prefs";
+  function loadPrefs(){ try{ return JSON.parse(localStorage.getItem(PREF_KEY)) || {}; }catch(e){ return {}; } }
+  function savePrefs(p){ try{ localStorage.setItem(PREF_KEY, JSON.stringify(p)); }catch(e){} }
+  var prefs = loadPrefs();
+  function applyPrefs(){
+    document.body.classList.toggle("hide-furi", !prefs.furi);
+    document.body.classList.toggle("big", !!prefs.big);
+    document.getElementById("pf-furi").classList.toggle("on", !!prefs.furi);
+    document.getElementById("pf-big").classList.toggle("on", !!prefs.big);
+  }
+  document.getElementById("pf-furi").addEventListener("click", function(){ prefs.furi = !prefs.furi; savePrefs(prefs); applyPrefs(); });
+  document.getElementById("pf-big").addEventListener("click", function(){ prefs.big = !prefs.big; savePrefs(prefs); applyPrefs(); });
+
+  /* ===== きょうの学習デザイン ===== */
+  // 学級で編集する選択肢は design.json。読めない時はこの初期値を使う。
+  var DEFAULT_DESIGN = {
+    where: ["自分《じぶん》のせき","ゆかスペース","ろうか・べつしつ","先生《せんせい》の近《ちか》く","としょコーナー"],
+    who:   ["ひとり（🌙月《つき》の学《まな》び）","ペア","グループ（☀太陽《たいよう》の学《まな》び）","先生《せんせい》と"],
+    how:   ["けテぶれ（計画《けいかく》→テスト→分析《ぶんせき》→練習《れんしゅう》）","QNKS（問《と》い→ぬき出《だ》し→組《く》み立《た》て→整理《せいり》）","教科書《きょうかしょ》を読《よ》む","動画《どうが》を見《み》る","練習問題《れんしゅうもんだい》をとく","友《とも》だちと せつめいし合《あ》う"]
+  };
+  var DESIGN_KEY = "portal_design";
+  function todayStr(){ var d=new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
+  function todayLabel(){ var d=new Date(); return (d.getMonth()+1)+"月"+d.getDate()+"日"; }
+  function loadDesign(){
+    try{ var s=JSON.parse(localStorage.getItem(DESIGN_KEY)); if(s && s.date===todayStr()) return s; }catch(e){}
+    return { date: todayStr(), task:"", where:"", who:"", how:[] };
+  }
+  function saveDesign(s){ try{ localStorage.setItem(DESIGN_KEY, JSON.stringify(s)); }catch(e){} }
+  var design = loadDesign();
+
+  function plain(s){ return String(s).replace(RUBY, "$1"); } // 保存・要約用：ふりがな記法を外す
+  function buildChips(containerId, options, field, multi){
+    var box = document.getElementById(containerId);
+    box.innerHTML = "";
+    options.forEach(function(opt){
+      var b = document.createElement("button");
+      b.className = "chip";
+      b.innerHTML = toRuby(opt);
+      var val = plain(opt);
+      var selected = multi ? (design[field].indexOf(val) >= 0) : (design[field] === val);
+      if(selected) b.classList.add("on");
+      b.addEventListener("click", function(){
+        if(multi){
+          var i = design[field].indexOf(val);
+          if(i >= 0){ design[field].splice(i,1); b.classList.remove("on"); }
+          else { design[field].push(val); b.classList.add("on"); }
+        } else {
+          design[field] = (design[field] === val) ? "" : val;
+          box.querySelectorAll(".chip").forEach(function(c){ c.classList.remove("on"); });
+          if(design[field]) b.classList.add("on");
+        }
+        saveDesign(design); renderSummary();
+      });
+      box.appendChild(b);
+    });
+  }
+  function renderSummary(){
+    var el = document.getElementById("d-summary");
+    var task = (design.task||"").trim();
+    if(!task && !design.where && !design.who && (!design.how || !design.how.length)){
+      el.innerHTML = "えらぶと、ここに きょうの さくせんが まとまるよ。";
+      return;
+    }
+    var parts = [];
+    if(task) parts.push("「<b>"+escapeHtml(task)+"</b>」を");
+    if(design.where) parts.push("<b>"+escapeHtml(design.where)+"</b>で");
+    if(design.who) parts.push("<b>"+escapeHtml(design.who)+"</b>と");
+    if(design.how && design.how.length) parts.push("<b>"+design.how.map(escapeHtml).join("・")+"</b>で");
+    el.innerHTML = "🎯 きょうは " + parts.join("、") + " がんばる！";
+  }
+  function escapeHtml(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+  function initDesign(opts){
+    var d = (opts && (opts.where||opts.who||opts.how)) ? opts : DEFAULT_DESIGN;
+    document.getElementById("d-date").textContent = todayLabel();
+    var taskEl = document.getElementById("d-task");
+    taskEl.value = design.task || "";
+    taskEl.addEventListener("input", function(){ design.task = taskEl.value; saveDesign(design); renderSummary(); });
+    buildChips("d-where", d.where||DEFAULT_DESIGN.where, "where", false);
+    buildChips("d-who",   d.who||DEFAULT_DESIGN.who,     "who",   false);
+    buildChips("d-how",   d.how||DEFAULT_DESIGN.how,     "how",   true);
+    document.getElementById("d-reset").addEventListener("click", function(){
+      design = { date: todayStr(), task:"", where:"", who:"", how:[] };
+      saveDesign(design); taskEl.value="";
+      buildChips("d-where", d.where||DEFAULT_DESIGN.where, "where", false);
+      buildChips("d-who",   d.who||DEFAULT_DESIGN.who,     "who",   false);
+      buildChips("d-how",   d.how||DEFAULT_DESIGN.how,     "how",   true);
+      renderSummary();
+    });
+    renderSummary();
+  }
+
+  /* ===== 起動 ===== */
+  rubifyStatic();
+  applyPrefs();
+  // 学習デザインの選択肢（design.json があれば使う。なければ内蔵初期値）
+  fetch("./design.json").then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(d){ initDesign(d); }).catch(function(){ initDesign(null); });
+  fetch("./units.json")
+    .then(function(r){ if(!r.ok) throw new Error("units.json " + r.status); return r.json(); })
+    .then(function(data){ renderCards((data && data.units) || []); })
+    .catch(function(e){
+      document.getElementById("err").innerHTML =
+        '<div class="err">単元リスト（units.json）を よみこめませんでした。ページを ひらき直してください。<br><small>' + esc(e.message) + '</small></div>';
+    });
+})();
+</script>
+</body>
+</html>
