@@ -7,185 +7,315 @@
 <meta name="description" content="計画→実行→振り返りのサイクルを回す学びの基地。進度表と教材リンク。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Noto+Sans+JP:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root{
-    --teal:#2E91A8; --teal-d:#1f6a7a; --teal-l:#E3F2F5;
-    --ink:#2A3B40; --muted:#5b6a72; --line:#e4eaec;
-    --bg:#F3F7F8;
+    --ink:#16181F; --subink:#5B5E6B;
+    --primary:#FF4E3A;                /* バーミリオン：意味のある1か所だけ */
+    --c-math:#FF8A00; --c-social:#1AA179; --c-science:#3D7BFF; --gold:#FFC400;
+    --line:rgba(22,24,31,.12); --dash:rgba(22,24,31,.18);
+    --star-empty:rgba(22,24,31,.14);
+    --bg:#ffffff;
+    --shadow:0 12px 30px -16px rgba(22,24,31,.35);
+    --shadow-lg:0 22px 44px -18px rgba(22,24,31,.45);
+    --shadow-sm:0 8px 18px -12px rgba(22,24,31,.3);
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
-  html{background:var(--bg);}
+  html{scroll-behavior:smooth;}
   body{
-    font-family:'BIZ UDPGothic','Noto Sans JP','Hiragino Kaku Gothic ProN',sans-serif;
-    color:var(--ink); background:var(--bg);
-    font-size:18px; line-height:1.7; min-height:100vh;
+    font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Hiragino Sans',sans-serif;
+    color:var(--ink); font-size:17px; line-height:1.75; min-height:100vh; font-weight:500;
+    background:#fff;
+    background-image:radial-gradient(rgba(22,24,31,.045) .9px, transparent .9px);
+    background-size:26px 26px; background-attachment:fixed;
+    -webkit-font-smoothing:antialiased;
   }
-  body.big{font-size:21px;}
-  .wrap{max-width:980px;margin:0 auto;padding:0 18px;}
+  body.big{font-size:20px;}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 24px;}
+  .num-f{font-feature-settings:"tnum";}
 
-  /* 上部：トグルだけ */
-  .topbar{display:flex;justify-content:flex-end;gap:8px;max-width:980px;margin:0 auto;padding:12px 18px 0;flex-wrap:wrap;}
-  .pref{font-size:14px;font-weight:700;cursor:pointer;border:2px solid #cfe0e4;background:#fff;color:var(--muted);
-    border-radius:999px;padding:9px 15px;min-height:44px;}
-  .pref.on{background:var(--teal);color:#fff;border-color:var(--teal);}
+  /* ===== ヘッダー（白・無彩・スッキリ） ===== */
+  .nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.9);
+    backdrop-filter:saturate(120%) blur(8px);-webkit-backdrop-filter:saturate(120%) blur(8px);
+    border-bottom:2px dotted var(--line);}
+  .nav-in{max-width:1060px;margin:0 auto;padding:11px 24px;display:flex;align-items:center;gap:12px;}
+  .brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:inherit;}
+  .pw{width:34px;height:34px;border-radius:9px;background:var(--primary);color:#fff;
+    display:grid;place-items:center;font-weight:900;font-size:18px;flex:none;
+    box-shadow:0 0 0 3px #fff,0 0 0 5px rgba(255,78,58,.28);}
+  .brand .bt{font-weight:900;font-size:19px;letter-spacing:-.01em;color:var(--ink);}
+  .nav .sp{flex:1;}
+  .pref{font-size:13.5px;font-weight:800;cursor:pointer;border:2px solid var(--line);background:#fff;
+    color:var(--subink);border-radius:999px;padding:8px 15px;min-height:44px;white-space:nowrap;
+    transition:background .18s,color .18s,border-color .18s;}
+  .pref:hover{border-color:var(--ink);color:var(--ink);}
+  .pref.on{background:var(--ink);color:#fff;border-color:var(--ink);}
 
-  /* ヒーロー */
-  .hero{padding:24px 0 6px;text-align:center;}
-  .hero .titlerow{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;}
-  .hero .mark{width:66px;height:66px;border-radius:18px;background:var(--teal);color:#fff;
-    display:grid;place-items:center;font-weight:700;font-size:34px;flex:none;box-shadow:0 6px 0 rgba(46,145,168,.28);}
-  .hero h1{font-size:52px;font-weight:700;margin:0;color:var(--teal);line-height:1.1;letter-spacing:.02em;}
-  .hero .sub{font-size:15px;font-weight:700;color:var(--muted);margin:10px 0 0;}
-  body.big .hero h1{font-size:60px;}
+  /* ===== ヒーロー：電源ON ===== */
+  .hero{position:relative;overflow:hidden;padding:48px 0 30px;}
+  .hero::before{content:"";position:absolute;left:50%;top:-120px;width:760px;height:760px;
+    transform:translateX(-50%);z-index:0;pointer-events:none;
+    background:radial-gradient(circle,rgba(255,78,58,.06),transparent 60%);}
+  .hero-in{position:relative;z-index:1;display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+  .hero-main{flex:1;min-width:280px;}
+  .logo{display:flex;align-items:center;gap:16px;}
+  .logo .power{width:54px;height:54px;border-radius:13px;background:var(--primary);color:#fff;flex:none;
+    display:grid;place-items:center;font-weight:900;font-size:30px;
+    box-shadow:0 0 0 4px #fff,0 0 0 6px rgba(255,78,58,.25);animation:powerOn .7s ease-out 1;}
+  @keyframes powerOn{0%{box-shadow:0 0 0 4px #fff,0 0 0 4px rgba(255,78,58,0);}
+    100%{box-shadow:0 0 0 4px #fff,0 0 0 6px rgba(255,78,58,.25);}}
+  .logo h1{font-size:clamp(44px,7vw,74px);font-weight:900;margin:0;line-height:1.02;
+    letter-spacing:-.02em;color:var(--ink);}
+  .hero-sub{font-size:18px;font-weight:800;color:var(--subink);margin:14px 0 0;}
+  body.big .logo h1{font-size:clamp(50px,7vw,82px);}
 
-  /* 学びのサイクル（計画→実行→振り返り） */
-  .cycle{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:20px auto 4px;}
-  .cstep{display:inline-flex;align-items:center;gap:8px;background:#fff;border:2px solid var(--teal-l);
-    border-radius:999px;padding:10px 18px;font-size:16px;font-weight:700;color:var(--teal-d);}
-  .cstep .e{font-size:20px;}
-  .arr{font-size:20px;font-weight:700;color:var(--teal);}
-  .cyc-note{text-align:center;font-size:13px;font-weight:700;color:var(--muted);margin:8px 0 0;}
+  /* 総攻略リング */
+  .total{flex:none;text-align:center;}
+  .ring{width:108px;height:108px;border-radius:50%;display:grid;place-items:center;position:relative;
+    margin:0 auto;}
+  .ring .hole{width:78px;height:78px;border-radius:50%;background:#fff;display:grid;place-items:center;
+    line-height:1.1;box-shadow:inset 0 0 0 1px var(--line);}
+  .ring .hole .pct{font-size:23px;font-weight:900;color:var(--ink);}
+  .ring .hole .lab{font-size:10.5px;font-weight:800;color:var(--subink);letter-spacing:.04em;}
+  .total .cap{font-size:12px;font-weight:800;color:var(--subink);margin-top:7px;}
+  .ring.allclear .hole .pct{font-size:30px;}
+  .confetti{position:absolute;inset:0;overflow:visible;pointer-events:none;}
+  .confetti i{position:absolute;top:48%;left:50%;width:7px;height:11px;border-radius:2px;
+    opacity:0;animation:conf 1.3s ease-out forwards;}
+  @keyframes conf{0%{opacity:1;transform:translate(0,0) rotate(0);}
+    100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(320deg);}}
 
-  /* セクション */
-  section.block{padding:26px 0 4px;}
-  .sec-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
-  .sec-head .num{width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;
-    display:grid;place-items:center;font-size:18px;font-weight:700;flex:none;}
-  .sec-head .ico{font-size:24px;}
-  .sec-head h2{font-size:21px;font-weight:700;margin:0;}
-  .sec-head .date{margin-left:auto;font-size:12px;font-weight:700;color:var(--muted);}
+  /* ===== SRL チュートリアル帯 ===== */
+  .cyclebar{padding:6px 0 6px;}
+  .cyc-in{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;}
+  .cchip{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);
+    background:#fff;border:2px solid var(--line);border-radius:999px;padding:10px 18px;
+    font-size:15px;font-weight:800;transition:transform .15s,box-shadow .15s,border-color .15s;}
+  .cchip .ce{font-size:19px;}
+  .cchip:hover{border-color:var(--ink);transform:translateY(-1px);}
+  .cchip.on{background:var(--primary);color:#fff;border-color:var(--primary);
+    box-shadow:var(--shadow-sm);animation:chipPop .4s ease-out 1;}
+  @keyframes chipPop{0%{transform:scale(1.08);}100%{transform:scale(1);}}
+  .dots{color:rgba(22,24,31,.28);font-weight:900;letter-spacing:.18em;font-size:15px;}
+  .cyc-note{text-align:center;font-size:13px;font-weight:800;color:var(--subink);margin:12px 0 0;}
 
-  /* 計画・振り返り の入力パネル */
-  .panel{background:#fff;border:2px solid var(--teal-l);border-radius:16px;padding:16px 18px;}
-  .panel .lbl{font-size:14px;font-weight:700;color:var(--teal-d);margin-bottom:8px;}
-  .panel .lbl small{color:var(--muted);font-weight:700;font-size:12px;margin-left:4px;}
-  .fld{width:100%;font-size:16px;font-weight:700;color:var(--ink);border:2px solid #d3dde1;border-radius:11px;
-    padding:12px 14px;outline:none;font-family:inherit;min-height:50px;}
-  .fld:focus{border-color:var(--teal);}
-  .rate{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
-  .rbtn{font-size:15px;font-weight:700;cursor:pointer;border:2px solid #d3dde1;background:#fff;color:#3a4a52;
-    border-radius:999px;padding:10px 18px;min-height:44px;}
-  .rbtn.on{background:var(--teal);color:#fff;border-color:var(--teal);}
-  .loop-note{margin-top:10px;font-size:13px;font-weight:700;color:var(--teal-d);background:#F2FAFB;
-    border:1.5px dashed #8ec7d2;border-radius:10px;padding:9px 13px;}
-  /* まえのふりかえり（前回→今日の計画へつなぐ） */
-  .prev{background:#FBF7EC;border:1.5px dashed #d8c89a;border-radius:14px;padding:13px 16px;margin-bottom:14px;}
-  .prev .pr-ttl{font-size:13px;font-weight:700;color:#9a7a1a;margin-bottom:6px;}
-  .prev .pr{font-size:14px;font-weight:700;color:var(--ink);line-height:1.75;}
-  .prev .pr b{color:var(--teal-d);}
-  .prev .pr-nudge{font-size:13px;font-weight:700;color:var(--teal-d);margin-top:8px;}
+  hr.div{height:0;border:0;border-top:2px dotted var(--line);margin:0;}
 
-  /* 進度表カード */
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:16px;}
-  .card{display:flex;flex-direction:column;text-decoration:none;color:inherit;background:#fff;
-    border:1px solid var(--line);border-radius:16px;overflow:hidden;transition:box-shadow .15s, transform .15s;}
-  .card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(46,145,168,.15);}
-  .card .top{padding:16px 16px 13px;color:#fff;}
-  .card .emoji{font-size:30px;}
-  .card .subj{font-size:12.5px;font-weight:700;opacity:.95;margin-top:6px;}
-  .card .unit{font-size:18px;font-weight:700;line-height:1.3;margin-top:2px;}
-  .card .body{padding:14px 16px 16px;flex:1;display:flex;flex-direction:column;}
-  .card .core{font-size:13px;font-weight:700;color:var(--muted);line-height:1.7;flex:1;}
-  .card .prog{margin-top:13px;}
-  .card .prog .meta{display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px;}
-  .card .prog .meta b{font-size:14px;}
-  .card .bar{height:9px;border-radius:999px;background:#eef2f4;overflow:hidden;}
-  .card .bar>i{display:block;height:100%;width:0;border-radius:999px;transition:width .7s cubic-bezier(.2,.8,.2,1);}
-  .card .go{margin-top:13px;font-size:14px;font-weight:700;color:#fff;border-radius:11px;padding:12px 16px;text-align:center;}
+  /* ===== セクション ===== */
+  section.block{padding:40px 0;scroll-margin-top:76px;}
+  .sec-head{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+  .sec-head .n{width:38px;height:38px;border-radius:11px;background:var(--ink);color:#fff;
+    display:grid;place-items:center;font-size:19px;font-weight:900;flex:none;}
+  .sec-head .ico{width:38px;height:38px;border-radius:11px;background:#fff;border:2px solid var(--line);
+    display:grid;place-items:center;font-size:21px;flex:none;}
+  .sec-head h2{font-size:clamp(20px,3vw,25px);font-weight:900;margin:0;letter-spacing:-.01em;}
+  .sec-head .date{margin-left:auto;font-size:12.5px;font-weight:800;color:var(--subink);
+    background:#fff;border:2px solid var(--line);border-radius:999px;padding:5px 14px;}
 
-  /* 教材リンク */
-  .links{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;}
+  /* 入力パネル */
+  .panel{background:#fff;border:2px solid var(--line);border-radius:18px;padding:20px 22px;box-shadow:var(--shadow-sm);}
+  .panel .lbl{font-size:14.5px;font-weight:800;color:var(--ink);margin-bottom:9px;}
+  .panel .lbl small{color:var(--subink);font-weight:800;font-size:12px;margin-left:4px;}
+  .fld{width:100%;font-size:16px;font-weight:700;color:var(--ink);border:2px solid var(--line);
+    border-radius:13px;padding:13px 15px;outline:none;font-family:inherit;min-height:52px;background:#fff;
+    transition:border-color .15s,box-shadow .15s;}
+  .fld:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(255,78,58,.14);}
+  .rate{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:16px;}
+  .rbtn{position:relative;font-size:15px;font-weight:800;cursor:pointer;border:2px solid var(--line);
+    background:#fff;color:var(--ink);border-radius:999px;padding:11px 20px;min-height:46px;transition:all .15s;}
+  .rbtn:hover{border-color:var(--ink);}
+  .rbtn.on{background:var(--c-social);color:#fff;border-color:var(--c-social);box-shadow:var(--shadow-sm);}
+  .loop-note{margin-top:12px;font-size:13px;font-weight:800;color:var(--ink);
+    background:#fff;border:2px dashed var(--line);border-radius:13px;padding:11px 15px;}
+  .loop-note b{color:var(--primary);}
+  /* まえのふりかえり */
+  .prev{background:#fff;border:2px solid var(--line);border-left:6px solid var(--primary);
+    border-radius:14px;padding:15px 18px;margin-bottom:16px;box-shadow:var(--shadow-sm);}
+  .prev .pr-ttl{font-size:13px;font-weight:900;color:var(--primary);margin-bottom:7px;}
+  .prev .pr{font-size:14px;font-weight:700;color:var(--ink);line-height:1.8;}
+  .prev .pr b{color:var(--ink);}
+  .prev .pr-nudge{font-size:13px;font-weight:800;color:var(--subink);margin-top:9px;}
+
+  /* ===== 教科タイル（主役・Switchソフト風） ===== */
+  .grid{display:grid;grid-template-columns:repeat(3,minmax(280px,1fr));gap:20px;}
+  .tile{display:flex;flex-direction:column;text-decoration:none;color:inherit;background:#fff;
+    border-radius:18px;overflow:hidden;box-shadow:var(--shadow);
+    transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s;min-height:0;}
+  .tile:hover{transform:translateY(-8px) scale(1.015);box-shadow:var(--shadow-lg);}
+  .tile:active{transform:translateY(-2px) scale(.99);}
+  .tile:focus-visible{outline:3px solid var(--tc);outline-offset:3px;}
+  /* 上部ジャケット */
+  .jacket{position:relative;padding:18px 18px 16px;color:#fff;overflow:hidden;min-height:188px;
+    display:flex;flex-direction:column;}
+  .jacket .gloss{position:absolute;right:-26px;top:-26px;width:150px;height:150px;border-radius:50%;
+    background:rgba(255,255,255,.13);transition:transform .22s;}
+  .tile:hover .jacket .gloss{transform:scale(1.18);}
+  .lv{position:relative;align-self:flex-start;background:rgba(255,255,255,.24);color:#fff;
+    font-weight:900;font-size:11.5px;border-radius:999px;padding:4px 11px;letter-spacing:.02em;}
+  .appic{position:relative;width:84px;height:84px;border-radius:21px;background:rgba(255,255,255,.16);
+    display:grid;place-items:center;font-size:46px;margin:12px 0 auto;transition:transform .22s;}
+  .tile:hover .appic{transform:scale(1.08) rotate(-3deg);}
+  .jacket .subj{position:relative;font-size:12px;font-weight:800;opacity:.95;letter-spacing:.06em;margin-top:12px;}
+  .jacket .unit{position:relative;font-size:18.5px;font-weight:900;line-height:1.3;margin-top:2px;letter-spacing:-.005em;}
+  /* 下部ステータス */
+  .status{padding:16px 18px 18px;display:flex;flex-direction:column;gap:13px;}
+  .road{position:relative;padding:4px 0 2px;}
+  .road .track{position:absolute;left:11px;right:11px;top:13px;border-top:2px dashed var(--dash);}
+  .road .fill{position:absolute;left:11px;top:13px;border-top:3px solid var(--tc);width:0;
+    max-width:calc(100% - 22px);transition:width .8s cubic-bezier(.2,.8,.2,1);}
+  .nodes{position:relative;display:flex;justify-content:space-between;}
+  .node{width:22px;height:22px;border-radius:50%;background:#fff;border:2px solid var(--dash);
+    display:grid;place-items:center;font-size:12px;line-height:1;}
+  .node.done{background:var(--tc);border-color:var(--tc);}
+  .node.current{border-color:var(--tc);animation:pulse 1.6s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.16);}}
+  .nudge{font-size:11.5px;font-weight:800;color:var(--subink);margin-top:5px;}
+  .stars{display:flex;align-items:center;flex-wrap:wrap;gap:1px;font-size:17px;line-height:1;}
+  .star{position:relative;display:inline-block;color:var(--star-empty);width:1em;
+    animation:starPop .4s ease-out both;}
+  .star>b{position:absolute;left:0;top:0;overflow:hidden;white-space:nowrap;color:var(--tc);}
+  .star.full>b{color:var(--gold);}
+  @keyframes starPop{0%{transform:scale(0);}70%{transform:scale(1.2);}100%{transform:scale(1);}}
+  .mas{margin-left:8px;font-size:13px;font-weight:900;color:var(--ink);}
+  .core{font-size:13px;font-weight:700;color:var(--subink);line-height:1.7;}
+  .go{font-size:15px;font-weight:900;color:#fff;background:var(--tc);border-radius:12px;
+    padding:13px 16px;text-align:center;box-shadow:0 8px 16px -8px rgba(22,24,31,.5);}
+  .go .ar{display:inline-block;transition:transform .15s;}
+  .tile:hover .go .ar{transform:translateX(4px);}
+  .go.clear{background:var(--gold);color:var(--ink);}
+
+  /* ===== 教材リンク ===== */
+  .links{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
   .linkcard{display:flex;gap:13px;align-items:center;text-decoration:none;color:inherit;background:#fff;
-    border:1px solid var(--line);border-radius:14px;padding:16px 17px;min-height:74px;transition:border-color .15s, transform .15s;}
-  .linkcard:hover{border-color:var(--teal);transform:translateY(-2px);}
-  .linkcard .li{font-size:28px;flex:none;}
+    border:2px solid var(--line);border-radius:14px;padding:15px 17px;min-height:74px;
+    transition:border-color .15s,transform .15s,box-shadow .15s;}
+  .linkcard:hover{border-color:var(--ink);transform:translateY(-2px);box-shadow:var(--shadow-sm);}
+  .linkcard .li{width:44px;height:44px;border-radius:12px;background:#fff;border:2px solid var(--line);
+    display:grid;place-items:center;font-size:23px;flex:none;}
   .linkcard .lcol{min-width:0;}
-  .linkcard .ln{display:block;font-size:16px;font-weight:700;}
-  .linkcard .ld{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-top:2px;}
-  .linkcard .ext{margin-left:auto;font-size:16px;font-weight:700;color:var(--teal);flex:none;}
+  .linkcard .ln{display:block;font-size:15.5px;font-weight:800;}
+  .linkcard .ld{display:block;font-size:12px;font-weight:700;color:var(--subink);margin-top:2px;}
+  .linkcard .ext{margin-left:auto;font-size:15px;font-weight:900;color:var(--ink);flex:none;}
 
-  footer.site{margin-top:36px;padding:22px 0 46px;border-top:1px solid var(--line);}
-  footer .ft{font-size:12px;font-weight:700;color:var(--muted);line-height:1.9;text-align:center;}
-  footer .ft b{color:#3a4a52;}
+  footer.site{padding:30px 0 50px;border-top:2px dotted var(--line);margin-top:14px;}
+  footer .ft{font-size:12px;font-weight:700;color:var(--subink);line-height:1.95;text-align:center;}
+  footer .ft b{color:var(--ink);}
 
-  ruby rt{font-size:.5em;font-weight:700;}
+  ruby rt{font-size:.5em;font-weight:800;}
   .hide-furi rt{display:none;}
-  @media(max-width:560px){ .hero h1{font-size:38px;} .hero .mark{width:54px;height:54px;font-size:28px;} }
+
+  @media(max-width:820px){ .grid{grid-template-columns:repeat(2,minmax(260px,1fr));} }
+  @media(max-width:560px){
+    .wrap{padding:0 16px;} .nav-in{padding:10px 16px;}
+    .grid{grid-template-columns:1fr;} .hero-in{justify-content:center;text-align:center;}
+    .logo{justify-content:center;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;}
+    .tile,.go .ar,.appic,.jacket .gloss{transition:none !important;}
+    .road .fill{transition:none !important;}
+  }
 </style>
 </head>
 <body class="hide-furi">
 
-<div class="topbar">
-  <button class="pref" id="pf-furi">ふりがな</button>
-  <button class="pref" id="pf-big">大きい文字</button>
-</div>
+<!-- ヘッダー -->
+<header class="nav">
+  <div class="nav-in">
+    <a class="brand" href="#top">
+      <span class="pw">基</span>
+      <span class="bt">まなびの基地</span>
+    </a>
+    <span class="sp"></span>
+    <button class="pref" id="pf-furi">ふりがな</button>
+    <button class="pref" id="pf-big">大きい文字</button>
+  </div>
+</header>
 
-<main class="wrap">
+<a id="top"></a>
 
-  <!-- ヒーロー＋学びのサイクル -->
-  <section class="hero">
-    <div class="titlerow">
-      <span class="mark">基</span>
-      <h1>まなびの基地</h1>
+<!-- ヒーロー -->
+<section class="hero">
+  <div class="wrap hero-in">
+    <div class="hero-main">
+      <div class="logo">
+        <span class="power">基</span>
+        <h1>まなびの基地</h1>
+      </div>
+      <p class="hero-sub" data-furi>きょうの ぼうけんを はじめよう。</p>
     </div>
-    <p class="sub" data-furi>子《こ》どもの 学《まな》びポータル</p>
+    <div class="total" id="total-ring"></div>
+  </div>
 
-    <div class="cycle">
-      <span class="cstep"><span class="e">📝</span><span data-furi>①計画《けいかく》</span></span>
-      <span class="arr">→</span>
-      <span class="cstep"><span class="e">🚀</span><span data-furi>②実行《じっこう》</span></span>
-      <span class="arr">→</span>
-      <span class="cstep"><span class="e">🔁</span><span data-furi>③ふりかえり</span></span>
+  <!-- SRL チュートリアル帯 -->
+  <nav class="cyclebar">
+    <div class="wrap cyc-in" id="cyc">
+      <a class="cchip" data-step="1" href="#sec-plan"><span class="ce">📝</span><span data-furi>①計画《けいかく》</span></a>
+      <span class="dots">• • •</span>
+      <a class="cchip" data-step="2" href="#sec-do"><span class="ce">🚀</span><span data-furi>②実行《じっこう》</span></a>
+      <span class="dots">• • •</span>
+      <a class="cchip" data-step="3" href="#sec-reflect"><span class="ce">🔁</span><span data-furi>③ふりかえり</span></a>
     </div>
-    <p class="cyc-note" data-furi>この 3つを くりかえして、自分《じぶん》の 学《まな》びを 回《まわ》そう。</p>
-  </section>
+    <p class="cyc-note" data-furi>この 3つを くりかえして、じぶんの 学《まな》びを レベルアップ。🔁</p>
+  </nav>
+</section>
+<hr class="div">
+
+<main>
 
   <!-- ① 計画 -->
-  <section class="block">
-    <div class="sec-head">
-      <span class="num">1</span>
-      <h2 data-furi>計画《けいかく》｜きょうの めあて</h2>
-      <span class="date" id="d-date"></span>
-    </div>
-    <div class="prev" id="prev"></div>
-    <div class="panel">
-      <div class="lbl" data-furi>📌 きょうは なにを、どこまで やる？ <small>（自分《じぶん》で きめよう）</small></div>
-      <input class="fld" id="plan" type="text" maxlength="70" placeholder="れい：たし算の ひっ算を 5もんめまで／チョウの育ちを せつめいできるように">
+  <section class="block" id="sec-plan">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="n">1</span>
+        <h2 data-furi>計画《けいかく》｜きょうの めあて</h2>
+        <span class="date num-f" id="d-date"></span>
+      </div>
+      <div class="prev" id="prev"></div>
+      <div class="panel">
+        <div class="lbl" data-furi>📌 きょうは なにを、どこまで やる？ <small>（自分《じぶん》で きめよう）</small></div>
+        <input class="fld" id="plan" type="text" maxlength="70" placeholder="れい：たし算の ひっ算を 5もんめまで／チョウの育ちを せつめいできるように">
+      </div>
     </div>
   </section>
 
   <!-- ② 実行（進度表） -->
-  <section class="block">
-    <div class="sec-head">
-      <span class="num">2</span>
-      <h2 data-furi>実行《じっこう》｜進度表《しんどひょう》</h2>
+  <section class="block" id="sec-do">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="n">2</span>
+        <h2 data-furi>実行《じっこう》｜進度表《しんどひょう》</h2>
+      </div>
+      <div class="grid" id="grid-units"></div>
     </div>
-    <div class="grid" id="grid-units"></div>
   </section>
 
-  <!-- 教材リンク（実行をたすける） -->
+  <!-- 教材リンク -->
   <section class="block">
-    <div class="sec-head">
-      <span class="ico">🔗</span>
-      <h2 data-furi>こまったら｜教材《きょうざい》リンク</h2>
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="ico">🔗</span>
+        <h2 data-furi>こまったら｜教材《きょうざい》リンク</h2>
+      </div>
+      <div class="links" id="grid-links"></div>
     </div>
-    <div class="links" id="grid-links"></div>
   </section>
 
   <!-- ③ ふりかえり -->
-  <section class="block">
-    <div class="sec-head">
-      <span class="num">3</span>
-      <h2 data-furi>ふりかえり｜きょうの 学《まな》び</h2>
-    </div>
-    <div class="panel">
-      <div class="lbl" data-furi>🎯 めあては できた？</div>
-      <div class="rate" id="rate"></div>
-      <div class="lbl" data-furi>💭 気《き》づいたこと・つぎ がんばること</div>
-      <input class="fld" id="reflect" type="text" maxlength="70" placeholder="れい：くり上がりで まちがえた。つぎは ゆっくり たしかめる">
-      <div class="loop-note" data-furi>🔁 この ふりかえりが、あしたの <b>計画《けいかく》</b>に つながるよ。</div>
+  <section class="block" id="sec-reflect">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="n">3</span>
+        <h2 data-furi>ふりかえり｜きょうの 学《まな》び</h2>
+      </div>
+      <div class="panel">
+        <div class="lbl" data-furi>🎯 めあては できた？</div>
+        <div class="rate" id="rate"></div>
+        <div class="lbl" data-furi>💭 気《き》づいたこと・つぎ がんばること</div>
+        <input class="fld" id="reflect" type="text" maxlength="70" placeholder="れい：くり上がりで まちがえた。つぎは ゆっくり たしかめる">
+        <div class="loop-note" data-furi>🔁 この ふりかえりが、あしたの <b>計画《けいかく》</b>に つながるよ。</div>
+      </div>
     </div>
   </section>
 
@@ -221,48 +351,109 @@
   document.getElementById("pf-big").onclick =function(){prefs.big =!prefs.big; sp(prefs);apply();};
   apply();
 
+  /* 色：黒を混ぜて暗くする（ジャケットの下グラデ用） */
+  function darken(hex,f){
+    var h=hex.replace("#",""); var r=parseInt(h.substr(0,2),16),g=parseInt(h.substr(2,2),16),b=parseInt(h.substr(4,2),16);
+    r=Math.round(r*(1-f)); g=Math.round(g*(1-f)); b=Math.round(b*(1-f));
+    return "rgb("+r+","+g+","+b+")";
+  }
+
   /* 進度（既存ツールと同じ localStorage キーを読む） */
   function doneCount(key){
     try{ var r=localStorage.getItem(key); if(!r) return 0; var o=JSON.parse(r); var d=(o&&o.done)?o.done:{}; var n=0; for(var k in d){if(d[k])n++;} return n; }catch(e){ return 0; }
   }
 
-  /* 進度表カード（理科=緑／社会=オレンジ・相対パス） */
+  /* 教科タイル（算数=橙／社会=緑／理科=青・相対パス） */
   var BASE="./";
   var UNITS=[
-    {emoji:"🧮",color:"#2E91A8",top:"linear-gradient(180deg,#3FA0B5,#2E91A8)",
+    {emoji:"🧮",color:"#FF8A00",
      subject:"算数《さんすう》3年《ねん》",
      unit:"たし算《ざん》とひき算《ざん》の筆算《ひっさん》",
      core:"位《くらい》をそろえて 計算《けいさん》する。お買《か》いもの・バトルのPBLつき。",
      storeKey:"shindo3d_hissan_v6",total:20,path:BASE+"sansu/"},
-    {emoji:"🗺️",color:"#D8731C",top:"linear-gradient(180deg,#E08A4F,#D8731C)",
+    {emoji:"🗺️",color:"#1AA179",
      subject:"社会《しゃかい》3年《ねん》",
      unit:"わたしたちの奈良市《ならし》（方位《ほうい》・地図記号《ちずきごう》）",
      core:"方位《ほうい》と地図記号《ちずきごう》で 土地《とち》のようすを 読《よ》む。",
      storeKey:"shindo3d_shakai_nara_v1",total:20,path:BASE+"shakai/"},
-    {emoji:"🌱",color:"#2F9E78",top:"linear-gradient(180deg,#46B58E,#2F9E78)",
+    {emoji:"🌱",color:"#3D7BFF",
      subject:"理科《りか》3年《ねん》",
      unit:"生《い》きものの育《そだ》ちとつくり（たね・植物《しょくぶつ》・チョウ）",
      core:"すがたは ちがっても、育《そだ》ちの じゅんばんは おなじ。",
      storeKey:"shindo3d_rika3_v1",total:24,path:BASE+"rika/"}
   ];
+
+  /* 5駅フラッグ道 */
+  function roadHTML(c,total){
+    var ratio=total>0?c/total:0, doneSt=Math.floor(ratio*5);
+    var nodes="";
+    for(var i=0;i<5;i++){
+      if(i<doneSt) nodes+='<span class="node done">🚩</span>';
+      else if(i===doneSt && c<total) nodes+='<span class="node current">🚀</span>';
+      else nodes+='<span class="node"></span>';
+    }
+    var w=Math.round(ratio*100);
+    var nudge;
+    if(c>=total) nudge="ぜんぶ クリア！🎉";
+    else { var nextAt=Math.ceil((doneSt+1)/5*total); var rem=Math.max(1,nextAt-c); nudge="あと "+rem+" マスで はたが たつ！"; }
+    return '<div class="road"><div class="track"></div><div class="fill" data-w="'+w+'"></div>'+
+      '<div class="nodes">'+nodes+'</div></div><div class="nudge">'+nudge+'</div>';
+  }
+  /* ★ゲージ（10星・連続フィル・満タンは金） */
+  function starsHTML(c,total){
+    var val=total>0?c/total*10:0, full=c>=total, s="";
+    for(var i=0;i<10;i++){
+      var frac=Math.max(0,Math.min(1,val-i)), w=Math.round(frac*100);
+      s+='<span class="star'+(full?' full':'')+'" style="animation-delay:'+(i*0.05)+'s"><b style="width:'+w+'%">★</b>★</span>';
+    }
+    return '<div class="stars">'+s+'<span class="mas num-f">'+c+' / '+total+' マス</span></div>';
+  }
+
   (function(){
-    var g=document.getElementById("grid-units"),html="";
+    var g=document.getElementById("grid-units"),html="",sumC=0,sumT=0,allFull=true;
     UNITS.forEach(function(u){
-      var c=Math.min(doneCount(u.storeKey),u.total);
-      var pct=Math.round(c/u.total*100);
-      var go=c>=u.total?"クリア！🎉 もう一回 →":(c>0?"つづきから →":"はじめる →");
-      html+='<a class="card" href="'+esc(u.path)+'">'+
-        '<div class="top" style="background:'+u.top+'">'+
-          '<div class="emoji">'+u.emoji+'</div>'+
+      var c=Math.min(doneCount(u.storeKey),u.total); sumC+=c; sumT+=u.total; if(c<u.total) allFull=false;
+      var go=c>=u.total?'<span class="go clear">クリア！ もういちど <span class="ar">→</span></span>'
+            :(c>0?'<span class="go">つづきから <span class="ar">→</span></span>'
+                 :'<span class="go">はじめる <span class="ar">→</span></span>');
+      html+='<a class="tile" href="'+esc(u.path)+'" style="--tc:'+u.color+'">'+
+        '<div class="jacket" style="background:linear-gradient(160deg,'+u.color+','+darken(u.color,.14)+')">'+
+          '<span class="gloss"></span>'+
+          '<span class="lv num-f">Lv.'+c+'</span>'+
+          '<span class="appic">'+u.emoji+'</span>'+
           '<div class="subj">'+toRuby(u.subject)+'</div>'+
-          '<div class="unit">'+toRuby(u.unit)+'</div></div>'+
-        '<div class="body"><div class="core">'+toRuby(u.core)+'</div>'+
-          '<div class="prog"><div class="meta"><span>すすみぐあい</span><span><b>'+c+'</b> / '+u.total+' マス</span></div>'+
-          '<div class="bar"><i data-pct="'+pct+'" style="background:'+u.color+'"></i></div></div>'+
-          '<span class="go" style="background:'+u.color+'">'+go+'</span></div></a>';
+          '<div class="unit">'+toRuby(u.unit)+'</div>'+
+        '</div>'+
+        '<div class="status">'+
+          roadHTML(c,u.total)+
+          starsHTML(c,u.total)+
+          '<div class="core">'+toRuby(u.core)+'</div>'+
+          go+
+        '</div></a>';
     });
     g.innerHTML=html;
-    setTimeout(function(){ g.querySelectorAll(".bar>i").forEach(function(i){ i.style.width=(i.getAttribute("data-pct")||0)+"%"; }); },90);
+    /* 道のフィルを左→右に伸ばす */
+    setTimeout(function(){ g.querySelectorAll(".road .fill").forEach(function(f){ f.style.width=(f.getAttribute("data-w")||0)+"%"; }); },90);
+
+    /* 総攻略リング */
+    var pct=sumT>0?Math.round(sumC/sumT*100):0;
+    var ring=document.getElementById("total-ring");
+    ring.innerHTML='<div class="ring'+(allFull?' allclear':'')+'" style="background:conic-gradient(var(--primary) '+pct+'%, rgba(22,24,31,.08) 0)">'+
+      '<div class="hole">'+(allFull?'<span class="pct">🏆</span>':'<span class="pct num-f">'+pct+'%</span><span class="lab">たんけん</span>')+'</div>'+
+      (allFull?'<div class="confetti" id="conf"></div>':'')+'</div>'+
+      '<div class="cap" data-furi>3きょうか ぜんたい</div>';
+    ring.querySelectorAll("[data-furi]").forEach(function(el){ el.innerHTML=toRuby(el.innerHTML); });
+    if(allFull){
+      var conf=document.getElementById("conf"), cols=["#FF4E3A","#FF8A00","#1AA179","#3D7BFF","#FFC400"];
+      for(var i=0;i<16;i++){
+        var p=document.createElement("i"), ang=(i/16)*Math.PI*2, dist=70+(i%3)*22;
+        p.style.background=cols[i%cols.length];
+        p.style.setProperty("--dx",Math.round(Math.cos(ang)*dist)+"px");
+        p.style.setProperty("--dy",Math.round(Math.sin(ang)*dist - 20)+"px");
+        p.style.animationDelay=(i*0.03)+"s";
+        conf.appendChild(p);
+      }
+    }
   })();
 
   /* 教材リンク */
@@ -302,6 +493,15 @@
   function saveC(s){ setJSON(CK,s); }
   document.getElementById("d-date").textContent=tl();
 
+  /* SRL 現在地：計画が空→①／めあてあり・ふりかえり前→②／ふりかえり着手→③ */
+  function litStep(){
+    var step = (!cyc.plan) ? 1 : ((!cyc.rate && !cyc.reflect) ? 2 : 3);
+    document.querySelectorAll("#cyc .cchip").forEach(function(ch){
+      ch.classList.toggle("on", +ch.getAttribute("data-step")===step);
+    });
+  }
+  /* チップは同一ページ内アンカー＝smooth scroll（href任せでOK） */
+
   /* まえのふりかえり → きょうの計画 に つなぐ */
   (function(){
     var box=document.getElementById("prev");
@@ -318,11 +518,11 @@
 
   var planEl=document.getElementById("plan");
   planEl.value=cyc.plan||"";
-  planEl.oninput=function(){ cyc.plan=planEl.value; saveC(cyc); };
+  planEl.oninput=function(){ cyc.plan=planEl.value; saveC(cyc); litStep(); };
 
   var reflectEl=document.getElementById("reflect");
   reflectEl.value=cyc.reflect||"";
-  reflectEl.oninput=function(){ cyc.reflect=reflectEl.value; saveC(cyc); };
+  reflectEl.oninput=function(){ cyc.reflect=reflectEl.value; saveC(cyc); litStep(); };
 
   var RATES=[{v:"◎",t:"◎ ばっちり"},{v:"○",t:"○ できた"},{v:"△",t:"△ もうすこし"}];
   (function(){
@@ -331,13 +531,27 @@
       var b=document.createElement("button"); b.className="rbtn"; b.textContent=r.t;
       if(cyc.rate===r.v) b.classList.add("on");
       b.onclick=function(){
-        cyc.rate=(cyc.rate===r.v)?"":r.v; saveC(cyc);
+        var wasOff=(cyc.rate!==r.v);
+        cyc.rate=(cyc.rate===r.v)?"":r.v; saveC(cyc); litStep();
         box.querySelectorAll(".rbtn").forEach(function(x){x.classList.remove("on");});
         if(cyc.rate) b.classList.add("on");
+        if(cyc.rate==="◎" && wasOff) celebrate(b);   // ◎で小さな祝福
       };
       box.appendChild(b);
     });
   })();
+
+  /* ◎を選んだ瞬間、⭐がふわっと上昇して消える */
+  function celebrate(btn){
+    if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    var s=document.createElement("span"); s.textContent="⭐";
+    s.style.cssText="position:absolute;left:50%;top:-4px;transform:translateX(-50%);font-size:18px;pointer-events:none;transition:transform .6s ease-out,opacity .6s ease-out;";
+    btn.appendChild(s);
+    requestAnimationFrame(function(){ s.style.transform="translate(-50%,-28px)"; s.style.opacity="0"; });
+    setTimeout(function(){ s.remove(); },650);
+  }
+
+  litStep();
 })();
 </script>
 </body>
