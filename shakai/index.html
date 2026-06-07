@@ -46,6 +46,9 @@ const GREEN_TX = "#1f7a5f";       // 伸度の文字用（濃い緑＝白地で�
 const GRAY = "#8a97a0";
 const INK = "#2A3B40";
 const SUB = "#5b6a72";
+/* グラデ：上は元色のまま・下だけ少し暗くする「片側グラデ」。最明部＝元色なので白文字の見やすさは下がらない。 */
+const darken = (hex, amt) => { const n = parseInt(hex.slice(1), 16); const r = Math.round(((n >> 16) & 255) * (1 - amt)), g = Math.round(((n >> 8) & 255) * (1 - amt)), b = Math.round((n & 255) * (1 - amt)); return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1); };
+const grad = (hex) => `linear-gradient(165deg, ${hex} 0%, ${hex} 48%, ${darken(hex, 0.14)} 100%)`;
 /* ===== 教科テーマ（外装のみ：3Dロゴ・タイトル・たんげん名・背景の淡い色）=====
    3軸の色（すすむ青BLUE／ふかめる金AMBER／つなげる緑GREEN）は変えない＝システムの統一感は維持。 */
 const THEME = { accent: "#B26836", bg: "radial-gradient(1200px 700px at 78% -8%, #FBF1E7 0%, #FBF4EC 45%, #F6EEE4 100%)" }; // 社会＝古都の朱（地図・奈良）
@@ -371,11 +374,11 @@ const MAP_SYMBOLS = [
 
 /* ===== 奈良市の地いきデータ（奈良市たんけん／∞地いきクイズで つかう） ===== */
 const NARA_AREAS = [
-  { name: "奈良のまち（中心部）", houi: "中央", feature: "東大寺・春日大社などの 文化財や 古い町なみ。JR・近鉄の駅、県庁・市役所が ある。外国からの 観光客も 多い。", job: "観光・売る しごと（店）" },
-  { name: "西奈良", houi: "西", feature: "住たくや 大がたショッピングセンターが 多い。大和西大寺駅から 大阪・京都・神戸へ 通きん・通学できる。", job: "通きん・通学、店ではたらく" },
-  { name: "南奈良", houi: "南", feature: "国道24号ぞいに 大きな 工場。田や畑、ため池が あり、ビニールハウスで いちごを 作る。", job: "工場ではたらく・いちご作り" },
-  { name: "東奈良", houi: "東", feature: "山に かこまれ 森林が 多い。鉄道は なく バスは 少ない。山のしゃ面に 茶畑（大和茶）が 広がる。", job: "茶作り（大和茶）" },
-  { name: "月ヶ瀬・都祁", houi: "東のはし（標高が高い）", feature: "標高が高く すずしい。広い 茶畑、梅林、高原野菜。名阪国道・針テラスが ある。", job: "茶作り・梅・高原野菜づくり" },
+  { name: "奈良のまち（中心部）", houi: "中央", lat: 34.6840, lng: 135.8290, feature: "東大寺・春日大社などの 文化財や 古い町なみ。JR・近鉄の駅、県庁・市役所が ある。外国からの 観光客も 多い。", job: "観光・売る しごと（店）" },
+  { name: "西奈良", houi: "西", lat: 34.6930, lng: 135.7790, feature: "住たくや 大がたショッピングセンターが 多い。大和西大寺駅から 大阪・京都・神戸へ 通きん・通学できる。", job: "通きん・通学、店ではたらく" },
+  { name: "南奈良", houi: "南", lat: 34.6270, lng: 135.7980, feature: "国道24号ぞいに 大きな 工場。田や畑、ため池が あり、ビニールハウスで いちごを 作る。", job: "工場ではたらく・いちご作り" },
+  { name: "東奈良", houi: "東", lat: 34.6720, lng: 135.9080, feature: "山に かこまれ 森林が 多い。鉄道は なく バスは 少ない。山のしゃ面に 茶畑（大和茶）が 広がる。", job: "茶作り（大和茶）" },
+  { name: "月ヶ瀬・都祁", houi: "東", lat: 34.7400, lng: 136.0120, feature: "標高が高く すずしい。広い 茶畑、梅林、高原野菜。名阪国道・針テラスが ある。", job: "茶作り・梅・高原野菜づくり" },
 ];
 
 /* ===== 奈良市の実在地点（本物の地図＝地理院地図で つかう。lat=北緯 lng=東経。先生が追加・修正できる） ===== */
@@ -608,7 +611,7 @@ function App() {
               return (
                 <button key={s.n} onClick={() => goGuide(s.n, 0)} style={{
                   position: "absolute", ...p, width: CW, height: HEADER - 6,
-                  background: isOpen ? BLUE : "#F7ECDF", color: isOpen ? "#fff" : INK,
+                  background: isOpen ? grad(BLUE) : "#F7ECDF", color: isOpen ? "#fff" : INK,
                   border: `2px solid ${BLUE}`, borderRadius: 8, cursor: "pointer", padding: "5px 8px", boxSizing: "border-box", textAlign: "left",
                   boxShadow: isOpen ? "0 4px 12px rgba(178,104,54,.32)" : "none",
                 }}>
@@ -724,7 +727,7 @@ function App() {
         <div ref={guideRef} key={`guide-${openStage}-${openLv}`} style={{ display: "flex", gap: 14, marginTop: 12, alignItems: "flex-start", flexWrap: "wrap", animation: "popUp .32s cubic-bezier(.2,.8,.2,1)", scrollMarginTop: 12 }}>
           {/* 左＝学習ガイド */}
           <div style={{ flex: "1 1 420px", minWidth: 360, border: `2px solid ${plan.ready ? AMBER_DK[openLv] : "#cdd8dd"}`, borderRadius: 14, background: "#fff", overflow: "hidden" }}>
-            <div style={{ background: plan.ready ? AMBER_DK[openLv] : "#cdd8dd", color: "#fff", padding: "10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ background: plan.ready ? grad(AMBER_DK[openLv]) : "#cdd8dd", color: "#fff", padding: "10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontSize: 20 }}>{DEPTH[openLv].badge}</span>
               <div>
                 <div style={{ fontSize: 11, fontWeight: 800, opacity: .9 }}>ステージ{st.n}「{st.title}{st.sub}」</div>
@@ -1032,9 +1035,9 @@ function App() {
       {showCipher && (
         <SocialGame
           title="奈良市たんけん" emoji="🏯" color={CHIIKI_COLOR}
-          subtitle="土地のようすから どの地いきか あてよう"
+          subtitle="本物の 奈良市の地図で、5つの地いきの 場所と ようすを たしかめよう"
           goal="奈良市は 場所で ようすが ちがう！を つかむ PBL（探究）"
-          make={makeChiikiQ}
+          make={makeChiikiMapQ}
           onClose={() => setShowCipher(false)}
         />
       )}
@@ -1236,6 +1239,42 @@ function makeChiikiQ() {
   };
 }
 
+/* 本物の地図：奈良市の5つの地いきを 地理院地図で 読み取る */
+function makeChiikiMapQ() {
+  const areas = NARA_AREAS;
+  if (Math.random() < 0.5) {
+    // 方位タイプ：中心から見て その地いきは どの方位？
+    const center = areas[0];
+    const cand = areas.filter((a) => a !== center);
+    const ans = cand[randInt(cand.length)];
+    const dir = houiOf(center, ans);
+    const opts = shuffle(["東", "西", "南", "北"]);
+    return {
+      scene: <RealMap height={300} markers={[
+        { lat: center.lat, lng: center.lng, label: `★${center.name}`, color: "#2E7D32" },
+        { lat: ans.lat, lng: ans.lng, label: ans.name, color: "#C0392B" },
+      ]} />,
+      display: `本物の 地図で、奈良市の 中心（★）から 見て「${ans.name}」は どの方位の 地いき？`,
+      choices: opts, ansIndex: opts.indexOf(dir),
+      explain: `${ans.name}は 奈良市の「${dir}」がわの 地いき。地図は 北が上だよ。`,
+    };
+  }
+  // ようすタイプ：地図に5地いきを置き、土地のようすから あてる
+  const i = randInt(areas.length);
+  const ans = areas[i];
+  const others = shuffle(areas.filter((_, k) => k !== i)).slice(0, 3);
+  const opts = shuffle([ans, ...others]);
+  const useJob = Math.random() < 0.4;
+  const clue = useJob ? `さかんな しごと：${ans.job}` : ans.feature;
+  return {
+    scene: <RealMap height={300} markers={areas.map((a) => ({ lat: a.lat, lng: a.lng, label: a.name, color: "#2F8B68" }))} />,
+    display: `本物の 地図で 5つの 地いきの 場所を たしかめて、つぎの ようすは どの 地いき？\n「${clue}」`,
+    choices: opts.map((o) => o.name),
+    ansIndex: opts.indexOf(ans),
+    explain: `${ans.name}（奈良市の ${ans.houi}）…${clue}`,
+  };
+}
+
 /* ===== 資料読み取り：方位じしん（コンパス）を 読む ===== */
 const DIR8 = ["北", "北東", "東", "南東", "南", "南西", "西", "北西"];
 const DIR_VEC = { "北": [0, -1], "北東": [0.7, -0.7], "東": [1, 0], "南東": [0.7, 0.7], "南": [0, 1], "南西": [-0.7, 0.7], "西": [-1, 0], "北西": [-0.7, -0.7] };
@@ -1354,7 +1393,7 @@ function makeHouiMix() { const r = randInt(3); return r === 0 ? makeHouiMapQ() :
 /* ミックス：学校のまわり（絵地図の読み取り＋地図記号＋方位） */
 function makeMapMix() { const r = randInt(3); return r === 0 ? makeMapReadQ() : r === 1 ? makeSymbolQ() : makeHouiMapQ(); }
 /* ミックス：この単元 まるごと（方位・記号・地いき・絵地図・方位じしん） */
-function makeMixAll() { const r = randInt(5); return r === 0 ? makeHouiMapQ() : r === 1 ? makeSymbolQ() : r === 2 ? makeChiikiQ() : r === 3 ? makeMapReadQ() : makeCompassQ(); }
+function makeMixAll() { const r = randInt(5); return r === 0 ? makeHouiMapQ() : r === 1 ? makeSymbolQ() : r === 2 ? makeChiikiMapQ() : r === 3 ? makeMapReadQ() : makeCompassQ(); }
 
 /* ===== 無限：選択式クイズ（つなげる裏面の ∞チャレンジ用） ===== */
 function InfiniteChoiceQuiz({ make, hint }) {
@@ -1414,7 +1453,7 @@ function InfiniteChoiceQuiz({ make, hint }) {
 const GENERATORS = {
   symbol: () => <InfiniteChoiceQuiz make={makeSymbolQ} />,
   houi: () => <InfiniteChoiceQuiz make={makeHouiQ} />,
-  chiiki: () => <InfiniteChoiceQuiz make={makeChiikiQ} />,
+  chiiki: () => <InfiniteChoiceQuiz make={makeChiikiMapQ} />,
   compass: () => <InfiniteChoiceQuiz make={makeCompassQ} />,
   map: () => <InfiniteChoiceQuiz make={makeMapQ} />,
   houiMix: () => <InfiniteChoiceQuiz make={makeHouiMix} />,
