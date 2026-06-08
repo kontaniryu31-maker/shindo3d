@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>「せつめいできる」ワークシート — たし算とひき算のひっ算</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --ink:#1f2a30; --line:#3a4750; --accent:#8A5A2B; --faint:#9aa7ae; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; font-family:"M PLUS Rounded 1c",sans-serif; color:var(--ink); }
+  ruby rt{ font-size:.5em; font-weight:600; }
+  .page{ width:210mm; min-height:297mm; margin:0 auto; padding:8mm 11mm 7mm; background:#fff; }
+  .toolbar{ max-width:210mm; margin:8px auto; text-align:center; }
+  .toolbar button{ font:inherit; font-weight:900; cursor:pointer; background:var(--accent); color:#fff; border:none; border-radius:10px; padding:9px 18px; }
+  .toolbar span{ color:#667; font-size:12px; margin-left:10px; }
+
+  .band{ display:flex; align-items:center; gap:8px; border:2px solid var(--line); border-radius:9px; padding:6px 10px; font-weight:800; font-size:12px; }
+  .band .fill{ flex:1; border-bottom:1.5px solid #cdd5d9; min-height:18px; }
+  .title{ text-align:center; font-size:18px; font-weight:900; margin:3px 0 1px; }
+  .mission{ text-align:center; font-size:12px; font-weight:800; color:var(--accent); margin-bottom:5px; }
+
+  .core{ text-align:center; font-size:17px; font-weight:900; background:#FBF3E7; border:2px solid var(--accent); border-radius:10px; padding:6px; margin-bottom:6px; letter-spacing:.5px; }
+
+  .sec{ border:2px solid var(--line); border-radius:11px; padding:6px 10px; margin-bottom:6px; }
+  .sec h2{ font-size:13.5px; font-weight:900; margin:0 0 5px; display:flex; align-items:center; gap:6px; }
+  .sec h2 .no{ background:var(--accent); color:#fff; border-radius:50%; width:22px; height:22px; display:inline-grid; place-items:center; font-size:13px; flex:none; }
+
+  .ex{ font-size:26px; font-weight:900; text-align:center; letter-spacing:3px; padding:2px 0; }
+  .note{ font-size:10px; color:var(--faint); font-weight:700; }
+
+  table.pv{ border-collapse:collapse; margin:2px auto 0; }
+  table.pv td,table.pv th{ width:18mm; height:12mm; border:1.6px solid var(--line); text-align:center; font-size:22px; font-weight:900; }
+  table.pv th{ height:7mm; font-size:12px; font-weight:900; background:#F2F5F6; color:#556; }
+  table.pv td.op{ width:9mm; border:none; font-size:22px; color:var(--accent); }
+  table.pv td.thou{ background:#fafbfb; color:#bcc; }
+  table.pv .ans td{ border-top:3px solid var(--line); }
+  table.pv td.ones{ background:#FFF7EC; box-shadow: inset 0 0 0 2px var(--accent); }
+  .arrowrow{ display:flex; justify-content:center; gap:0; margin-top:6px; }
+  .arrowrow .cell{ width:18mm; text-align:center; }
+  .arrowrow .bubble{ display:inline-block; width:13mm; height:9mm; border:1.4px dashed var(--accent); border-radius:6px; }
+  .startfrom{ text-align:center; font-size:11px; font-weight:800; color:var(--accent); margin-top:3px; }
+
+  .write{ min-height:22mm; border:1.6px solid var(--line); border-radius:8px; padding:7px 10px; background:repeating-linear-gradient(#fff,#fff 9mm,#e7edf0 9mm,#e7edf0 calc(9mm + 1px)); }
+  .write .hints{ font-size:12px; font-weight:800; color:#8893; line-height:2.4; }
+  .draw{ height:32mm; border:1.6px solid var(--line); border-radius:8px; position:relative; }
+  .draw .hint{ position:absolute; right:6px; bottom:5px; font-size:9.5px; color:var(--faint); font-weight:700; }
+  .two{ display:flex; gap:9px; }
+  .two > div{ flex:1; }
+  .checks{ font-size:12.5px; font-weight:800; line-height:1.85; }
+  .checks .b{ display:inline-block; width:15px; height:15px; border:1.6px solid var(--line); border-radius:3px; vertical-align:-2px; margin-right:6px; }
+  .footline{ font-size:12px; font-weight:800; margin-top:4px; }
+  .footline .fill{ display:inline-block; border-bottom:1.4px solid #cdd5d9; min-width:120px; height:16px; }
+  .speak{ font-size:11px; font-weight:800; color:#2E7D5B; margin-top:6px; }
+
+  @media print{
+    .toolbar{ display:none; }
+    .page{ width:auto; min-height:auto; margin:0; padding:7mm 9mm; }
+    @page{ size:A4 portrait; margin:0; }
+  }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <button onclick="window.print()">🖨️ 印刷する（A4・たて）</button>
+  <span>※ 印刷して 子どもに 配って つかってください。絵は 子どもが 描く 空欄です。</span>
+</div>
+
+<div class="page">
+  <!-- ① ヘッダー -->
+  <div class="band">
+    <span>3年&nbsp;&nbsp;くみ&nbsp;&nbsp;ばん</span>
+    <span>なまえ</span><span class="fill"></span>
+    <span>日づけ&nbsp;&nbsp;月&nbsp;&nbsp;日</span>
+  </div>
+  <div class="title">たし<ruby>算<rt>ざん</rt></ruby>と ひき<ruby>算<rt>ざん</rt></ruby>の ひっ<ruby>算<rt>ざん</rt></ruby></div>
+  <div class="mission">きょうの やること＝この1つの <ruby>計算<rt>けいさん</rt></ruby>を「せつめい」できるように する</div>
+
+  <!-- 核バナー -->
+  <div class="core"><ruby>位<rt>くらい</rt></ruby>を そろえて、<ruby>同<rt>おな</rt></ruby>じ <ruby>位<rt>くらい</rt></ruby>どうしを <ruby>計算<rt>けいさん</rt></ruby>する</div>
+
+  <!-- ①この計算を見る -->
+  <div class="sec">
+    <h2><span class="no">1</span>まず この <ruby>計算<rt>けいさん</rt></ruby>を <ruby>見<rt>み</rt></ruby>よう</h2>
+    <div class="ex">３６５ ＋ ４５７</div>
+    <div class="note">※先生：べつの計算にしたいときは、ここを書きかえてください（例：ひき算なら 512 − 348）。</div>
+  </div>
+
+  <!-- ②位取り表 -->
+  <div class="sec">
+    <h2><span class="no">2</span><ruby>位<rt>くらい</rt></ruby>の へやに <ruby>数<rt>かず</rt></ruby>を <ruby>入<rt>い</rt></ruby>れよう（たてに そろえる）</h2>
+    <table class="pv">
+      <tr><th class="thou">千</th><th>百</th><th>十</th><th>一</th></tr>
+      <tr><td class="thou"></td><td></td><td></td><td class="ones"></td></tr>
+      <tr><td class="op">＋</td><td></td><td></td><td class="ones"></td></tr>
+      <tr class="ans"><td class="thou"></td><td></td><td></td><td class="ones"></td></tr>
+    </table>
+    <div class="startfrom">← <ruby>一<rt>いち</rt></ruby>のくらい（右）から <ruby>計算<rt>けいさん</rt></ruby>する</div>
+  </div>
+
+  <!-- ③くり上がり/くり下がり -->
+  <div class="sec">
+    <h2><span class="no">3</span>どこで くり<ruby>上<rt>あ</rt></ruby>がる？（ひき算なら くり<ruby>下<rt>さ</rt></ruby>がる？）</h2>
+    <div class="arrowrow">
+      <div class="cell"><span class="bubble"></span></div>
+      <div class="cell"><span class="bubble"></span></div>
+      <div class="cell"><span class="bubble"></span></div>
+      <div class="cell"></div>
+    </div>
+    <div class="note" style="text-align:center;margin-top:5px">くり上がる（くり下がる）<ruby>位<rt>くらい</rt></ruby>の あいだに <ruby>矢<rt>や</rt></ruby>じるしを かいて、<ruby>小<rt>ちい</rt></ruby>さい「1」や へる<ruby>数<rt>かず</rt></ruby>を ふきだしに <ruby>書<rt>か</rt></ruby>こう</div>
+  </div>
+
+  <!-- ④自分のことばで -->
+  <div class="sec">
+    <h2><span class="no">4</span>なぜ そう <ruby>計算<rt>けいさん</rt></ruby>するの？ <ruby>自分<rt>じぶん</rt></ruby>の ことばで <ruby>書<rt>か</rt></ruby>こう</h2>
+    <div class="write">
+      <div class="hints">・まず…<br>・つぎに…（<ruby>一<rt>いち</rt></ruby>のくらいが 10を こえたから…）<br>・だから…</div>
+    </div>
+    <div class="speak">□ <ruby>友<rt>とも</rt></ruby>だちか <ruby>先生<rt>せんせい</rt></ruby>に、こえに <ruby>出<rt>だ</rt></ruby>して せつめいできた</div>
+  </div>
+
+  <div class="two">
+    <!-- ⑤絵で -->
+    <div class="sec" style="flex:1.1">
+      <h2><span class="no">5</span><ruby>絵<rt>え</rt></ruby>でも せつめいしよう</h2>
+      <div class="draw"><span class="hint">れい：●を 10こ あつめると 1のたばに なるよ</span></div>
+    </div>
+    <!-- ⑥たしかめ -->
+    <div class="sec">
+      <h2><span class="no">6</span>たしかめ</h2>
+      <div class="note">ぎゃくの <ruby>計算<rt>けいさん</rt></ruby>で たしかめよう（<ruby>答<rt>こた</rt></ruby>え − 457 ＝ 365 など）</div>
+      <div class="write" style="min-height:10mm;background:#fff"></div>
+      <div class="checks" style="margin-top:6px">
+        <span class="b"></span><ruby>位<rt>くらい</rt></ruby>を そろえた<br>
+        <span class="b"></span>くり<ruby>上<rt>あ</rt></ruby>がり（くり<ruby>下<rt>さ</rt></ruby>がり）の <ruby>場所<rt>ばしょ</rt></ruby>が <ruby>言<rt>い</rt></ruby>えた<br>
+        <span class="b"></span>こえに <ruby>出<rt>だ</rt></ruby>して せつめいできた
+      </div>
+      <div class="footline">つぎに したいこと：<span class="fill"></span></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

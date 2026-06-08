@@ -12,6 +12,7 @@
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
+  ruby rt { font-size: 0.5em; font-weight: 600; user-select: none; letter-spacing: 0; }
 </style>
 </head>
 <body>
@@ -361,6 +362,40 @@ const store = {
   async del(k) { if (!hasStore) return; try { await window.storage.delete(k); } catch (e) {} },
 };
 
+/* ===== ふりがな：3年生が ひとりで 読めるように 漢字へ ルビ ===== */
+const FURI_DICT = [
+  ["位取り表","くらいどりひょう"], ["教科書","きょうかしょ"], ["計算","けいさん"],
+  ["説明","せつめい"], ["問題","もんだい"], ["解説","かいせつ"], ["苦手","にがて"],
+  ["授業","じゅぎょう"], ["大事","だいじ"], ["友","とも"], ["学","まな"], ["読","よ"],
+  ["線","せん"], ["引","ひ"], ["見","み"], ["合","あ"], ["言","い"], ["方","かた"],
+  ["逆","ぎゃく"], ["考","かんが"], ["多","おお"], ["作","つく"], ["高","たか"],
+  ["算","ざん"], ["助","たす"],
+];
+// 「上」は じょう(教科書 上)／あ(くり上がり) で読みが割れるため辞書に入れず個別指定。
+const dataFuri = (s) => String(s == null ? "" : s).replace(/教科書\s*上/g, "{教科書|きょうかしょ} {上|じょう}");
+const titleFuri = (s) => String(s == null ? "" : s)
+  .replace(/くり上がり/g, "くり{上|あ}がり").replace(/くり下がり/g, "くり{下|さ}がり");
+// ヘッダーの単元名・コア概念だけの個別ルビ（辞書に無い語）
+const chromeFuri = (s) => String(s == null ? "" : s)
+  .replace(/筆算/g, "{筆算|ひっさん}")
+  .replace(/同じ/g, "{同|おな}じ")
+  .replace(/位を/g, "{位|くらい}を").replace(/位どうし/g, "{位|くらい}どうし");
+let _rbKey = 0;
+function rb(input) {
+  if (input == null) return input;
+  let text = String(input);
+  const slots = [];
+  const ph = (k, y) => { slots.push([k, y]); return "‹‹" + (slots.length - 1) + "‹‹"; };
+  text = text.replace(/\{([^|{}]+)\|([^|{}]+)\}/g, (m, k, y) => ph(k, y));
+  const dict = [...FURI_DICT].sort((a, b) => b[0].length - a[0].length);
+  for (const [k, y] of dict) { if (text.indexOf(k) >= 0) text = text.split(k).join(ph(k, y)); }
+  return text.split(/(‹‹\d+‹‹)/).map((p, i) => {
+    const m = /^‹‹(\d+)‹‹$/.exec(p);
+    if (m) { const [k, y] = slots[+m[1]]; return <ruby key={"r" + i + "_" + (_rbKey++)}>{k}<rt>{y}</rt></ruby>; }
+    return p;
+  });
+}
+
 function App() {
   const [openStage, setOpenStage] = useState(1);
   const [openLv, setOpenLv] = useState(0);       // どのマスを開いているか（既定はLv1「読む」＝学習の入口）
@@ -419,6 +454,8 @@ function App() {
 
   const toggleDone = (s, k) => setDone((d) => ({ ...d, [`${s}-${k}`]: !d[`${s}-${k}`] }));
   const resetAll = async () => {
+    if (typeof window !== "undefined" && window.confirm &&
+        !window.confirm("ぬった ところを ぜんぶ けします。よろしいですか？")) return;
     setDone({});
     await store.del(STORE_KEY);
   };
@@ -444,8 +481,8 @@ function App() {
         <div style={{ width: 46, height: 46, borderRadius: 12, background: THEME.accent, color: "#fff", fontWeight: 900, fontSize: 16, display: "grid", placeItems: "center", flex: "none", boxShadow: "0 5px 0 rgba(0,0,0,.14)" }}>3D</div>
         <div style={{ flex: 1, minWidth: 240 }}>
           <div style={{ fontSize: 22, fontWeight: 900, color: THEME.accent, lineHeight: 1.05 }}>3D 自由進度表</div>
-          <div style={{ fontSize: 12.5, fontWeight: 800, marginTop: 2 }}>たんげん：<span style={{ color: THEME.accent }}>{UNIT}</span></div>
-          <div style={{ fontSize: 10, fontWeight: 700, color: SUB, marginTop: 1 }}>{BOOK}　／　いちばん大事：{CORE}</div>
+          <div style={{ fontSize: 12.5, fontWeight: 800, marginTop: 2 }}>たんげん：<span style={{ color: THEME.accent }}>{rb(chromeFuri(UNIT))}</span></div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: SUB, marginTop: 1 }}>{BOOK}　／　{rb("いちばん大事")}：{rb(chromeFuri(CORE))}</div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
           <div style={{ fontSize: 11, fontWeight: 800, color: SUB, textAlign: "right", lineHeight: 1.5 }}>
@@ -544,7 +581,7 @@ function App() {
                 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <span style={{ width: 19, height: 19, borderRadius: "50%", background: isOpen ? "#fff" : BLUE, color: isOpen ? BLUE : "#fff", fontSize: 10.5, fontWeight: 900, display: "grid", placeItems: "center", flex: "none" }}>{s.n}</span>
-                    <span style={{ fontSize: 11.5, fontWeight: 900, lineHeight: 1.0 }}>{s.title}<br /><span style={{ fontSize: 8.5, opacity: .85, fontWeight: 800 }}>{s.sub}</span></span>
+                    <span style={{ fontSize: 11.5, fontWeight: 900, lineHeight: 1.15 }}>{rb(titleFuri(s.title))}<br /><span style={{ fontSize: 8.5, opacity: .85, fontWeight: 800 }}>{rb(titleFuri(s.sub))}</span></span>
                   </div>
                   <div style={{ fontSize: 8, fontWeight: 800, color: isOpen ? "#cfe0ff" : (built ? GREEN : SUB), textAlign: "right", marginTop: 1 }}>{built ? "✓つかえる" : "じゅんび中"}</div>
                 </button>
@@ -568,12 +605,33 @@ function App() {
                   }}>
                     <span style={{ width: 6, height: "100%", background: AMBER_DK[k], borderRadius: "5px 0 0 5px", flex: "none", opacity: isDone ? 1 : .85 }} />
                     <span style={{ fontSize: 12, flex: "none", marginLeft: 2 }}>{d.badge}</span>
-                    <span style={{ fontSize: 11.5, fontWeight: 900, color: INK, flex: 1, whiteSpace: "nowrap", overflow: "hidden", letterSpacing: "-0.3px" }}>{d.name}</span>
+                    <span style={{ fontSize: 11.5, fontWeight: 900, color: INK, flex: 1, whiteSpace: "nowrap", letterSpacing: "-0.3px" }}>{rb(d.name)}</span>
                     <span style={{ fontSize: 8, fontWeight: 800, color: isDone ? INK : AMBER_DK[k], paddingRight: 4, flex: "none" }}>L{d.lv}</span>
                   </div>
                 );
               })
             )}
+            {/* 🏁 ゴール塔：たしかめテストゾーン（すすむ軸の右端に常設） */}
+            {(() => {
+              const p = wrap(px(FW + 14, 0, 0));
+              const h = HEADER - 6 + DEPTH.length * CH;
+              const allDone = STAGES.every((s) => DEPTH.every((d, k) => done[`${s.n}-${k}`]));
+              return (
+                <button onClick={() => { setShowBack(false); setShowTest(true); }} style={{
+                  position: "absolute", ...p, width: CW + 8, height: h,
+                  background: grad(TEST_COLOR), color: "#fff",
+                  border: `2.5px solid ${TEST_COLOR}`, borderRadius: 13, cursor: "pointer",
+                  boxShadow: allDone ? "0 0 0 4px #FCE9C6, 0 8px 18px rgba(138,90,43,.45)" : "0 6px 16px rgba(138,90,43,.4)",
+                  padding: "10px 6px", boxSizing: "border-box",
+                  display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 7, textAlign: "center",
+                }}>
+                  <span style={{ fontSize: 30 }}>🏁</span>
+                  <span style={{ fontSize: 14.5, fontWeight: 900, lineHeight: 1.3 }}>たしかめ<br />テスト</span>
+                  <span style={{ fontSize: 9.5, fontWeight: 800, opacity: .92, lineHeight: 1.45 }}>ぜんぶ できたら<br />ちょうせん！</span>
+                  <span style={{ marginTop: 2, fontSize: 10, fontWeight: 900, background: "#fff", color: TEST_COLOR, borderRadius: 8, padding: "3px 9px" }}>はじめる →</span>
+                </button>
+              );
+            })()}
             {/* 深度ラベル左 */}
             {DEPTH.map((d, k) => {
               const p = wrap(px(-150, HEADER + k * CH, 0));
@@ -581,7 +639,7 @@ function App() {
                 <div key={"dl" + k} style={{ position: "absolute", ...p, width: 140, height: CH - 6, display: "flex", flexDirection: "column", justifyContent: "center" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <span style={{ fontSize: 14 }}>{d.badge}</span>
-                    <span style={{ fontSize: 11.5, fontWeight: 900 }}>Lv{d.lv} {d.name}</span>
+                    <span style={{ fontSize: 11.5, fontWeight: 900 }}>Lv{d.lv} {rb(d.name)}</span>
                   </div>
                   <span style={{ fontSize: 9, fontWeight: 700, color: SUB, marginLeft: 20 }}>{d.desc}</span>
                 </div>
@@ -657,151 +715,83 @@ function App() {
             <div style={{ background: plan.ready ? grad(AMBER_DK[openLv]) : "#cdd8dd", color: "#fff", padding: "10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontSize: 20 }}>{DEPTH[openLv].badge}</span>
               <div>
-                <div style={{ fontSize: 11, fontWeight: 800, opacity: .9 }}>ステージ{st.n}「{st.title}{st.sub}」</div>
-                <div style={{ fontSize: 16, fontWeight: 900 }}>ふかめる Lv{DEPTH[openLv].lv}：{DEPTH[openLv].name}</div>
+                <div style={{ fontSize: 11, fontWeight: 800, opacity: .9 }}>ステージ{st.n}「{rb(titleFuri(st.title))}{rb(titleFuri(st.sub))}」</div>
+                <div style={{ fontSize: 16, fontWeight: 900 }}>ふかめる Lv{DEPTH[openLv].lv}：{rb(DEPTH[openLv].name)}</div>
               </div>
             </div>
 
             {(plan.ready) ? (
               <div style={{ padding: "11px 13px" }}>
-                {/* 🎯 クリア条件（目立たせる） */}
-                <div style={{ borderRadius: 13, overflow: "hidden", border: `3px solid ${BLUE}`, boxShadow: "0 4px 0 rgba(46,145,168,.2)" }}>
-                  <div style={{ background: BLUE, color: "#fff", padding: "8px 13px", display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 18 }}>🎯</span>
-                    <span style={{ fontSize: 14, fontWeight: 900, letterSpacing: .5 }}>これが できたら クリア！</span>
-                  </div>
-                  <div style={{ padding: "12px 14px", background: "linear-gradient(180deg,#F4FBFD,#E8F5F8)" }}>
-                    <div style={{ fontSize: 14.5, fontWeight: 800, color: INK, lineHeight: 1.55 }}>{plan.goal}</div>
-
-                    {/* 📍 ここでやる：教科書ページ／計算ドリル */}
-                    {(() => {
-                      const refPage = plan.page || plan.readPage || (plan.explain && plan.explain.page);
-                      const refDrill = plan.drill;
-                      if (!refPage && !refDrill) return null;
-                      return (
-                        <div style={{ marginTop: 9, display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-                          <span style={{ fontSize: 10.5, fontWeight: 900, color: SUB }}>📍 ここで やる：</span>
-                          {refPage && <span style={{ fontSize: 12, fontWeight: 900, color: "#fff", background: BLUE, borderRadius: 9, padding: "4px 11px" }}>📖 {refPage}</span>}
-                          {refDrill && <span style={{ fontSize: 12, fontWeight: 900, color: "#fff", background: GREEN, borderRadius: 9, padding: "4px 11px" }}>📒 {refDrill}</span>}
-                        </div>
-                      );
-                    })()}
-
-                    {/* Lv4＝探究・教材研究（くわしくは 下の 探究セクション） */}
-                    {openLv === 3 && (
-                      <div style={{ marginTop: 8, fontSize: 12, fontWeight: 800, color: AMBER_MAIN, lineHeight: 1.5 }}>↓ 先生・研究者に なって 探究しよう。研究を すすめて、友だちと お互いに 高め合えたら クリア！</div>
-                    )}
-                  </div>
-                </div>
-
-                {/* 📖 読むところ（読む Lv1 だけ） */}
-                {plan.kind === "read" && (
-                  <div style={{ marginTop: 12, border: `2.5px solid ${AMBER[0]}`, borderRadius: 13, overflow: "hidden" }}>
-                    <div style={{ background: AMBER[0], color: INK, padding: "8px 13px", display: "flex", alignItems: "center", gap: 7 }}>
-                      <span style={{ fontSize: 17 }}>📖</span>
-                      <span style={{ fontSize: 13.5, fontWeight: 900 }}>読むところ</span>
-                    </div>
-                    <div style={{ padding: "11px 13px" }}>
-                      <div style={{ fontSize: 13.5, fontWeight: 900, color: INK }}>{plan.readPage}</div>
-                      <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                        <span style={{ fontSize: 12.5, fontWeight: 900, color: "#fff", background: BLUE, borderRadius: 9, padding: "5px 11px" }}>① まず【問題】</span>
-                        <span style={{ fontSize: 16, fontWeight: 900, color: GRAY }}>→</span>
-                        <span style={{ fontSize: 12.5, fontWeight: 900, color: "#fff", background: GREEN, borderRadius: 9, padding: "5px 11px" }}>② つぎに【まとめ】</span>
-                        <span style={{ fontSize: 11, fontWeight: 800, color: SUB }}>の 順で 音読しよう</span>
+                {/* 🎯 やること（これだけ・特大） */}
+                {(() => {
+                  const acc = AMBER_DK[openLv];
+                  const Card = ({ children }) => (
+                    <div style={{ borderRadius: 16, overflow: "hidden", border: `3px solid ${acc}`, boxShadow: `0 5px 0 ${acc}33` }}>
+                      <div style={{ background: grad(acc), color: "#fff", padding: "9px 16px", display: "flex", alignItems: "center", gap: 9 }}>
+                        <span style={{ fontSize: 22 }}>{DEPTH[openLv].badge}</span>
+                        <span style={{ fontSize: 16, fontWeight: 900, letterSpacing: 1 }}>やること</span>
                       </div>
-                      <div style={{ marginTop: 8, fontSize: 11, fontWeight: 700, color: SUB, lineHeight: 1.5 }}>【問題】で「何を するか」、【まとめ】で「大事な考え」を つかんでから、大事なことばに 線を引こう。</div>
+                      <div style={{ padding: "20px 18px", background: "#fff" }}>{children}</div>
                     </div>
-                  </div>
-                )}
+                  );
 
-                {/* 💡 説明ミッション（せつめい Lv3 だけ） */}
-                {plan.explain && (
-                  <div style={{ marginTop: 12, border: `2.5px solid ${AMBER[2]}`, borderRadius: 13, overflow: "hidden" }}>
-                    <div style={{ background: AMBER[2], color: INK, padding: "8px 13px", display: "flex", alignItems: "center", gap: 7 }}>
-                      <span style={{ fontSize: 17 }}>💡</span>
-                      <span style={{ fontSize: 13.5, fontWeight: 900 }}>QNKSで せつめい — 問い→ぬき出し→組み立て→整理</span>
-                    </div>
-                    <div style={{ padding: "12px 13px" }}>
-                      <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
-                        <span style={{ fontSize: 22, fontWeight: 900, color: INK, letterSpacing: 1 }}>{plan.explain.problem}</span>
-                        <span style={{ fontSize: 11.5, fontWeight: 800, color: INK, background: AMBER[2], borderRadius: 8, padding: "3px 9px" }}>{plan.explain.page}</span>
-                      </div>
-                      <div style={{ marginTop: 10, fontSize: 11, fontWeight: 900, color: AMBER_DK[2] }}>🧠 中心の考え（ここを せつめいする）</div>
-                      <div style={{ marginTop: 4, fontSize: 12.5, fontWeight: 700, color: INK, background: "#fff", border: `1.5px dashed ${AMBER_DK[2]}`, borderRadius: 9, padding: "9px 12px", lineHeight: 1.6 }}>{plan.explain.point}</div>
-                      <div style={{ marginTop: 10, fontSize: 11, fontWeight: 900, color: AMBER_DK[2] }}>🧩 QNKS で せつめいする（この じゅんばん）</div>
-                      <div style={{ marginTop: 6, display: "flex", gap: 6, flexWrap: "wrap" }}>
-                        {[["Q", "「なぜ そう計算するの？」の 問いを たてる"], ["N", "教科書・式・図から ぬき出す"], ["K", "図と式で 組み立てる（位取り・くり上がり）"], ["S", "整理して だれにでも わかるように せつめい"]].map(([qq, txt], i) => (
-                          <div key={i} style={{ flex: "1 1 160px", display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 800, color: INK, background: "#fff", border: `1.3px solid ${AMBER_DK[2]}`, borderRadius: 8, padding: "6px 8px" }}>
-                            <span style={{ width: 18, height: 18, borderRadius: "50%", background: AMBER_DK[2], color: "#fff", fontSize: 11, fontWeight: 900, display: "grid", placeItems: "center", flex: "none" }}>{qq}</span>{txt}
-                          </div>
-                        ))}
-                      </div>
-                      <div style={{ marginTop: 8, fontSize: 11, fontWeight: 700, color: SUB, lineHeight: 1.5 }}>👉 答えを 出すだけで なく、<b>図とことば</b>で「<b>なぜ そう計算するのか</b>」を せつめいしよう。</div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 🔭 探究タイム（高め合う Lv4 だけ） */}
-                {openLv === 3 && (
-                  <div style={{ marginTop: 12, border: `2.5px solid ${AMBER_MAIN}`, borderRadius: 13, overflow: "hidden" }}>
-                    <div style={{ background: AMBER_MAIN, color: "#fff", padding: "8px 13px", display: "flex", alignItems: "center", gap: 7 }}>
-                      <span style={{ fontSize: 17 }}>🔭</span>
-                      <span style={{ fontSize: 13.5, fontWeight: 900 }}>探究タイム — けんきゅうして 高め合おう</span>
-                    </div>
-                    <div style={{ padding: "12px 13px", background: "#FBF8FF" }}>
-                      <div style={{ fontSize: 12, fontWeight: 900, color: AMBER_MAIN, marginBottom: 8 }}>🧪 けんきゅう活動（やってみたい ものから）</div>
-                      <div style={{ display: "flex", gap: 9, flexWrap: "wrap" }}>
-                        {/* ① つまずきレスキュー隊（QNKS＋ミニ授業） */}
-                        <div style={{ flex: "1 1 100%", border: `2.5px solid ${MINI_COLOR}`, borderRadius: 12, background: "#FFF6EE", padding: "12px 13px" }}>
-                          <div style={{ fontSize: 15, fontWeight: 900, color: MINI_COLOR }}>🛟 つまずきレスキュー隊</div>
-                          <div style={{ fontSize: 11.5, fontWeight: 700, color: SUB, marginTop: 4, lineHeight: 1.5 }}>みんなが「むずかしい！」と つまずく ところと その「なぜ」を 見つけて、<b style={{ color: MINI_COLOR }}>QNKS</b> で わかりやすく まとめよう。ミニ先生として 教えて、友だちを レスキュー！</div>
-                          <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
-                            {[["Q", "どこで つまずく？ なぜ？"], ["N", "大事なところを ぬき出す"], ["K", "わかりやすく 組み立てる"], ["S", "整理して 友だちに 教える"]].map(([q, txt], i) => (
-                              <div key={i} style={{ flex: "1 1 150px", display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 800, color: INK, background: "#fff", border: `1.3px solid ${MINI_COLOR}`, borderRadius: 8, padding: "6px 8px" }}>
-                                <span style={{ width: 18, height: 18, borderRadius: "50%", background: MINI_COLOR, color: "#fff", fontSize: 11, fontWeight: 900, display: "grid", placeItems: "center", flex: "none" }}>{q}</span>{txt}
-                              </div>
-                            ))}
-                          </div>
-                          <div style={{ marginTop: 8, fontSize: 10, fontWeight: 700, color: MINI_COLOR, background: "#fff", border: `1.3px dashed ${MINI_COLOR}`, borderRadius: 8, padding: "6px 9px", lineHeight: 1.5 }}>💡 まとめは 画用紙や まとめシートに。友だちには 黒板や 口で せつめいしよう。</div>
+                  // 高め合う（Lv4）＝つぎの3つの どれか1つ
+                  if (plan.kind === "together") {
+                    const choices = [
+                      ["🗺️", "学びマップを 作る"],
+                      ["📝", "みんプリ（問題と 解説）を 作る"],
+                      ["🧑‍🏫", "友だちの 苦手を 考えて 授業を する"],
+                    ];
+                    return (
+                      <Card>
+                        <div style={{ fontSize: 16, fontWeight: 900, color: acc, marginBottom: 12 }}>{rb("つぎの どれか 1つが できたら クリア")}</div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                          {choices.map(([emo, txt], i) => (
+                            <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, border: `2px solid ${acc}`, borderRadius: 12, padding: "13px 15px", background: "#FFFDF8" }}>
+                              <span style={{ fontSize: 26, flex: "none" }}>{emo}</span>
+                              <span style={{ fontSize: 21, fontWeight: 900, color: INK, lineHeight: 1.5 }}>{rb(txt)}</span>
+                            </div>
+                          ))}
                         </div>
-                        {/* ② たし算・ひき算マップ */}
-                        <div style={{ flex: "1 1 230px", border: `2px solid ${GREEN}`, borderRadius: 11, background: "#F3FBF7", padding: "10px 12px" }}>
-                          <div style={{ fontSize: 13.5, fontWeight: 900, color: GREEN_TX }}>🗺️ たし算・ひき算マップを つくる</div>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: SUB, marginTop: 4, lineHeight: 1.45 }}>この単元（<b style={{ color: GREEN_TX }}>たし算・ひき算の筆算</b>）の 考えを、矢印・図で 1まいの マップに まとめよう。</div>
-                          <div style={{ marginTop: 7, fontSize: 10, fontWeight: 700, color: GREEN_TX, background: "#fff", border: `1.3px dashed ${GREEN}`, borderRadius: 8, padding: "6px 9px", lineHeight: 1.5 }}>れい：くり上がりと くり下がりは どこが にてる？ ちがう？　「位をそろえる」は ぜんぶに 共通？　3けたと 4けたは？</div>
+                        <div style={{ marginTop: 14, borderRadius: 12, border: `2.5px dashed ${BLUE}`, background: "linear-gradient(180deg,#F4FBFD,#E8F5F8)", padding: "13px 15px" }}>
+                          <div style={{ fontSize: 13, fontWeight: 900, color: BLUE, marginBottom: 5 }}>{rb("🎯 ゴール（これが できたら クリア）")}</div>
+                          <div style={{ fontSize: 18, fontWeight: 900, color: INK, lineHeight: 1.55 }}>{rb("ならった しくみを 友だちに 説明できる。")}</div>
                         </div>
-                        {/* ③ みんプリ作り */}
-                        <div style={{ flex: "1 1 230px", border: "2px solid #C0567E", borderRadius: 11, background: "#FCEEF4", padding: "10px 12px" }}>
-                          <div style={{ fontSize: 13.5, fontWeight: 900, color: "#A33765" }}>📄 みんプリ作り</div>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: SUB, marginTop: 4, lineHeight: 1.45 }}>みんなの ための プリント「<b style={{ color: "#A33765" }}>みんプリ</b>」を 作ろう。自分で 問題を つくって、友だちに といて もらう。作ると いちばん 力が つく。</div>
-                          <div style={{ marginTop: 7, fontSize: 10, fontWeight: 700, color: "#A33765", background: "#fff", border: "1.3px dashed #C0567E", borderRadius: 8, padding: "6px 9px", lineHeight: 1.5 }}>れい：画用紙に 問題を 書いて、みんなで チャレンジ！　くり上がりが 2回 おきる たし算など。</div>
+                        <div style={{ marginTop: 12, borderRadius: 12, border: "2.5px solid #E59A1C", background: "linear-gradient(180deg,#FFF7E8,#FFEFD0)", padding: "13px 15px" }}>
+                          <div style={{ fontSize: 13, fontWeight: 900, color: "#B5740A", marginBottom: 5 }}>{rb("⤴ もっと レベルアップ！")}</div>
+                          <div style={{ fontSize: 16, fontWeight: 900, color: INK, lineHeight: 1.6 }}>{rb("いつもの 友だちだけでなく、もっと 多くの 友だちを まきこんで いっしょに できたら さらに レベルアップ！")}</div>
                         </div>
-                      </div>
-                      <div style={{ marginTop: 10, fontSize: 10.5, fontWeight: 700, color: SUB }}>けんきゅうを すすめたら ↓の「<b style={{ color: AMBER_MAIN }}>できたら ぬる</b>」で マスに 色を つけよう！ お互いに 見せ合って 高め合おう。</div>
-                    </div>
-                  </div>
-                )}
+                      </Card>
+                    );
+                  }
 
-                {/* プリント運用フロー（せつめい） */}
-                {plan.flow && (
-                  <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    {plan.flow.map((f, i) => (
-                      <div key={i} style={{ flex: "1 1 150px", fontSize: 11.5, fontWeight: 800, color: "#7a2f54", background: "#FCEEF4", border: "1.5px solid #d98cb0", borderRadius: 9, padding: "7px 9px", lineHeight: 1.4 }}>{f}</div>
-                    ))}
-                  </div>
-                )}
-                <SectionTitle color={SUB} icon="🎒" text="じゅんびするもの" mt />
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {plan.prep.map((x, i) => <span key={i} style={{ fontSize: 11, fontWeight: 800, color: "#4a5560", background: "#f1f5f7", border: "1.4px solid #d3dde1", borderRadius: 11, padding: "3px 10px" }}>{x}</span>)}
-                </div>
-
-                {/* 問いかけサポート */}
-                <SectionTitle color={AMBER_MAIN} icon="💭" text="考えを ふかめる しつもん（自分に きいてみよう）" mt />
-                <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                  {plan.asks.map((q, i) => (
-                    <div key={i} style={{ fontSize: 12.5, fontWeight: 700, color: INK, background: "#F3EDFB", borderLeft: `3px solid ${AMBER_MAIN}`, borderRadius: 6, padding: "6px 10px", lineHeight: 1.45 }}>{q}</div>
-                  ))}
-                </div>
+                  const lines = [];
+                  if (plan.kind === "read") {
+                    lines.push(dataFuri(plan.readPage) + " を 読む。");
+                    lines.push("大事な ことばに 線を引く。");
+                  } else if (plan.kind === "use") {
+                    if (plan.page)  lines.push(dataFuri(plan.page) + " を とく。");
+                    if (plan.drill) lines.push(plan.drill + " を とく。");
+                  } else if (plan.kind === "explain_print") {
+                    lines.push(plan.explain.problem + " を ノートで とく。");
+                  }
+                  const goalText = plan.kind === "explain_print"
+                    ? (st.n === 5 ? "たし算とひき算は 逆だと 説明できる。" : "位取り表で この計算の しくみを 説明できる。")
+                    : null;
+                  return (
+                    <Card>
+                      {lines.map((t, i) => (
+                        <div key={i} style={{ fontSize: 27, fontWeight: 900, color: INK, lineHeight: 1.6, letterSpacing: "-0.3px" }}>{rb(t)}</div>
+                      ))}
+                      {goalText && (
+                        <div style={{ marginTop: 18, borderRadius: 13, border: `2.5px dashed ${BLUE}`, background: "linear-gradient(180deg,#F4FBFD,#E8F5F8)", padding: "14px 16px" }}>
+                          <div style={{ fontSize: 13, fontWeight: 900, color: BLUE, marginBottom: 6 }}>{rb("🎯 ゴール（これが 言えたら クリア）")}</div>
+                          <div style={{ fontSize: 20, fontWeight: 900, color: INK, lineHeight: 1.6 }}>{rb(goalText)}</div>
+                        </div>
+                      )}
+                    </Card>
+                  );
+                })()}
 
                 {/* クリア（ぬる） */}
                 <div style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", borderTop: "1px dashed #d3dde1", paddingTop: 12 }}>
@@ -810,7 +800,9 @@ function App() {
                     color: done[`${st.n}-${openLv}`] ? INK : AMBER_DK[openLv],
                     background: done[`${st.n}-${openLv}`] ? AMBER[openLv] : "#fff",
                     border: `2px solid ${AMBER_DK[openLv]}`, borderRadius: 10, padding: "10px 0",
-                  }}>{done[`${st.n}-${openLv}`] ? `✓ ${DEPTH[openLv].badge} ${DEPTH[openLv].name} ぬれた！` : `できたら ぬる（${DEPTH[openLv].badge}${DEPTH[openLv].name}）`}</button>
+                  }}>{done[`${st.n}-${openLv}`]
+                    ? <>✓ {DEPTH[openLv].badge} {rb(DEPTH[openLv].name)} ぬれた！</>
+                    : <>できたら ぬる（{DEPTH[openLv].badge}{rb(DEPTH[openLv].name)}）</>}</button>
                 </div>
 
               </div>
@@ -827,26 +819,15 @@ function App() {
             )}
           </div>
 
-          {/* 右＝教材リンク置き場 */}
-          <div style={{ flex: "1 1 320px", minWidth: 300, border: `2px solid ${AQUA}`, borderRadius: 14, background: "#fff", overflow: "hidden", alignSelf: "flex-start" }}>
-            <div style={{ background: AQUA, color: "#fff", padding: "10px 14px" }}>
-              <div style={{ fontSize: 11, fontWeight: 800, opacity: .9 }}>このマスで つかう</div>
-              <div style={{ fontSize: 16, fontWeight: 900 }}>📚 つかう どうぐ・リンク</div>
+          {/* 右＝こまった ときの お助けアイテム */}
+          <div style={{ flex: "1 1 300px", minWidth: 280, border: `2px solid ${AQUA}`, borderRadius: 14, background: "#fff", overflow: "hidden", alignSelf: "flex-start" }}>
+            <div style={{ background: AQUA, color: "#fff", padding: "11px 14px" }}>
+              <div style={{ fontSize: 11, fontWeight: 800, opacity: .9 }}>{rb("やり方が わからず こまった ときは…")}</div>
+              <div style={{ fontSize: 16, fontWeight: 900 }}>{rb("🆘 お助けアイテム")}</div>
             </div>
-            <div style={{ padding: "11px 13px" }}>
-              {plan.ready ? (
-                <>
-                  <SectionTitle color={AQUA} icon="🔖" text={`このマス（${DEPTH[openLv].badge}${DEPTH[openLv].name}）で つかう もの`} />
-                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                    {plan.links.map((l, i) => <LinkChip key={i} item={l} block />)}
-                  </div>
-                </>
-              ) : (
-                <div style={{ fontSize: 11.5, fontWeight: 700, color: SUB, lineHeight: 1.6 }}>この マスは じゅんび中。下の リンクは つかえます。</div>
-              )}
-
-              <SectionTitle color={GREEN} icon="🟢" text="いつでも つかえる リンク" mt />
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{ padding: "12px 13px" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: SUB, lineHeight: 1.6, marginBottom: 9 }}>{rb("こまった ときだけ つかおう。やり方の どうがが 見られるよ。")}</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
                 {COMMON_LINKS.map((l, i) => <LinkChip key={i} item={l} block />)}
               </div>
             </div>
@@ -1096,56 +1077,118 @@ function makeTSubZero() { const a = (tri(8) + 2) * 100 + tri(10); let b = tri(a 
 function makeT4() { if (Math.random() < 0.5) { const a = tri(9000) + 1000, b = tri(9000) + 1000; return { display: `${a} ＋ ${b} ＝`, ans: a + b, ansText: String(a + b) }; } let a = tri(9000) + 1000, b = tri(9000) + 1000; if (b > a) { const t = a; a = b; b = t; } return { display: `${a} − ${b} ＝`, ans: a - b, ansText: String(a - b) }; }
 function makeTestMix() { const r = tri(4); return r === 0 ? makeTAdd() : r === 1 ? makeTSub() : r === 2 ? makeTSubZero() : makeT4(); }
 
+/* 文章題（思考・判断・表現ベース／数値は新規・検算済み）＋ 説明題（まちがいさがし→位取り表で説明） */
+const TEST_WORD = [
+  { type: "word", text: "あさひさんは、385{円|えん}の {色|いろ}えんぴつと、247{円|えん}の ノートを {買|か}いました。あわせて {何円|なんえん}に なりますか。", ans: 632 },
+  { type: "word", text: "ある えき で、きのう {電車|でんしゃ}に のった{人|ひと}は 4216{人|にん}、きょう {電車|でんしゃ}に のった{人|ひと}は 1758{人|にん} でした。きのうと きょうでは、のった{人|ひと}は {何人|なんにん} ちがいますか。", ans: 2458 },
+];
+const TEST_EXPLAIN = {
+  type: "explain",
+  wrong: `  2 5 4
++ 6 3
+───────
+  8 8 4`,
+  prompt: "つぎの {筆算|ひっさん}は どこかが まちがっています。どこが まちがいですか? くらいどり{表|ひょう}を つかって、なぜ まちがいなのかを せつ{明|めい}しましょう。",
+  correct: 317,
+  model: "まちがいは、63を {左|ひだり}に よせて {書|か}いたこと。63は {十|じゅう}のくらいが6、{一|いち}のくらいが3。だから 3は4の{下|した}、6は5の{下|した}に そろえる。おなじ くらいどうしを たすと、4＋3＝7、5＋6＝11で {十|じゅう}のくらいに 小さい1。2＋1＝3。だから {答|こた}えは 317。",
+};
+function buildTest() {
+  const calc = [];
+  for (let i = 0; i < 6; i++) calc.push({ type: "calc", ...makeTestMix() });
+  return [...calc, ...TEST_WORD, TEST_EXPLAIN];
+}
+
 function CalcTest({ onClose }) {
-  const TOTAL = 10;
-  const [q, setQ] = useState(makeTestMix);
+  const [list, setList] = useState(buildTest);
+  const [n, setN] = useState(1);
   const [val, setVal] = useState("");
   const [judge, setJudge] = useState(null);
-  const [n, setN] = useState(1);
   const [score, setScore] = useState(0);
+  const [revealed, setRevealed] = useState(false);
   const [finished, setFinished] = useState(false);
   const inputRef = useRef(null);
+  const TOTAL = list.length;
+  const numericTotal = list.filter((x) => x.type !== "explain").length;
+  const q = list[n - 1];
+  const tag = q.type === "calc" ? "けいさん" : q.type === "word" ? "ぶんしょうだい" : "せつめい";
+  const tagColor = q.type === "calc" ? TEST_COLOR : q.type === "word" ? "#2E7D5B" : "#5B3E8A";
+
   const check = () => { if (val.trim() === "") return; const ok = Math.abs(parseFloat(val) - q.ans) < 1e-9; setJudge(ok ? "ok" : "ng"); if (ok) setScore((s) => s + 1); };
-  const next = () => { if (n >= TOTAL) { setFinished(true); return; } setN(n + 1); setQ(makeTestMix()); setVal(""); setJudge(null); if (inputRef.current) inputRef.current.focus(); };
-  const onKey = (e) => { if (e.key === "Enter") { judge ? next() : check(); } };
-  const star = score >= 9 ? "★★★" : score >= 7 ? "★★☆" : score >= 5 ? "★☆☆" : "☆☆☆";
-  const msg = score >= 9 ? "かんぺき！筆算マスター！" : score >= 7 ? "よくできました！" : score >= 5 ? "もう一歩！まちがいを 見直そう" : "もう一回 ちょうせん！";
+  const next = () => { if (n >= TOTAL) { setFinished(true); return; } setN(n + 1); setVal(""); setJudge(null); setRevealed(false); if (inputRef.current) inputRef.current.focus(); };
+  const onKey = (e) => { if (e.key === "Enter" && q.type !== "explain") { judge ? next() : check(); } };
+  const restart = () => { setList(buildTest()); setN(1); setVal(""); setJudge(null); setRevealed(false); setScore(0); setFinished(false); };
+  const pass7 = Math.ceil(numericTotal * 0.7), pass5 = Math.ceil(numericTotal * 0.5);
+  const star = score >= numericTotal ? "★★★" : score >= pass7 ? "★★☆" : score >= pass5 ? "★☆☆" : "☆☆☆";
+  const msg = score >= numericTotal ? "かんぺき！筆算マスター！" : score >= pass7 ? "よくできました！" : score >= pass5 ? "もう一歩！見なおそう" : "もう一回 ちょうせん！";
+
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(20,40,45,.45)", zIndex: 50, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: 18, overflow: "auto" }}>
-      <div style={{ width: "min(560px,100%)", background: "#fff", borderRadius: 18, overflow: "hidden", marginTop: 24 }}>
+      <div style={{ width: "min(600px,100%)", background: "#fff", borderRadius: 18, overflow: "hidden", marginTop: 24 }}>
         <div style={{ background: `linear-gradient(180deg,#A56B33,${TEST_COLOR})`, color: "#fff", padding: "13px 18px", display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 22 }}>📝</span>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 17, fontWeight: 900 }}>たしかめテスト</div>
-            <div style={{ fontSize: 12, fontWeight: 800, opacity: .95 }}>たし算・ひき算の筆算 ぜんぶから 10問</div>
+            <div style={{ fontSize: 12, fontWeight: 800, opacity: .95 }}>けいさん・ぶんしょうだい・せつめい</div>
           </div>
           <button onClick={onClose} style={{ fontSize: 13, fontWeight: 900, cursor: "pointer", color: "#fff", background: "rgba(255,255,255,.25)", border: "none", borderRadius: 10, padding: "8px 14px" }}>✕ とじる</button>
         </div>
         <div style={{ padding: "16px 18px" }}>
           {!finished ? (
             <>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 900, color: SUB, marginBottom: 10 }}>
-                <span>第 {n} / {TOTAL} もん</span><span>せいかい：{score}</span>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12, fontWeight: 900, color: SUB, marginBottom: 10 }}>
+                <span>第 {n} / {TOTAL} もん <span style={{ marginLeft: 6, color: "#fff", background: tagColor, borderRadius: 8, padding: "2px 8px", fontSize: 11 }}>{tag}</span></span>
+                <span>せいかい：{score} / {numericTotal}</span>
               </div>
-              <div style={{ background: "#FBF6EE", border: `2px solid ${TEST_COLOR}`, borderRadius: 12, padding: "18px 14px", textAlign: "center" }}>
-                <div style={{ fontSize: 28, fontWeight: 900, color: INK, letterSpacing: 1 }}>{q.display}</div>
-                <input ref={inputRef} value={val} onChange={(e) => setVal(e.target.value)} onKeyDown={onKey} inputMode="numeric" placeholder="答え"
-                  style={{ marginTop: 12, width: 150, fontSize: 24, fontWeight: 900, textAlign: "center", color: INK, border: `2px solid ${judge === "ok" ? GREEN : judge === "ng" ? "#D85A30" : "#cdd8dd"}`, borderRadius: 10, padding: "7px 8px", outline: "none" }} />
-                <div style={{ marginTop: 8, fontSize: 10.5, fontWeight: 700, color: SUB }}>位をそろえて 一の位から 計算しよう</div>
-              </div>
-              {judge && <div style={{ marginTop: 10, textAlign: "center", fontSize: 15, fontWeight: 900, color: judge === "ok" ? GREEN : "#D85A30" }}>{judge === "ok" ? "⭕ せいかい！" : `❌ おしい… 答えは ${q.ansText}`}</div>}
+
+              {q.type === "explain" ? (
+                <div style={{ border: `2px solid ${tagColor}`, borderRadius: 12, overflow: "hidden" }}>
+                  <div style={{ background: "#F4EEFB", padding: "12px 14px" }}>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: INK, lineHeight: 1.7 }}>{rb(q.prompt)}</div>
+                    <pre style={{ margin: "10px auto 0", width: "fit-content", fontSize: 22, fontWeight: 900, color: INK, fontFamily: "monospace", lineHeight: 1.35, textAlign: "left" }}>{q.wrong}</pre>
+                  </div>
+                  <div style={{ padding: "12px 14px" }}>
+                    <div style={{ fontSize: 12.5, fontWeight: 800, color: SUB, lineHeight: 1.6 }}>{rb("まず じぶんで かんがえよう。{口|くち}で {言|い}う か、ノートに {書|か}いて みよう。")}</div>
+                    {!revealed ? (
+                      <button onClick={() => setRevealed(true)} style={{ ...btnMain(tagColor), marginTop: 10 }}>せつ明の 見本(みほん)を 見る</button>
+                    ) : (
+                      <div style={{ marginTop: 10, background: "#F8F5FE", border: `1.5px dashed ${tagColor}`, borderRadius: 10, padding: "12px 13px" }}>
+                        <div style={{ fontSize: 12, fontWeight: 900, color: tagColor, marginBottom: 5 }}>💡 せつ明の 見本</div>
+                        <div style={{ fontSize: 13.5, fontWeight: 700, color: INK, lineHeight: 1.8 }}>{rb(q.model)}</div>
+                        <div style={{ marginTop: 8, fontSize: 14, fontWeight: 900, color: GREEN }}>{rb(`{正|ただ}しい {答|こた}えは ${q.correct}。`)}</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div style={{ background: "#FBF6EE", border: `2px solid ${TEST_COLOR}`, borderRadius: 12, padding: "18px 14px", textAlign: q.type === "word" ? "left" : "center" }}>
+                  {q.type === "word"
+                    ? <div style={{ fontSize: 17, fontWeight: 800, color: INK, lineHeight: 1.95 }}>{rb(q.text)}</div>
+                    : <div style={{ fontSize: 28, fontWeight: 900, color: INK, letterSpacing: 1, textAlign: "center" }}>{q.display}</div>}
+                  <div style={{ textAlign: "center" }}>
+                    <input ref={inputRef} value={val} onChange={(e) => setVal(e.target.value)} onKeyDown={onKey} inputMode="numeric" placeholder="答え"
+                      style={{ marginTop: 12, width: 150, fontSize: 24, fontWeight: 900, textAlign: "center", color: INK, border: `2px solid ${judge === "ok" ? GREEN : judge === "ng" ? "#D85A30" : "#cdd8dd"}`, borderRadius: 10, padding: "7px 8px", outline: "none" }} />
+                  </div>
+                  <div style={{ marginTop: 8, fontSize: 10.5, fontWeight: 700, color: SUB, textAlign: "center" }}>{rb("{位|くらい}をそろえて {一|いち}の{位|くらい}から {計算|けいさん}しよう")}</div>
+                </div>
+              )}
+
+              {judge && q.type !== "explain" && <div style={{ marginTop: 10, textAlign: "center", fontSize: 15, fontWeight: 900, color: judge === "ok" ? GREEN : "#D85A30" }}>{judge === "ok" ? "⭕ せいかい！" : `❌ おしい… 答えは ${q.ans}`}</div>}
+
               <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
-                {!judge ? <button onClick={check} style={btnMain(TEST_COLOR)}>こたえあわせ</button>
-                  : <button onClick={next} style={btnMain(GREEN)}>{n >= TOTAL ? "けっか を 見る →" : "つぎの問題 →"}</button>}
+                {q.type === "explain"
+                  ? <button onClick={next} style={btnMain(revealed ? GREEN : tagColor)}>{n >= TOTAL ? "けっか を 見る →" : "つぎ →"}</button>
+                  : !judge ? <button onClick={check} style={btnMain(TEST_COLOR)}>こたえあわせ</button>
+                    : <button onClick={next} style={btnMain(GREEN)}>{n >= TOTAL ? "けっか を 見る →" : "つぎの問題 →"}</button>}
               </div>
             </>
           ) : (
             <div style={{ textAlign: "center", padding: "10px 0 6px" }}>
               <div style={{ fontSize: 32, letterSpacing: 4 }}>{star}</div>
-              <div style={{ fontSize: 22, fontWeight: 900, color: INK, marginTop: 6 }}>{score} / {TOTAL} もん せいかい！</div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: INK, marginTop: 6 }}>{score} / {numericTotal} もん せいかい！</div>
+              <div style={{ fontSize: 12.5, fontWeight: 800, color: SUB, marginTop: 4 }}>＋ せつめい問題にも ちょうせんできたね</div>
               <div style={{ fontSize: 14, fontWeight: 800, color: SUB, marginTop: 6 }}>{msg}</div>
               <div style={{ marginTop: 14, display: "flex", gap: 8 }}>
-                <button onClick={() => { setQ(makeTestMix()); setVal(""); setJudge(null); setN(1); setScore(0); setFinished(false); }} style={btnMain(TEST_COLOR)}>もう一回</button>
+                <button onClick={restart} style={btnMain(TEST_COLOR)}>もう一回</button>
                 <button onClick={onClose} style={btnMain(GREEN)}>とじる</button>
               </div>
             </div>
