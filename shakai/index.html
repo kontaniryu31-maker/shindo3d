@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>3D 自由進度表 — わたしたちの奈良市（方位・地図記号）</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -34,8 +34,8 @@ if (typeof window !== "undefined" && !window.storage) {
 
 /* ===== カラー（ポンチ絵系・現行踏襲） ===== */
 /* ===== カラー（水色=すすむ／紫=ふかめる／緑=つなげる） ===== */
-const AQUA = "#A86B33";          // 右パネル装飾＝濃いめ暖色タン（白文字が読める社会テーマ）
-const BLUE = "#A55B2C";          // 進度（すすむ）＝古都の朱（白文字4.9:1・社会テーマ）
+const AQUA = "#A8780A";          // 右パネル装飾＝濃いめゴールド（白文字が読める社会＝黄テーマ）
+const BLUE = "#9C7400";          // 進度（すすむ）＝深いゴールド（白文字4.3:1・社会＝黄テーマ）
 // 深度（ふかめる）＝金1色の濃淡4段（読む→高め合う で 淡→濃）。色相を1つに絞り 認知負荷を下げる。
 const AMBER = ["#FBF3DA", "#F6E8B6", "#F0D98E", "#E8C75F"];    // 塗り（淡い金→濃い金）
 const AMBER_DK = ["#9E7C24", "#917324", "#856A22", "#74591B"]; // 枠線・文字・帯（白文字が読める濃い金）
@@ -51,7 +51,7 @@ const darken = (hex, amt) => { const n = parseInt(hex.slice(1), 16); const r = M
 const grad = (hex) => `linear-gradient(165deg, ${hex} 0%, ${hex} 48%, ${darken(hex, 0.14)} 100%)`;
 /* ===== 教科テーマ（外装のみ：3Dロゴ・タイトル・たんげん名・背景の淡い色）=====
    3軸の色（すすむ青BLUE／ふかめる金AMBER／つなげる緑GREEN）は変えない＝システムの統一感は維持。 */
-const THEME = { accent: "#B26836", bg: "radial-gradient(1200px 700px at 78% -8%, #FBF1E7 0%, #FBF4EC 45%, #F6EEE4 100%)" }; // 社会＝古都の朱（地図・奈良）
+const THEME = { accent: "#F5B400", bg: "radial-gradient(1200px 700px at 78% -8%, #FFF7DD 0%, #FFFBEC 45%, #FBF4D8 100%)" }; // 社会＝黄色（ポータルと統一）
 const NOTE_BG = "#FCF3D6";        // 黄色の注記帯
 const NOTE_BD = "#E6C34D";
 const NOTE_INK = "#8A6D1B";
@@ -502,7 +502,7 @@ function App() {
 
   return (
     <div style={{
-      fontFamily: "'Noto Sans JP','Hiragino Kaku Gothic ProN',sans-serif",
+      fontFamily: "'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Hiragino Sans',sans-serif",
       background: THEME.bg,
       minHeight: "100vh", color: INK, padding: "16px 18px 26px", boxSizing: "border-box",
     }}>
@@ -510,10 +510,10 @@ function App() {
 @keyframes cellPop{0%{transform:scale(1)}45%{transform:scale(1.07)}100%{transform:scale(1)}}`}</style>
       {/* ヘッダー */}
       <div style={{ display: "flex", alignItems: "center", gap: 13, flexWrap: "wrap" }}>
-        <div style={{ width: 46, height: 46, borderRadius: 12, background: THEME.accent, color: "#fff", fontWeight: 900, fontSize: 16, display: "grid", placeItems: "center", flex: "none", boxShadow: "0 5px 0 rgba(0,0,0,.14)" }}>3D</div>
+        <div style={{ width: 46, height: 46, borderRadius: 12, background: THEME.accent, color: "#16181F", fontWeight: 900, fontSize: 16, display: "grid", placeItems: "center", flex: "none", boxShadow: "0 5px 0 rgba(0,0,0,.14)" }}>3D</div>
         <div style={{ flex: 1, minWidth: 240 }}>
-          <div style={{ fontSize: 22, fontWeight: 900, color: THEME.accent, lineHeight: 1.05 }}>3D 自由進度表</div>
-          <div style={{ fontSize: 12.5, fontWeight: 800, marginTop: 2 }}>たんげん：<span style={{ color: THEME.accent }}>{UNIT}</span></div>
+          <div style={{ fontSize: 22, fontWeight: 900, color: "#16181F", lineHeight: 1.05 }}>3D 自由進度表</div>
+          <div style={{ fontSize: 12.5, fontWeight: 800, marginTop: 2 }}>たんげん：<span style={{ color: "#9A6B00" }}>{UNIT}</span></div>
           <div style={{ fontSize: 11.5, fontWeight: 700, color: SUB, marginTop: 2, lineHeight: 1.7 }}>{furi(BOOK)}　／　いちばん大事：{furi(CORE)}</div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
