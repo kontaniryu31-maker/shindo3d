@@ -14,7 +14,7 @@
     --primary:#FF4E3A;                /* バーミリオン：意味のある1か所だけ */
     --c-math:#2B7FFF; --c-science:#1AA179; --c-social:#F5B400; --gold:#FFC400;
     --line:rgba(22,24,31,.12); --dash:rgba(22,24,31,.18);
-    --star-empty:rgba(22,24,31,.14);
+    --star-empty:rgba(22,24,31,.20);
     --bg:#ffffff;
     --shadow:0 12px 30px -16px rgba(22,24,31,.35);
     --shadow-lg:0 22px 44px -18px rgba(22,24,31,.45);
@@ -32,6 +32,8 @@
     -webkit-font-smoothing:antialiased;
   }
   body.big{font-size:20px;}
+  body.big .unit{font-size:21px;} body.big .wp{font-size:17px;} body.big .stars{font-size:19px;}
+  body.big .mas{font-size:15px;} body.big .core{font-size:14.5px;} body.big .nudge{font-size:13px;}
   .wrap{max-width:1060px;margin:0 auto;padding:0 24px;}
   .num-f{font-feature-settings:"tnum";}
 
@@ -92,7 +94,7 @@
   .maptag{position:absolute;left:20px;top:15px;font-size:12px;font-weight:900;letter-spacing:.1em;
     color:var(--subink);background:rgba(255,255,255,.8);border:2px solid var(--line);border-radius:999px;padding:5px 13px;}
   .wp{position:absolute;transform:translate(-50%,-50%);display:inline-flex;align-items:center;gap:9px;
-    text-decoration:none;background:#fff;border:2px solid var(--line);border-radius:999px;padding:11px 19px;
+    cursor:pointer;text-decoration:none;background:#fff;border:2px solid var(--line);border-radius:999px;padding:11px 19px;
     font-weight:900;font-size:15.5px;color:var(--ink);box-shadow:var(--shadow-sm);white-space:nowrap;
     transition:transform .16s,box-shadow .16s,border-color .16s,background .16s;}
   .wp .we{font-size:21px;}
@@ -100,7 +102,7 @@
   .wp.on{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:var(--shadow);animation:chipPop .4s ease-out 1;}
   @keyframes chipPop{0%{transform:translate(-50%,-50%) scale(1.1);}100%{transform:translate(-50%,-50%) scale(1);}}
   .wp1{left:15%;top:62%;} .wp2{left:50%;top:30%;} .wp3{left:85%;top:63%;}
-  .loopbadge{position:absolute;left:50%;top:93%;transform:translate(-50%,-50%);font-size:12.5px;font-weight:900;
+  .loopbadge{position:absolute;left:50%;top:88%;transform:translate(-50%,-50%);font-size:12.5px;font-weight:900;
     color:var(--primary);background:#fff;border:2px solid var(--primary);border-radius:999px;padding:5px 14px;white-space:nowrap;}
   .cyc-note{text-align:center;font-size:13px;font-weight:800;color:var(--subink);margin:14px 0 0;}
 
@@ -147,7 +149,7 @@
     transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s;}
   .tile:hover{transform:translateY(-8px) scale(1.015);box-shadow:var(--shadow-lg);}
   .tile:active{transform:translateY(-2px) scale(.99);}
-  .tile:focus-visible{outline:3px solid var(--tc);outline-offset:3px;}
+  .tile:focus-visible,.wp:focus-visible,.pref:focus-visible,.rbtn:focus-visible,.linkcard:focus-visible,.fld:focus-visible{outline:3px solid var(--ink);outline-offset:3px;}
   .jacket{position:relative;padding:18px 18px 16px;color:#fff;overflow:hidden;min-height:188px;display:flex;flex-direction:column;}
   .jacket.dark{color:var(--ink);}
   .jacket .gloss{position:absolute;right:-26px;top:-26px;width:150px;height:150px;border-radius:50%;
@@ -166,18 +168,19 @@
   .status{padding:16px 18px 18px;display:flex;flex-direction:column;gap:13px;}
   .road{position:relative;padding:4px 0 2px;}
   .road .track{position:absolute;left:11px;right:11px;top:13px;border-top:2px dashed var(--dash);}
-  .road .fill{position:absolute;left:11px;top:13px;border-top:3px solid var(--tc);width:0;
+  .road .fill{position:absolute;left:11px;top:13px;border-top:4px solid var(--tcg,var(--tc));width:0;
     max-width:calc(100% - 22px);transition:width .8s cubic-bezier(.2,.8,.2,1);}
   .nodes{position:relative;display:flex;justify-content:space-between;}
   .node{width:22px;height:22px;border-radius:50%;background:#fff;border:2px solid var(--dash);
     display:grid;place-items:center;font-size:12px;line-height:1;}
-  .node.done{background:var(--tc);border-color:var(--tc);}
-  .node.current{border-color:var(--tc);animation:pulse 1.6s ease-in-out infinite;}
+  .node.done{background:var(--tcg,var(--tc));border-color:var(--tcg,var(--tc));}
+  .node.current{border-color:var(--tcg,var(--tc));animation:pulse 1.6s ease-in-out infinite;}
+  .node:empty::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--dash);}
   @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.16);}}
   .nudge{font-size:11.5px;font-weight:800;color:var(--subink);margin-top:5px;}
   .stars{display:flex;align-items:center;flex-wrap:wrap;gap:1px;font-size:17px;line-height:1;}
   .star{position:relative;display:inline-block;color:var(--star-empty);width:1em;animation:starPop .4s ease-out both;}
-  .star>b{position:absolute;left:0;top:0;overflow:hidden;white-space:nowrap;color:var(--tc);}
+  .star>b{position:absolute;left:0;top:0;overflow:hidden;white-space:nowrap;color:var(--tcg,var(--tc));-webkit-text-stroke:.4px rgba(0,0,0,.32);}
   .star.full>b{color:var(--gold);}
   @keyframes starPop{0%{transform:scale(0);}70%{transform:scale(1.2);}100%{transform:scale(1);}}
   .mas{margin-left:8px;font-size:13px;font-weight:900;color:var(--ink);}
@@ -266,7 +269,7 @@
         <path d="M150,168 C300,168 350,82 500,82 C650,82 700,170 850,170"
               fill="none" stroke="rgba(22,24,31,.30)" stroke-width="4" stroke-linecap="round" stroke-dasharray="3 12"/>
         <!-- もどるループ（くりかえし） -->
-        <path d="M850,170 C905,255 600,262 500,250 C360,233 215,250 152,178"
+        <path d="M850,170 C905,255 600,262 500,250 C360,233 235,250 182,206"
               fill="none" stroke="#FF4E3A" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="2 11" marker-end="url(#ah)"/>
         <!-- コンパス -->
         <g transform="translate(930,52)">
@@ -300,7 +303,7 @@
       <div class="prev" id="prev"></div>
       <div class="panel">
         <div class="lbl" data-furi>📌 きょうは なにを、どこまで やる？ <small>（自分《じぶん》で きめよう）</small></div>
-        <input class="fld" id="plan" type="text" maxlength="70" placeholder="れい：たし算の ひっ算を 5もんめまで／チョウの育ちを せつめいできるように">
+        <input class="fld" id="plan" type="text" maxlength="70" placeholder="れい：たしざんの ひっさんを 5もんめまで／チョウの そだちを せつめいできるように">
       </div>
     </div>
   </section>
@@ -312,6 +315,7 @@
         <span class="n">2</span>
         <h2 data-furi>実行《じっこう》｜進度表《しんどひょう》</h2>
       </div>
+      <p class="cyc-note" data-furi style="text-align:left;margin:-6px 0 16px;">🚀 いまの えき／🚩 クリアした えき／★ は すすんだ ぶん。3つの きょうかを すすめよう。</p>
       <div class="grid" id="grid-units"></div>
     </div>
   </section>
@@ -338,7 +342,7 @@
         <div class="lbl" data-furi>🎯 めあては できた？</div>
         <div class="rate" id="rate"></div>
         <div class="lbl" data-furi>💭 気《き》づいたこと・つぎ がんばること</div>
-        <input class="fld" id="reflect" type="text" maxlength="70" placeholder="れい：くり上がりで まちがえた。つぎは ゆっくり たしかめる">
+        <input class="fld" id="reflect" type="text" maxlength="70" placeholder="れい：くりあがりで まちがえた。つぎは ゆっくり たしかめる">
         <div class="loop-note" data-furi>🔁 この ふりかえりが、あしたの <b>計画《けいかく》</b>に つながるよ。</div>
       </div>
     </div>
@@ -398,7 +402,7 @@
      unit:"生《い》きものの育《そだ》ちとつくり（たね・植物《しょくぶつ》・チョウ）",
      core:"すがたは ちがっても、育《そだ》ちの じゅんばんは おなじ。",
      storeKey:"shindo3d_rika3_v1",total:24,path:BASE+"rika/"},
-    {emoji:"🗺️",color:"#F5B400",ink:true,
+    {emoji:"🗺️",color:"#F5B400",ink:true,strong:"#9A6A00",
      subject:"社会《しゃかい》3年《ねん》",
      unit:"わたしたちの奈良市《ならし》（方位《ほうい》・地図記号《ちずきごう》）",
      core:"方位《ほうい》と地図記号《ちずきごう》で 土地《とち》のようすを 読《よ》む。",
@@ -437,7 +441,7 @@
       var go=c>=u.total?'<span class="go clear">クリア！ もういちど <span class="ar">→</span></span>'
             :(c>0?'<span class="go'+dg+'">つづきから <span class="ar">→</span></span>'
                  :'<span class="go'+dg+'">はじめる <span class="ar">→</span></span>');
-      html+='<a class="tile" href="'+esc(u.path)+'" style="--tc:'+u.color+'">'+
+      html+='<a class="tile" href="'+esc(u.path)+'" style="--tc:'+u.color+';--tcg:'+(u.strong||u.color)+'">'+
         '<div class="jacket'+(u.ink?' dark':'')+'" style="background:linear-gradient(160deg,'+u.color+','+darken(u.color,.14)+')">'+
           '<span class="gloss"></span>'+
           '<span class="lv num-f">Lv.'+c+'</span>'+
