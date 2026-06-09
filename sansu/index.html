@@ -744,18 +744,19 @@ function App() {
                   // 高め合う（Lv4）＝つぎの3つの どれか1つ
                   if (plan.kind === "together") {
                     const choices = [
-                      ["🗺️", "学びマップを 作る"],
-                      ["📝", "みんプリ（問題と 解説）を 作る"],
-                      ["🧑‍🏫", "友だちの 苦手を 考えて 授業を する"],
+                      ["🗺️", "学びマップを 作る", "./manabimap.html"],
+                      ["📝", "みんプリ（問題と 解説）を 作る", null],
+                      ["🧑‍🏫", "友だちの 苦手を 考えて 授業を する", null],
                     ];
                     return (
                       <Card>
                         <div style={{ fontSize: 16, fontWeight: 900, color: acc, marginBottom: 12 }}>{rb("つぎの どれか 1つが できたら クリア")}</div>
                         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                          {choices.map(([emo, txt], i) => (
+                          {choices.map(([emo, txt, href], i) => (
                             <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, border: `2px solid ${acc}`, borderRadius: 12, padding: "13px 15px", background: "#FFFDF8" }}>
                               <span style={{ fontSize: 26, flex: "none" }}>{emo}</span>
-                              <span style={{ fontSize: 21, fontWeight: 900, color: INK, lineHeight: 1.5 }}>{rb(txt)}</span>
+                              <span style={{ fontSize: 21, fontWeight: 900, color: INK, lineHeight: 1.5, flex: 1 }}>{rb(txt)}</span>
+                              {href && <a href={href} target="_blank" rel="noopener" style={{ flex: "none", fontSize: 13, fontWeight: 900, color: "#fff", background: acc, borderRadius: 9, padding: "7px 12px", textDecoration: "none", whiteSpace: "nowrap" }}>{rb("📄 シートを ひらく")}</a>}
                             </div>
                           ))}
                         </div>
