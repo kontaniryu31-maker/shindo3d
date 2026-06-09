@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>学びマップ — たし算とひき算のひっ算</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --ink:#1f2a30; --line:#3a4750; --accent:#8A5A2B; --faint:#9aa7ae; --fact:#2E6CA8; --concept:#B5651D; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; font-family:"M PLUS Rounded 1c",sans-serif; color:var(--ink); }
+  ruby rt{ font-size:.5em; font-weight:600; }
+  .page{ width:210mm; min-height:297mm; margin:0 auto; padding:7mm 10mm 6mm; background:#fff; }
+  .toolbar{ max-width:210mm; margin:8px auto; text-align:center; }
+  .toolbar button{ font:inherit; font-weight:900; cursor:pointer; background:var(--accent); color:#fff; border:none; border-radius:10px; padding:9px 18px; }
+  .toolbar span{ color:#667; font-size:12px; margin-left:10px; }
+
+  .band{ display:flex; align-items:center; gap:8px; border:2px solid var(--line); border-radius:9px; padding:5px 10px; font-weight:800; font-size:12px; }
+  .band .fill{ flex:1; border-bottom:1.5px solid #cdd5d9; min-height:16px; }
+  .title{ text-align:center; font-size:18px; font-weight:900; margin:3px 0 1px; }
+  .mission{ text-align:center; font-size:11.5px; font-weight:800; color:var(--accent); margin-bottom:4px; }
+
+  .sec{ border:2px solid var(--line); border-radius:10px; padding:5px 9px; margin-bottom:5px; }
+  .sec h2{ font-size:13px; font-weight:900; margin:0 0 5px; display:flex; align-items:center; gap:6px; }
+  .sec h2 .tag{ background:var(--accent); color:#fff; border-radius:7px; padding:1px 8px; font-size:11px; }
+
+  /* 見本の概念マップ */
+  .map{ position:relative; height:55mm; }
+  .map .links{ position:absolute; inset:0; width:100%; height:100%; }
+  .map .links line{ stroke:#c3a988; stroke-width:1.6; vector-effect:non-scaling-stroke; }
+  .node{ position:absolute; border:1.6px solid var(--concept); background:#FFF8F0; border-radius:9px; padding:3px 5px; font-size:10px; font-weight:800; line-height:1.3; text-align:center; }
+  .node small{ font-size:8.5px; color:var(--faint); font-weight:700; }
+  .core{ position:absolute; border:2.4px solid var(--accent); background:#FBEFD9; border-radius:11px; padding:5px 7px; font-size:12px; font-weight:900; line-height:1.25; text-align:center; box-shadow:0 2px 0 rgba(138,90,43,.18); }
+  .core small{ font-size:9px; color:var(--accent); }
+
+  /* 語群 */
+  .bank{ display:flex; flex-wrap:wrap; gap:5px; }
+  .chip{ font-size:11px; font-weight:800; border-radius:13px; padding:3px 10px; border:1.6px solid; }
+  .chip.fact{ color:var(--fact); border-color:var(--fact); background:#EEF4FB; }
+  .chip.concept{ color:var(--concept); border-color:var(--concept); background:#FBF1E7; }
+  .banklabel{ font-size:10.5px; font-weight:900; margin:4px 0 3px; }
+  .banklabel.f{ color:var(--fact); } .banklabel.c{ color:var(--concept); }
+
+  /* 空欄キャンバス */
+  .canvas{ position:relative; height:99mm; border:1.6px solid var(--line); border-radius:9px; background:
+     linear-gradient(#eef2f4 1px,transparent 1px) 0 0/7mm 7mm,
+     linear-gradient(90deg,#eef2f4 1px,transparent 1px) 0 0/7mm 7mm; }
+  .canvas .seed{ position:absolute; left:50%; top:46%; transform:translate(-50%,-50%); border:2.4px solid var(--accent); background:#FBEFD9; border-radius:11px; padding:6px 10px; font-size:13px; font-weight:900; text-align:center; line-height:1.25; }
+  .canvas .seed small{ font-size:9px; color:var(--accent); }
+  .canvas .hint{ position:absolute; right:7px; bottom:5px; font-size:9px; color:var(--faint); font-weight:700; }
+
+  @media print{
+    .toolbar{ display:none; }
+    .page{ width:auto; min-height:auto; margin:0; padding:6mm 8mm; }
+    @page{ size:A4 portrait; margin:0; }
+  }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <button onclick="window.print()">🖨️ 印刷する（A4・たて）</button>
+  <span>※ 上の見本を まねて、語群を つかって 子どもが 自分の 学びマップを 作ります。</span>
+</div>
+
+<div class="page">
+  <div class="band">
+    <span>3年&nbsp;&nbsp;くみ&nbsp;&nbsp;ばん</span>
+    <span>なまえ</span><span class="fill"></span>
+    <span>日づけ&nbsp;&nbsp;月&nbsp;&nbsp;日</span>
+  </div>
+  <div class="title"><ruby>学<rt>まな</rt></ruby>びマップ — たし<ruby>算<rt>ざん</rt></ruby>と ひき<ruby>算<rt>ざん</rt></ruby>の ひっ<ruby>算<rt>ざん</rt></ruby></div>
+  <div class="mission">キーワードを <ruby>線<rt>せん</rt></ruby>で つないで、<ruby>単元<rt>たんげん</rt></ruby>の つながりを 1まいに まとめよう</div>
+
+  <!-- ① 見本 -->
+  <div class="sec">
+    <h2><span class="tag">見本</span>こんなふうに つなぐ（<ruby>中心<rt>ちゅうしん</rt></ruby>＝いちばん 大事）</h2>
+    <div class="map">
+      <svg class="links" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <line x1="50" y1="50" x2="16" y2="14"/>
+        <line x1="50" y1="50" x2="84" y2="14"/>
+        <line x1="50" y1="50" x2="14" y2="50"/>
+        <line x1="50" y1="50" x2="86" y2="50"/>
+        <line x1="50" y1="50" x2="20" y2="87"/>
+        <line x1="50" y1="50" x2="80" y2="87"/>
+      </svg>
+      <div class="core" style="left:37%;top:37%;width:26%">位を そろえる<br><small>＝同じ 位どうし</small></div>
+      <div class="node" style="left:2%;top:3%;width:28%"><ruby>一<rt>いち</rt></ruby>の<ruby>位<rt>くらい</rt></ruby>（<ruby>右<rt>みぎ</rt></ruby>）から <ruby>計算<rt>けいさん</rt></ruby></div>
+      <div class="node" style="left:70%;top:3%;width:28%">くり<ruby>上<rt>あ</rt></ruby>がり<br><small>10を <ruby>上<rt>うえ</rt></ruby>の<ruby>位<rt>くらい</rt></ruby>へ</small></div>
+      <div class="node" style="left:1%;top:42%;width:27%">くり<ruby>下<rt>さ</rt></ruby>がり<br><small><ruby>上<rt>うえ</rt></ruby>から 10かりる</small></div>
+      <div class="node" style="left:71%;top:42%;width:28%">0をこえる<br><small>そのまた<ruby>上<rt>うえ</rt></ruby>から（0は9）</small></div>
+      <div class="node" style="left:4%;top:79%;width:30%">けたが ふえても <ruby>同<rt>おな</rt></ruby>じ</div>
+      <div class="node" style="left:62%;top:79%;width:36%">たし<ruby>算<rt>ざん</rt></ruby>とひき<ruby>算<rt>ざん</rt></ruby>は <ruby>逆<rt>ぎゃく</rt></ruby>＝たしかめ<ruby>算<rt>ざん</rt></ruby></div>
+    </div>
+  </div>
+
+  <!-- ② 語群 -->
+  <div class="sec">
+    <h2><span class="tag">語群</span>つかう キーワード（<ruby>青<rt>あお</rt></ruby>＝<ruby>事実<rt>じじつ</rt></ruby>／<ruby>橙<rt>だいだい</rt></ruby>＝<ruby>考<rt>かんが</rt></ruby>え方）</h2>
+    <div class="banklabel f">🟦 <ruby>事実<rt>じじつ</rt></ruby>てき<ruby>知識<rt>ちしき</rt></ruby>（ことば・じじつ）</div>
+    <div class="bank">
+      <span class="chip fact"><ruby>位<rt>くらい</rt></ruby></span>
+      <span class="chip fact"><ruby>一<rt>いち</rt></ruby>の<ruby>位<rt>くらい</rt></ruby></span>
+      <span class="chip fact"><ruby>十<rt>じゅう</rt></ruby>の<ruby>位<rt>くらい</rt></ruby></span>
+      <span class="chip fact"><ruby>百<rt>ひゃく</rt></ruby>の<ruby>位<rt>くらい</rt></ruby></span>
+      <span class="chip fact"><ruby>千<rt>せん</rt></ruby>の<ruby>位<rt>くらい</rt></ruby></span>
+      <span class="chip fact"><ruby>筆算<rt>ひっさん</rt></ruby></span>
+      <span class="chip fact">くらいどり<ruby>表<rt>ひょう</rt></ruby></span>
+      <span class="chip fact">くり<ruby>上<rt>あ</rt></ruby>がりの「小さい1」</span>
+      <span class="chip fact">たしかめ<ruby>算<rt>ざん</rt></ruby></span>
+      <span class="chip fact">0は9になる</span>
+    </div>
+    <div class="banklabel c">🟧 <ruby>概念<rt>がいねん</rt></ruby>てき<ruby>知識<rt>ちしき</rt></ruby>（なぜ・つながり）</div>
+    <div class="bank">
+      <span class="chip concept"><ruby>位<rt>くらい</rt></ruby>を そろえる</span>
+      <span class="chip concept"><ruby>同<rt>おな</rt></ruby>じ<ruby>位<rt>くらい</rt></ruby>どうし</span>
+      <span class="chip concept"><ruby>一<rt>いち</rt></ruby>の<ruby>位<rt>くらい</rt></ruby>から</span>
+      <span class="chip concept">10を <ruby>上<rt>うえ</rt></ruby>へ（くり<ruby>上<rt>あ</rt></ruby>がり）</span>
+      <span class="chip concept"><ruby>上<rt>うえ</rt></ruby>から 10かりる（くり<ruby>下<rt>さ</rt></ruby>がり）</span>
+      <span class="chip concept">そのまた<ruby>上<rt>うえ</rt></ruby>から</span>
+      <span class="chip concept">けたが ふえても <ruby>同<rt>おな</rt></ruby>じ</span>
+      <span class="chip concept">たし<ruby>算<rt>ざん</rt></ruby>とひき<ruby>算<rt>ざん</rt></ruby>は <ruby>逆<rt>ぎゃく</rt></ruby></span>
+    </div>
+  </div>
+
+  <!-- ③ 空欄キャンバス -->
+  <div class="sec">
+    <h2><span class="tag">じぶんで</span>じぶんの <ruby>学<rt>まな</rt></ruby>びマップを <ruby>作<rt>つく</rt></ruby>ろう（ことばを <ruby>書<rt>か</rt></ruby>いて、<ruby>線<rt>せん</rt></ruby>で つなごう）</h2>
+    <div class="canvas">
+      <div class="seed">位を そろえる<br><small>（ここから つなぐ）</small></div>
+      <div class="hint">れい：くり上がり →「10を 上の位へ」と 矢じるしで つなぐ</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
