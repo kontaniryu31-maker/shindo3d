@@ -370,6 +370,8 @@ const FURI_DICT = [
   ["線","せん"], ["引","ひ"], ["見","み"], ["合","あ"], ["言","い"], ["方","かた"],
   ["逆","ぎゃく"], ["考","かんが"], ["多","おお"], ["作","つく"], ["高","たか"],
   ["算","ざん"], ["助","たす"],
+  ["一","いち"], ["十","じゅう"], ["百","ひゃく"], ["千","せん"], ["位","くらい"],
+  ["書","か"], ["同","おな"], ["数","かず"], ["小","ちい"], ["正","ただ"], ["力","ちから"],
 ];
 // 「上」は じょう(教科書 上)／あ(くり上がり) で読みが割れるため辞書に入れず個別指定。
 const dataFuri = (s) => String(s == null ? "" : s).replace(/教科書\s*上/g, "{教科書|きょうかしょ} {上|じょう}");
@@ -406,6 +408,7 @@ function App() {
   const [showBattle, setShowBattle] = useState(false); // PBL（モンスターバトル）
   const [showCipher, setShowCipher] = useState(false); // PBL（暗号たんてい）
   const [showTest, setShowTest] = useState(false); // たしかめテスト（まとめ）
+  const [showDeep, setShowDeep] = useState(false); // 深い学びテスト（記述・追加点）
   const [budget, setBudget] = useState(5000);       // 予算（自分で設定）
   const [cart, setCart] = useState({});             // {itemId: 個数}
   const [loaded, setLoaded] = useState(false);
@@ -706,7 +709,8 @@ function App() {
               <button onClick={() => { setShowTest(true); setShowBack(false); }} style={{ fontSize: 15, fontWeight: 900, cursor: "pointer", color: "#8A5A2B", background: "#fff", border: "none", borderRadius: 12, padding: "11px 20px", boxShadow: "0 3px 0 rgba(0,0,0,.15)", whiteSpace: "nowrap" }}>📝 テストを はじめる →</button>
             </div>
             <div style={{ marginTop: 12, display: "flex", gap: 10, flexWrap: "wrap" }}>
-              <a href="./worksheet-setsumei.html" target="_blank" rel="noopener" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 900, color: "#8A5A2B", background: "#fff", borderRadius: 11, padding: "9px 14px", textDecoration: "none", boxShadow: "0 2px 0 rgba(0,0,0,.12)" }}>{rb("📄 ふかい{学|まな}びの {追加点|ついかてん}プリント（せつめい5{問|もん}）")}</a>
+              <button onClick={() => { setShowDeep(true); setShowBack(false); }} style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 900, cursor: "pointer", color: "#fff", background: "#5B3E8A", border: "none", borderRadius: 11, padding: "9px 14px", boxShadow: "0 2px 0 rgba(0,0,0,.18)" }}>{rb("✍️ ふかい{学|まな}びテスト（{記述|きじゅつ}・{追加点|ついかてん}）")}</button>
+              <a href="./worksheet-setsumei.html" target="_blank" rel="noopener" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 900, color: "#8A5A2B", background: "#fff", borderRadius: 11, padding: "9px 14px", textDecoration: "none", boxShadow: "0 2px 0 rgba(0,0,0,.12)" }}>{rb("📄 せつめいワークシート（{図|ず}・5{問|もん}）")}</a>
               <a href="./manabimap.html" target="_blank" rel="noopener" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 900, color: "#8A5A2B", background: "#fff", borderRadius: 11, padding: "9px 14px", textDecoration: "none", boxShadow: "0 2px 0 rgba(0,0,0,.12)" }}>{rb("🗺️ {学|まな}びマップ")}</a>
             </div>
           </div>
@@ -933,6 +937,7 @@ function App() {
 
       {/* ===== たしかめテスト（まとめ・全分野ミックス10問） ===== */}
       {showTest && <CalcTest onClose={() => setShowTest(false)} />}
+      {showDeep && <DeepTest onClose={() => setShowDeep(false)} />}
 
     </div>
   );
@@ -1086,8 +1091,10 @@ function makeTestMix() { const r = tri(4); return r === 0 ? makeTAdd() : r === 1
 
 /* 文章題（思考・判断・表現ベース／数値は新規・検算済み）＋ 説明題（まちがいさがし→位取り表で説明） */
 const TEST_WORD = [
-  { type: "word", text: "あさひさんは、385{円|えん}の {色|いろ}えんぴつと、247{円|えん}の ノートを {買|か}いました。あわせて {何円|なんえん}に なりますか。", ans: 632 },
-  { type: "word", text: "ある えき で、きのう {電車|でんしゃ}に のった{人|ひと}は 4216{人|にん}、きょう {電車|でんしゃ}に のった{人|ひと}は 1758{人|にん} でした。きのうと きょうでは、のった{人|ひと}は {何人|なんにん} ちがいますか。", ans: 2458 },
+  { type: "word", text: "{色|いろ}えんぴつと ノートを 1つずつ {買|か}います。だいきんは あわせて {何円|なんえん}に なりますか。",
+    data: { title: "ねだん{表|ひょう}", rows: [["🖍️ {色|いろ}えんぴつ", "385{円|えん}"], ["📓 ノート", "247{円|えん}"]] }, ans: 632 },
+  { type: "word", text: "{電車|でんしゃ}に のった {人|ひと}の {数|かず}を しらべました。きのうと きょうで、のった {人|ひと}は {何人|なんにん} ちがいますか。",
+    data: { title: "🚃 {電車|でんしゃ}に のった {人数|にんずう}", rows: [["きのう", "4216{人|にん}"], ["きょう", "1758{人|にん}"]] }, ans: 2458 },
 ];
 const TEST_EXPLAIN = {
   type: "explain",
@@ -1169,7 +1176,22 @@ function CalcTest({ onClose }) {
               ) : (
                 <div style={{ background: "#FBF6EE", border: `2px solid ${TEST_COLOR}`, borderRadius: 12, padding: "18px 14px", textAlign: q.type === "word" ? "left" : "center" }}>
                   {q.type === "word"
-                    ? <div style={{ fontSize: 17, fontWeight: 800, color: INK, lineHeight: 1.95 }}>{rb(q.text)}</div>
+                    ? <div>
+                        <div style={{ fontSize: 17, fontWeight: 800, color: INK, lineHeight: 1.95 }}>{rb(q.text)}</div>
+                        {q.data && (
+                          <div style={{ margin: "12px auto 0", border: `2px solid ${TEST_COLOR}`, borderRadius: 10, overflow: "hidden", maxWidth: 300 }}>
+                            <div style={{ background: TEST_COLOR, color: "#fff", fontSize: 13, fontWeight: 900, padding: "6px 12px", textAlign: "center" }}>{rb("📊 " + q.data.title)}</div>
+                            <table style={{ width: "100%", borderCollapse: "collapse", background: "#fff" }}><tbody>
+                              {q.data.rows.map((r, ri) => (
+                                <tr key={ri}>
+                                  <td style={{ borderTop: ri ? "1px solid #ead9c0" : "none", padding: "8px 12px", fontSize: 15, fontWeight: 800, color: INK }}>{rb(r[0])}</td>
+                                  <td style={{ borderTop: ri ? "1px solid #ead9c0" : "none", borderLeft: "1px solid #ead9c0", padding: "8px 12px", fontSize: 16, fontWeight: 900, color: INK, textAlign: "right", whiteSpace: "nowrap" }}>{rb(r[1])}</td>
+                                </tr>
+                              ))}
+                            </tbody></table>
+                          </div>
+                        )}
+                      </div>
                     : <div style={{ fontSize: 28, fontWeight: 900, color: INK, letterSpacing: 1, textAlign: "center" }}>{q.display}</div>}
                   <div style={{ textAlign: "center" }}>
                     <input ref={inputRef} value={val} onChange={(e) => setVal(e.target.value)} onKeyDown={onKey} inputMode="numeric" placeholder="答え"
@@ -1203,6 +1225,99 @@ function CalcTest({ onClose }) {
               </div>
               <div style={{ marginTop: 14, display: "flex", gap: 8 }}>
                 <button onClick={restart} style={btnMain(TEST_COLOR)}>もう一回</button>
+                <button onClick={onClose} style={btnMain(GREEN)}>とじる</button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ===== 深い学びテスト（記述・追加点）：各ステージ1問の説明問題 ===== */
+const DEEP_COLOR = "#5B3E8A";
+const DEEP_PROBLEMS = [
+  { stage: "①たし算（くり{上|あ}がり）",
+    q: "365＋457 で、一の位の 5＋7＝12 の 小さい1 は、なぜ 十の位へ いくの? わけを 書こう。",
+    model: "12は「10と2」。10は 十の位の 1まとまり だから、十の位へ くり{上|あ}げる。一の位には 2が のこる。" },
+  { stage: "②ひき算（くり{下|さ}がり）",
+    q: "512−348 で、一の位は 2−8 で ひけない。なぜ {上|うえ}の位から 10を かりて くるの? わけを 書こう。",
+    model: "一の位だけでは たりない。十の位の 1は「10」なので、かりて 12−8 に できる。かりた ぶん、十の位は 1へる。" },
+  { stage: "③0をこえる くり{下|さ}がり",
+    q: "402−175 で、十の位が 0の とき、どうやって かりて くる? なぜ? わけを 書こう。",
+    model: "十の位が 0で かりられないので、百の位から かりる。百の 1を 十の位（10）→ 一の位 へ じゅんに わたす。" },
+  { stage: "④4けたの計算",
+    q: "2456＋3897 のような 4けたでも、なぜ いままでと 同じ やり方で いいの? わけを 書こう。",
+    model: "けたが ふえても「位を そろえて、同じ位どうしを 計算する」は ずっと 同じ だから。" },
+  { stage: "⑤たしかめ算",
+    q: "512−348＝164 が 正しいか、164＋348 で たしかめられる。なぜ たしかめに なるの? わけを 書こう。",
+    model: "たし算と ひき算は 逆の かんけい。ひいた数を たすと、もとの数（512）に もどる から。" },
+];
+
+function DeepTest({ onClose }) {
+  const [n, setN] = useState(1);
+  const [revealed, setRevealed] = useState(false);
+  const [marks, setMarks] = useState({});
+  const [finished, setFinished] = useState(false);
+  const TOTAL = DEEP_PROBLEMS.length;
+  const q = DEEP_PROBLEMS[n - 1];
+  const next = () => { if (n >= TOTAL) { setFinished(true); return; } setN(n + 1); setRevealed(false); };
+  const maru = Object.values(marks).filter((v) => v === "maru").length;
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(20,40,45,.45)", zIndex: 50, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: 18, overflow: "auto" }}>
+      <div style={{ width: "min(620px,100%)", background: "#fff", borderRadius: 18, overflow: "hidden", marginTop: 24 }}>
+        <div style={{ background: `linear-gradient(180deg,#6E4FA0,${DEEP_COLOR})`, color: "#fff", padding: "13px 18px", display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 22 }}>✍️</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 17, fontWeight: 900 }}>{rb("ふかい{学|まな}びテスト（{追加点|ついかてん}）")}</div>
+            <div style={{ fontSize: 12, fontWeight: 800, opacity: .95 }}>{rb("わけを ことばで 書く・{記述|きじゅつ}もんだい")}</div>
+          </div>
+          <button onClick={onClose} style={{ fontSize: 13, fontWeight: 900, cursor: "pointer", color: "#fff", background: "rgba(255,255,255,.25)", border: "none", borderRadius: 10, padding: "8px 14px" }}>✕ とじる</button>
+        </div>
+        <div style={{ padding: "16px 18px" }}>
+          {!finished ? (
+            <>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, fontWeight: 900, color: SUB, marginBottom: 10 }}>
+                <span>第 {n} / {TOTAL} もん</span><span>{rb("〇の 数")}：{maru}</span>
+              </div>
+              <div style={{ border: `2px solid ${DEEP_COLOR}`, borderRadius: 12, overflow: "hidden" }}>
+                <div style={{ background: "#F4EEFB", padding: "12px 14px" }}>
+                  <div style={{ fontSize: 12, fontWeight: 900, color: DEEP_COLOR, marginBottom: 5 }}>{rb(q.stage)}</div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: INK, lineHeight: 1.85 }}>{rb(q.q)}</div>
+                </div>
+                <div style={{ padding: "12px 14px" }}>
+                  <textarea placeholder="ここに わけを 書こう（声に 出しても OK）" style={{ width: "100%", minHeight: 88, fontSize: 15, fontWeight: 700, fontFamily: "inherit", color: INK, border: "2px solid #cdd8dd", borderRadius: 10, padding: "9px 11px", outline: "none", resize: "vertical", lineHeight: 1.7, boxSizing: "border-box" }} />
+                  {!revealed ? (
+                    <button onClick={() => setRevealed(true)} style={{ ...btnMain(DEEP_COLOR), marginTop: 10 }}>{rb("書けたら 見本(みほん)を 見る")}</button>
+                  ) : (
+                    <>
+                      <div style={{ marginTop: 10, background: "#F8F5FE", border: `1.5px dashed ${DEEP_COLOR}`, borderRadius: 10, padding: "12px 13px" }}>
+                        <div style={{ fontSize: 12, fontWeight: 900, color: DEEP_COLOR, marginBottom: 5 }}>💡 見本</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: INK, lineHeight: 1.85 }}>{rb(q.model)}</div>
+                      </div>
+                      <div style={{ marginTop: 10, textAlign: "center" }}>
+                        <div style={{ fontSize: 12, fontWeight: 900, color: SUB, marginBottom: 6 }}>{rb("見本と くらべて、自分で つけよう")}</div>
+                        <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+                          <button onClick={() => setMarks((m) => ({ ...m, [n]: "maru" }))} style={{ fontSize: 16, fontWeight: 900, cursor: "pointer", color: marks[n] === "maru" ? "#fff" : GREEN, background: marks[n] === "maru" ? GREEN : "#fff", border: `2px solid ${GREEN}`, borderRadius: 10, padding: "8px 18px" }}>{rb("〇 書けた")}</button>
+                          <button onClick={() => setMarks((m) => ({ ...m, [n]: "san" }))} style={{ fontSize: 16, fontWeight: 900, cursor: "pointer", color: marks[n] === "san" ? "#fff" : "#D8932E", background: marks[n] === "san" ? "#D8932E" : "#fff", border: "2px solid #D8932E", borderRadius: 10, padding: "8px 18px" }}>{rb("△ もう少し")}</button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+              <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+                <button onClick={next} style={btnMain(marks[n] ? GREEN : DEEP_COLOR)}>{n >= TOTAL ? "けっか を 見る →" : "つぎ →"}</button>
+              </div>
+            </>
+          ) : (
+            <div style={{ textAlign: "center", padding: "10px 0 6px" }}>
+              <div style={{ fontSize: 30 }}>✍️🌟</div>
+              <div style={{ fontSize: 21, fontWeight: 900, color: INK, marginTop: 6 }}>{rb(`〇が ${maru} / ${TOTAL} もん！`)}</div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: SUB, marginTop: 6, lineHeight: 1.8 }}>{rb("ことばで せつめいできたら、ほんとうに わかった しるし。△は もう一回 見本を 見て 書いて みよう。")}</div>
+              <div style={{ marginTop: 14, display: "flex", gap: 8 }}>
+                <button onClick={() => { setN(1); setRevealed(false); setMarks({}); setFinished(false); }} style={btnMain(DEEP_COLOR)}>もう一回</button>
                 <button onClick={onClose} style={btnMain(GREEN)}>とじる</button>
               </div>
             </div>
