@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>理科テスト ① 植物のかんさつ（たね・育ち・体）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --ink:#1f2a30; --line:#3a4750; --accent:#168a68; --faint:#9aa7ae; --grid:#cdd5d9; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; font-family:"M PLUS Rounded 1c",sans-serif; color:var(--ink); background:#eef1f0; }
+  ruby rt{ font-size:.5em; font-weight:600; }
+
+  .toolbar{ max-width:210mm; margin:10px auto 4px; text-align:center; }
+  .toolbar button{ font:inherit; font-weight:900; cursor:pointer; background:var(--accent); color:#fff; border:none; border-radius:10px; padding:9px 18px; }
+  .toolbar span{ color:#667; font-size:12px; margin-left:10px; }
+
+  .page{ width:210mm; min-height:297mm; margin:0 auto 12px; padding:10mm 12mm; background:#fff; }
+
+  /* 右上の小ロゴ（控えめ） */
+  .miniLogo{ display:flex; justify-content:flex-end; align-items:center; gap:4px; color:var(--faint); font-size:11px; font-weight:800; margin-bottom:2px; }
+  .miniLogo .pw{ font-size:12px; }
+
+  /* 記名バンド */
+  .band{ display:flex; align-items:center; gap:10px; border:2px solid var(--line); border-radius:9px; padding:7px 12px; font-weight:800; font-size:13px; margin-bottom:8px; }
+  .band .nm{ flex:1; display:flex; align-items:center; gap:6px; }
+  .band .nm .fill{ flex:1; border-bottom:1.6px solid var(--grid); min-height:18px; }
+  .band .score{ border:2px solid var(--accent); border-radius:8px; padding:4px 12px; font-size:15px; font-weight:900; color:var(--accent); white-space:nowrap; }
+
+  .title{ text-align:center; font-size:21px; font-weight:900; margin:6px 0 2px; letter-spacing:.4px; }
+  .subhead{ text-align:center; font-size:12px; font-weight:800; color:var(--faint); margin-bottom:6px; }
+
+  /* 大問ヘッダ */
+  .qhead{ display:flex; align-items:center; gap:8px; margin:9px 0 4px; }
+  .qhead .no{ background:var(--ink); color:#fff; border-radius:7px; padding:3px 11px; font-size:15px; font-weight:900; }
+  .qhead .ttl{ font-size:15px; font-weight:900; }
+  .qhead .tag{ border:1.6px solid var(--accent); color:var(--accent); border-radius:6px; padding:2px 8px; font-size:11px; font-weight:900; }
+  .qhead .pts{ margin-left:auto; font-size:12px; font-weight:900; color:var(--faint); }
+  .qbox{ border:2px solid var(--line); border-radius:10px; padding:5px 12px 6px; }
+
+  /* 小問 */
+  .item{ padding:4px 0; border-top:1.4px dashed var(--grid); }
+  .item:first-child{ border-top:none; }
+  .item .qn{ font-size:12.5px; font-weight:800; line-height:1.5; }
+  .item .qn .lbl{ display:inline-grid; place-items:center; min-width:24px; height:24px; border:1.8px solid var(--ink); border-radius:50%; font-size:12px; font-weight:900; margin-right:5px; vertical-align:middle; }
+  .pt{ font-size:11px; font-weight:900; color:var(--accent); margin-left:4px; }
+
+  /* 選択肢 */
+  .choices{ display:flex; flex-wrap:wrap; gap:5px 16px; margin:4px 0 2px 30px; font-size:12.5px; font-weight:700; }
+  .choices .ch{ display:flex; align-items:center; gap:5px; }
+  .choices .mk{ display:inline-grid; place-items:center; width:21px; height:21px; border:1.6px solid var(--line); border-radius:50%; font-weight:900; font-size:12px; flex:none; }
+
+  /* 穴うめ・短答 */
+  .blank{ display:inline-block; min-width:120px; border-bottom:1.8px solid var(--ink); height:22px; margin:0 4px; vertical-align:bottom; }
+  .ansline{ margin:7px 0 2px 30px; }
+  .ansline .lab{ font-size:11.5px; font-weight:800; color:var(--faint); margin-right:6px; }
+
+  /* 記述らん */
+  .write{ margin:7px 0 2px 30px; }
+  .write .lines{ border:1.6px solid var(--line); border-radius:7px; padding:6px 8px; }
+  .write .ln{ border-bottom:1.5px solid var(--grid); height:7.5mm; }
+  .write .ln:last-child{ border-bottom:none; }
+
+  /* 答え・解説ページ */
+  .pagebreak{ break-before:page; }
+  .ansTitle{ text-align:center; font-size:20px; font-weight:900; color:var(--accent); margin:4px 0 10px; letter-spacing:1px; }
+  .secLabel{ font-size:15px; font-weight:900; background:#EAF6F1; border-left:6px solid var(--accent); border-radius:0 7px 7px 0; padding:6px 12px; margin:14px 0 8px; }
+  .ansGrid{ border:2px solid var(--line); border-radius:10px; padding:4px 12px; }
+  .ansRow{ display:flex; gap:10px; padding:6px 0; border-top:1.4px dashed var(--grid); font-size:13.5px; font-weight:700; line-height:1.6; }
+  .ansRow:first-child{ border-top:none; }
+  .ansRow .k{ font-weight:900; color:var(--ink); white-space:nowrap; min-width:74px; }
+  .ansRow .v{ flex:1; }
+  .ansRow .v b{ color:var(--accent); }
+  .kaisetsu .ansRow .v{ font-weight:600; }
+
+  @media print{
+    .toolbar{ display:none; }
+    html,body{ background:#fff; }
+    .page{ width:auto; min-height:auto; margin:0; padding:9mm 11mm; }
+    @page{ size:A4 portrait; margin:0; }
+    .pagebreak{ break-before:page; }
+  }
+</style>
+</head>
+<body>
+<div class="toolbar">
+  <button onclick="window.print()">🖨️ 印刷する（A4・たて）</button>
+  <span>※ 1まいめ＝もんだい／2まいめ＝答え・かいせつ（じぶんで○つけ）</span>
+</div>
+
+<!-- ========== 1まいめ もんだい ========== -->
+<div class="page">
+  <div class="miniLogo"><span class="pw">⏻</span><span>まなびの<ruby>基地<rt>きち</rt></ruby></span></div>
+
+  <div class="band">
+    <span>3<ruby>年<rt>ねん</rt></ruby>&nbsp;&nbsp;（&nbsp;&nbsp;）<ruby>組<rt>くみ</rt></ruby>&nbsp;&nbsp;（&nbsp;&nbsp;）<ruby>番<rt>ばん</rt></ruby></span>
+    <span class="nm"><ruby>名前<rt>なまえ</rt></ruby><span class="fill"></span></span>
+    <span class="score">てんすう&nbsp;&nbsp;／100</span>
+  </div>
+
+  <div class="title">理科テスト ① <ruby>植物<rt>しょくぶつ</rt></ruby>のかんさつ</div>
+  <div class="subhead">（たね・<ruby>育<rt>そだ</rt></ruby>ち・<ruby>体<rt>からだ</rt></ruby>）</div>
+
+  <!-- 【1】たね -->
+  <div class="qhead">
+    <span class="no">1</span>
+    <span class="ttl">たね</span>
+    <span class="tag"><ruby>知識<rt>ちしき</rt></ruby>・<ruby>技能<rt>ぎのう</rt></ruby></span>
+    <span class="pts">（<ruby>各<rt>かく</rt></ruby>8<ruby>点<rt>てん</rt></ruby>）</span>
+  </div>
+  <div class="qbox">
+    <div class="item">
+      <div class="qn"><span class="lbl">1</span>ホウセンカとヒマワリのたねをくらべます。<ruby>大<rt>おお</rt></ruby>きいほうはどちらですか。<span class="pt">8<ruby>点<rt>てん</rt></ruby></span></div>
+      <div class="choices">
+        <span class="ch"><span class="mk">ア</span>ホウセンカ</span>
+        <span class="ch"><span class="mk">イ</span>ヒマワリ</span>
+      </div>
+    </div>
+    <div class="item">
+      <div class="qn"><span class="lbl">2</span>ホウセンカのたねのまき<ruby>方<rt>かた</rt></ruby>で<ruby>正<rt>ただ</rt></ruby>しいのはどれですか。<span class="pt">8<ruby>点<rt>てん</rt></ruby></span></div>
+      <div class="choices">
+        <span class="ch"><span class="mk">ア</span>土はかけない</span>
+        <span class="ch"><span class="mk">イ</span>うすく土をかける</span>
+        <span class="ch"><span class="mk">ウ</span>土をたくさんかける</span>
+      </div>
+    </div>
+    <div class="item">
+      <div class="qn"><span class="lbl">3</span>ヒマワリ・ホウセンカ・マリーゴールドのたねについて<ruby>正<rt>ただ</rt></ruby>しいものはどれですか。<span class="pt">8<ruby>点<rt>てん</rt></ruby></span></div>
+      <div class="choices">
+        <span class="ch"><span class="mk">ア</span>しゅるいによって<ruby>形<rt>かたち</rt></ruby>・<ruby>色<rt>いろ</rt></ruby>・<ruby>大<rt>おお</rt></ruby>きさがちがう</span>
+        <span class="ch"><span class="mk">イ</span>どれも<ruby>同<rt>おな</rt></ruby>じ<ruby>形<rt>かたち</rt></ruby>・<ruby>大<rt>おお</rt></ruby>きさ</span>
+        <span class="ch"><span class="mk">ウ</span>ぜんぶまっ<ruby>赤<rt>あか</rt></ruby></span>
+        <span class="ch"><span class="mk">エ</span>ぜんぶヒマワリと<ruby>同<rt>おな</rt></ruby>じ<ruby>大<rt>おお</rt></ruby>きさ</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 【2】植物の育ちと体 -->
+  <div class="qhead">
+    <span class="no">2</span>
+    <span class="ttl"><ruby>植物<rt>しょくぶつ</rt></ruby>の<ruby>育<rt>そだ</rt></ruby>ちと<ruby>体<rt>からだ</rt></ruby></span>
+    <span class="tag"><ruby>知識<rt>ちしき</rt></ruby>・<ruby>技能<rt>ぎのう</rt></ruby></span>
+    <span class="pts">（<ruby>各<rt>かく</rt></ruby>8<ruby>点<rt>てん</rt></ruby>）</span>
+  </div>
+  <div class="qbox">
+    <div class="item">
+      <div class="qn"><span class="lbl">1</span>たねをまいて、はじめに<ruby>出<rt>で</rt></ruby>てくる<ruby>葉<rt>は</rt></ruby>を<ruby>何<rt>なん</rt></ruby>といいますか。<span class="pt">8<ruby>点<rt>てん</rt></ruby></span></div>
+      <div class="ansline"><span class="lab">こたえ</span><span class="blank"></span></div>
+    </div>
+    <div class="item">
+      <div class="qn"><span class="lbl">2</span>ホウセンカやヒマワリの<ruby>育<rt>そだ</rt></ruby>つじゅんばんで<ruby>正<rt>ただ</rt></ruby>しいのはどれですか。<span class="pt">8<ruby>点<rt>てん</rt></ruby></span></div>
+      <div class="choices">
+        <span class="ch"><span class="mk">ア</span>たね→<ruby>子葉<rt>しよう</rt></ruby>→<ruby>葉<rt>は</rt></ruby>がふえる→<ruby>花<rt>はな</rt></ruby>→<ruby>実<rt>み</rt></ruby></span>
+        <span class="ch"><span class="mk">イ</span>たね→<ruby>花<rt>はな</rt></ruby>→<ruby>葉<rt>は</rt></ruby>→<ruby>実<rt>み</rt></ruby>→<ruby>子葉<rt>しよう</rt></ruby></span>
+        <span class="ch"><span class="mk">ウ</span><ruby>花<rt>はな</rt></ruby>→たね→<ruby>葉<rt>は</rt></ruby>→<ruby>実<rt>み</rt></ruby>→<ruby>子葉<rt>しよう</rt></ruby></span>
+        <span class="ch"><span class="mk">エ</span><ruby>実<rt>み</rt></ruby>→<ruby>花<rt>はな</rt></ruby>→<ruby>葉<rt>は</rt></ruby>→<ruby>子葉<rt>しよう</rt></ruby>→たね</span>
+      </div>
+    </div>
+    <div class="item">
+      <div class="qn"><span class="lbl">3</span><ruby>植物<rt>しょくぶつ</rt></ruby>の<ruby>体<rt>からだ</rt></ruby>は、<ruby>葉<rt>は</rt></ruby>・くきと、もう1つ<ruby>何<rt>なに</rt></ruby>からできていますか。<span class="pt">8<ruby>点<rt>てん</rt></ruby></span></div>
+      <div class="ansline"><span class="lab">こたえ</span>（<span class="blank" style="min-width:90px;"></span>）</div>
+    </div>
+    <div class="item">
+      <div class="qn"><span class="lbl">4</span>ホウセンカの<ruby>葉<rt>は</rt></ruby>は、<ruby>体<rt>からだ</rt></ruby>のどこについていますか。<span class="pt">8<ruby>点<rt>てん</rt></ruby></span></div>
+      <div class="choices">
+        <span class="ch"><span class="mk">ア</span>くきについている</span>
+        <span class="ch"><span class="mk">イ</span><ruby>根<rt>ね</rt></ruby>についている</span>
+      </div>
+    </div>
+    <div class="item">
+      <div class="qn"><span class="lbl">5</span><ruby>植物<rt>しょくぶつ</rt></ruby>の<ruby>根<rt>ね</rt></ruby>があるのはどこですか。<span class="pt">8<ruby>点<rt>てん</rt></ruby></span></div>
+      <div class="choices">
+        <span class="ch"><span class="mk">ア</span><ruby>葉<rt>は</rt></ruby>の<ruby>先<rt>さき</rt></ruby></span>
+        <span class="ch"><span class="mk">イ</span>くきの<ruby>下<rt>した</rt></ruby>（<ruby>土<rt>つち</rt></ruby>の<ruby>中<rt>なか</rt></ruby>）</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 【3】考える問題 -->
+  <div class="qhead">
+    <span class="no">3</span>
+    <span class="ttl"><ruby>考<rt>かんが</rt></ruby>える<ruby>問題<rt>もんだい</rt></ruby></span>
+    <span class="tag"><ruby>思考<rt>しこう</rt></ruby>・<ruby>判断<rt>はんだん</rt></ruby>・<ruby>表現<rt>ひょうげん</rt></ruby></span>
+    <span class="pts">（36<ruby>点<rt>てん</rt></ruby>）</span>
+  </div>
+  <div class="qbox">
+    <div class="item">
+      <div class="qn"><span class="lbl">1</span>6<ruby>月<rt>がつ</rt></ruby>ごろのホウセンカを、<ruby>子葉<rt>しよう</rt></ruby>が<ruby>出<rt>で</rt></ruby>たころとくらべます。「<ruby>葉<rt>は</rt></ruby>の<ruby>数<rt>かず</rt></ruby>」「<ruby>草<rt>くさ</rt></ruby>たけ」「くきの<ruby>太<rt>ふと</rt></ruby>さ」はそれぞれどうかわりましたか。<span class="pt">36<ruby>点<rt>てん</rt></ruby></span></div>
+      <div class="write"><div class="lines"><div class="ln"></div><div class="ln"></div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 2まいめ 答え・かいせつ ========== -->
+<div class="page pagebreak">
+  <div class="miniLogo"><span class="pw">⏻</span><span>まなびの<ruby>基地<rt>きち</rt></ruby></span></div>
+  <div class="ansTitle">こたえ と かいせつ　— 理科テスト ①</div>
+
+  <div class="secLabel">こたえ</div>
+  <div class="ansGrid">
+    <div class="ansRow"><span class="k">【1】(1)</span><span class="v"><b>イ　ヒマワリ</b></span></div>
+    <div class="ansRow"><span class="k">【1】(2)</span><span class="v"><b>イ　うすく土をかける</b></span></div>
+    <div class="ansRow"><span class="k">【1】(3)</span><span class="v"><b>ア　しゅるいによって形・色・大きさがちがう</b></span></div>
+    <div class="ansRow"><span class="k">【2】(1)</span><span class="v"><b><ruby>子葉<rt>しよう</rt></ruby>（しよう）</b></span></div>
+    <div class="ansRow"><span class="k">【2】(2)</span><span class="v"><b>ア　たね→子葉→葉がふえる→花→実（中にたね）</b></span></div>
+    <div class="ansRow"><span class="k">【2】(3)</span><span class="v"><b><ruby>根<rt>ね</rt></ruby>（ね）</b></span></div>
+    <div class="ansRow"><span class="k">【2】(4)</span><span class="v"><b>ア　くきについている</b></span></div>
+    <div class="ansRow"><span class="k">【2】(5)</span><span class="v"><b>イ　くきの下（土の中）</b></span></div>
+    <div class="ansRow"><span class="k">【3】(1)</span><span class="v"><b>（れい）葉の数はふえ、草たけは高く（長く）なり、くきは太くなった。</b></span></div>
+  </div>
+
+  <div class="secLabel">かいせつ</div>
+  <div class="ansGrid kaisetsu">
+    <div class="ansRow"><span class="k">【1】(1)</span><span class="v">ホウセンカのたねはとても小さく、ヒマワリのたねは大きくてしまもようがあります。</span></div>
+    <div class="ansRow"><span class="k">【1】(2)</span><span class="v">たねはうすく土をかけてまきます。かけすぎるとめが出にくく、かけないとかわいてしまいます。まいた後は土がかわかないよう水をやります。</span></div>
+    <div class="ansRow"><span class="k">【1】(3)</span><span class="v">虫めがねでたねをかんさつすると、形も色も大きさもそれぞれちがうことがわかります。</span></div>
+    <div class="ansRow"><span class="k">【2】(1)</span><span class="v">いちばんはじめに出てくる葉を子葉といいます。ホウセンカでは丸い形の子葉が2まい出ます。そのあとに出る葉（本葉）とは形がちがいます。</span></div>
+    <div class="ansRow"><span class="k">【2】(2)</span><span class="v">めが出るとまず子葉が出て、そのあと葉がふえてくきがのび、花がさき、花のあとに実ができ、実の中にまたあたらしいたねができます。</span></div>
+    <div class="ansRow"><span class="k">【2】(3)</span><span class="v">植物の体は根・くき・葉の3つからできています。ホウセンカもヒマワリも共通です。</span></div>
+    <div class="ansRow"><span class="k">【2】(4)</span><span class="v">葉はくきから出ています。根は土の中に広がる部分です。</span></div>
+    <div class="ansRow"><span class="k">【2】(5)</span><span class="v">根はくきの下にあって土の中に広がり、体をささえ、水をすいあげるはたらきがあります。</span></div>
+    <div class="ansRow"><span class="k">【3】(1)</span><span class="v">植物はそだつにつれて、葉の数がふえ、草たけがのび、くきが太くなっていきます。</span></div>
+  </div>
+</div>
+
+</body>
+</html>
