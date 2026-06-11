@@ -217,13 +217,29 @@
     .wrap{padding:0 16px;} .nav-in{padding:10px 16px;}
     .grid{grid-template-columns:1fr;} .hero-in{justify-content:center;text-align:center;} .logo{justify-content:center;}
   }
+  /* ===== 🎨 オーロラ：マウスの跡が背景にふわっととける ===== */
+  #aurora{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;}
+  #aurora b{position:absolute;left:0;top:0;border-radius:50%;filter:blur(34px);
+    will-change:transform,opacity;opacity:0;mix-blend-mode:multiply;}
+  #aurora b:nth-child(1){width:300px;height:300px;background:radial-gradient(circle,rgba(255,78,58,.20),rgba(255,78,58,0) 70%);}
+  #aurora b:nth-child(2){width:262px;height:262px;background:radial-gradient(circle,rgba(43,127,255,.17),rgba(43,127,255,0) 70%);}
+  #aurora b:nth-child(3){width:230px;height:230px;background:radial-gradient(circle,rgba(26,161,121,.17),rgba(26,161,121,0) 70%);}
+  #aurora b:nth-child(4){width:202px;height:202px;background:radial-gradient(circle,rgba(255,196,0,.20),rgba(255,196,0,0) 70%);}
+  #aurora b:nth-child(5){width:176px;height:176px;background:radial-gradient(circle,rgba(255,78,58,.15),rgba(255,78,58,0) 70%);}
+  #aurora b:nth-child(6){width:152px;height:152px;background:radial-gradient(circle,rgba(43,127,255,.13),rgba(43,127,255,0) 70%);}
+  #aurora b:nth-child(7){width:130px;height:130px;background:radial-gradient(circle,rgba(26,161,121,.12),rgba(26,161,121,0) 70%);}
+
   @media (prefers-reduced-motion: reduce){
     *{animation:none !important;}
     .tile,.go .ar,.appic,.jacket .gloss,.road .fill,.wp{transition:none !important;}
+    #aurora{display:none !important;}
   }
 </style>
 </head>
 <body class="hide-furi">
+
+<!-- 🎨 オーロラ（マウスの跡が背景にとける） -->
+<div id="aurora" aria-hidden="true"><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div>
 
 <!-- ヘッダー -->
 <header class="nav">
@@ -571,6 +587,43 @@
   }
 
   litStep();
+})();
+</script>
+<script>
+/* 🎨 オーロラ：マウスの跡を数珠つなぎのぼかし玉が追いかけ、背景にとける。
+   - pointermove(マウス/トラックパッド)に追従。touchは無視
+   - 3.5秒なにもないと「ひとり旅モード」でゆっくり漂う(タブレットでも生きる)
+   - prefers-reduced-motion では起動しない */
+(function(){
+  if(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var au=document.getElementById("aurora"); if(!au) return;
+  var blobs=[].slice.call(au.children); if(!blobs.length) return;
+  var halves=blobs.map(function(b){return b.offsetWidth/2;});
+  var pts=blobs.map(function(){return {x:innerWidth/2,y:innerHeight*0.38,o:0};});
+  var mx=innerWidth/2,my=innerHeight*0.38,idle=99,t=0,last=performance.now();
+  addEventListener("pointermove",function(e){
+    if(e.pointerType==="touch") return;
+    mx=e.clientX; my=e.clientY; idle=0;
+  },{passive:true});
+  function frame(now){
+    var dt=Math.min((now-last)/1000,.05); last=now; t+=dt; idle+=dt;
+    var tx=mx, ty=my;
+    if(idle>3.5){ /* ひとり旅 */
+      tx=innerWidth *(0.50+0.34*Math.sin(t*0.21));
+      ty=innerHeight*(0.40+0.24*Math.cos(t*0.15));
+    }
+    for(var i=0;i<blobs.length;i++){
+      var p=pts[i], g= i===0 ? {x:tx,y:ty} : pts[i-1];
+      var k= i===0 ? .20 : .26;
+      p.x+=(g.x-p.x)*k; p.y+=(g.y-p.y)*k;
+      var oT= idle>3.5 ? .55-(i*.06) : .95-(i*.11);
+      p.o+=(oT-p.o)*.045;
+      blobs[i].style.transform="translate3d("+(p.x-halves[i])+"px,"+(p.y-halves[i])+"px,0)";
+      blobs[i].style.opacity=p.o.toFixed(3);
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
 })();
 </script>
 </body>
