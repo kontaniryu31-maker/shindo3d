@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>社会科テスト ⑤ しりょう問題（奈良市の土地と人）— わたしたちの奈良市</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --ink:#1f2a30; --line:#3a4750; --accent:#9A6A00; --faint:#9aa7ae; --soft:#cdd5d9; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; font-family:"M PLUS Rounded 1c",sans-serif; color:var(--ink); background:#eef1f2; }
+  ruby rt{ font-size:.5em; font-weight:600; }
+
+  .toolbar{ max-width:210mm; margin:10px auto; text-align:center; }
+  .toolbar button{ font:inherit; font-weight:900; cursor:pointer; background:var(--accent); color:#fff; border:none; border-radius:10px; padding:9px 20px; }
+  .toolbar span{ color:#667; font-size:12px; margin-left:10px; }
+
+  .page{ width:210mm; min-height:297mm; margin:0 auto 12px; padding:8mm 11mm; background:#fff; }
+  .pagebreak{ break-before:page; }
+
+  .logo{ float:right; font-size:11px; font-weight:800; color:var(--faint); margin-top:1px; }
+  .logo b{ color:var(--accent); }
+
+  .band{ display:flex; align-items:center; gap:10px; border:2px solid var(--accent); border-radius:9px; padding:5px 12px; font-weight:800; font-size:13px; clear:both; }
+  .band .grade{ white-space:nowrap; }
+  .band .nm{ flex:1; display:flex; align-items:center; gap:6px; }
+  .band .nm .fill{ flex:1; border-bottom:1.5px solid var(--soft); min-height:18px; }
+  .band .score{ white-space:nowrap; border:2px solid var(--ink); border-radius:8px; padding:3px 10px; font-weight:900; font-size:14px; }
+  .band .score b{ font-size:18px; }
+
+  .ttl{ text-align:center; font-size:20px; font-weight:900; margin:4px 0 1px; letter-spacing:.5px; }
+  .subttl{ text-align:center; font-size:11.5px; font-weight:800; color:var(--faint); margin-bottom:5px; }
+
+  .q{ border:1.8px solid var(--soft); border-radius:11px; padding:6px 12px 6px; margin-bottom:6px; }
+  .qhead{ display:flex; align-items:center; gap:8px; border-bottom:2px solid var(--accent); padding-bottom:4px; margin-bottom:6px; flex-wrap:wrap; }
+  .qno{ background:var(--accent); color:#fff; font-weight:900; font-size:14px; border-radius:7px; padding:2px 10px; }
+  .qttl{ font-size:14.5px; font-weight:900; }
+  .tag{ font-size:10px; font-weight:900; color:#fff; background:var(--accent); border-radius:6px; padding:2px 8px; }
+  .pt{ font-size:11px; font-weight:800; color:var(--faint); margin-left:auto; }
+
+  .item{ margin:0 0 5px; font-size:12.5px; font-weight:700; line-height:1.6; }
+  .item:last-child{ margin-bottom:1px; }
+  .item .n{ font-weight:900; color:var(--accent); margin-right:4px; }
+  .hint{ display:inline-block; font-size:10px; font-weight:800; color:var(--faint); margin-left:5px; }
+  .paren{ display:inline-block; min-width:110px; text-align:center; }
+  .writebox{ margin:3px 0 0 16px; border:1.6px solid var(--soft); border-radius:7px; min-height:12mm; background:repeating-linear-gradient(transparent,transparent 6mm,var(--soft) 6mm,var(--soft) calc(6mm + 1.2px)); }
+
+  /* しりょう（資料） */
+  .slabel{ font-size:11.5px; font-weight:900; margin:1px 0 4px; }
+  .slabel .schip{ display:inline-block; background:var(--accent); color:#fff; border-radius:5px; padding:1px 9px; font-size:10.5px; margin-right:7px; }
+  .shiryo{ margin:0 0 7px; }
+
+  table.cmp{ width:100%; border-collapse:collapse; font-size:10.5px; font-weight:700; line-height:1.45; }
+  .cmp th,.cmp td{ border:1.2px solid var(--soft); padding:2px 5px; text-align:center; }
+  .cmp thead th{ background:var(--accent); color:#fff; font-weight:900; }
+  .cmp tbody th{ background:#F4EDE0; white-space:nowrap; font-weight:900; }
+
+  .cards{ display:flex; gap:8px; margin-bottom:7px; }
+  .card{ flex:1; border:1.6px solid var(--accent); border-radius:8px; overflow:hidden; background:#fff; }
+  .card .chead{ display:flex; justify-content:space-between; align-items:center; background:var(--accent); color:#fff; font-weight:900; font-size:12px; padding:2px 9px; }
+  .card .chead .wh{ font-size:9px; border:1.2px solid #fff; border-radius:4px; padding:0 5px; font-weight:800; }
+  .card .cbody{ font-size:10px; font-weight:700; line-height:1.55; padding:4px 8px 5px; }
+
+  /* 答え・かいせつページ */
+  .akey{ border:1.8px solid var(--accent); border-radius:11px; padding:12px 15px; margin-bottom:14px; }
+  .akey h2{ font-size:17px; font-weight:900; color:var(--accent); margin:0 0 6px; border-bottom:2px solid var(--accent); padding-bottom:5px; }
+  .akey .note{ font-size:11px; font-weight:800; color:var(--faint); margin-bottom:9px; }
+  .arow{ font-size:12.5px; font-weight:700; line-height:1.8; margin-bottom:9px; }
+  .arow .lab{ display:inline-block; min-width:62px; font-weight:900; color:var(--accent); vertical-align:top; }
+  .arow .ans{ font-weight:900; color:var(--ink); }
+  .arow .pts{ display:block; margin:1px 0 0 62px; font-size:11px; font-weight:800; color:#2E7D5B; }
+  .arow .pts b{ color:#2E7D5B; }
+
+  .expl{ border:1.8px solid var(--soft); border-radius:11px; padding:12px 15px; }
+  .expl h2{ font-size:16px; font-weight:900; color:var(--ink); margin:0 0 9px; border-bottom:2px solid var(--soft); padding-bottom:5px; }
+  .expl p{ font-size:12px; font-weight:700; line-height:1.8; margin:0 0 7px; }
+  .expl p .lab{ font-weight:900; color:var(--accent); margin-right:5px; }
+
+  @media print{
+    html,body{ background:#fff; }
+    .toolbar{ display:none; }
+    .page{ width:auto; min-height:auto; margin:0; padding:7mm 10mm; }
+    @page{ size:A4 portrait; margin:0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button onclick="window.print()">🖨️ 印刷する（A4・たて）</button>
+  <span>※ 1まい目＝もんだい / 2まい目＝答えとかいせつ（じぶんで○つけ）</span>
+</div>
+
+<!-- ============ 1ページ目：もんだい ============ -->
+<div class="page">
+  <div class="logo"><ruby>学<rt>まな</rt></ruby>びの<ruby>基地<rt>きち</rt></ruby> <b>⏻</b></div>
+  <div class="band">
+    <span class="grade">3<ruby>年<rt>ねん</rt></ruby>&nbsp;&nbsp;（&nbsp;&nbsp;）<ruby>組<rt>くみ</rt></ruby>&nbsp;&nbsp;（&nbsp;&nbsp;）<ruby>番<rt>ばん</rt></ruby></span>
+    <span class="nm"><ruby>名前<rt>なまえ</rt></ruby><span class="fill"></span></span>
+    <span class="score">てんすう&nbsp;<b>　</b>&nbsp;／100</span>
+  </div>
+
+  <div class="ttl"><ruby>社会科<rt>しゃかいか</rt></ruby>テスト ⑤　しりょう<ruby>問題<rt>もんだい</rt></ruby></div>
+  <div class="subttl"><ruby>奈良市<rt>ならし</rt></ruby>の<ruby>土地<rt>とち</rt></ruby>と<ruby>人<rt>ひと</rt></ruby>　／　しりょう（<ruby>表<rt>ひょう</rt></ruby>・グラフ・カード）をよく<ruby>見<rt>み</rt></ruby>てから<ruby>答<rt>こた</rt></ruby>えよう</div>
+
+  <!-- 【1】しりょう①：比較表 -->
+  <div class="q">
+    <div class="qhead">
+      <span class="qno">1</span>
+      <span class="qttl"><ruby>表<rt>ひょう</rt></ruby>から<ruby>読<rt>よ</rt></ruby>み<ruby>取<rt>と</rt></ruby>る</span>
+      <span class="tag"><ruby>知識<rt>ちしき</rt></ruby>・<ruby>技能<rt>ぎのう</rt></ruby></span>
+      <span class="pt">（<ruby>各<rt>かく</rt></ruby>10<ruby>点<rt>てん</rt></ruby>・<ruby>計<rt>けい</rt></ruby>30<ruby>点<rt>てん</rt></ruby>）</span>
+    </div>
+    <div class="shiryo">
+      <div class="slabel"><span class="schip">しりょう①</span><ruby>奈良市<rt>ならし</rt></ruby>の<ruby>土地<rt>とち</rt></ruby>のようすくらべ</div>
+      <table class="cmp">
+        <thead>
+          <tr><th>　</th><th><ruby>東<rt>ひがし</rt></ruby>のほう</th><th><ruby>中央<rt>ちゅうおう</rt></ruby>（<ruby>奈良<rt>なら</rt></ruby>のまち）</th><th><ruby>西<rt>にし</rt></ruby>のほう</th></tr>
+        </thead>
+        <tbody>
+          <tr><th><ruby>土地<rt>とち</rt></ruby>のようす</th><td><ruby>山<rt>やま</rt></ruby>が<ruby>多<rt>おお</rt></ruby>く、<ruby>森林<rt>しんりん</rt></ruby>が<ruby>広<rt>ひろ</rt></ruby>がる</td><td><ruby>平<rt>たい</rt></ruby>らな<ruby>土地<rt>とち</rt></ruby></td><td><ruby>住<rt>じゅう</rt></ruby>たく<ruby>地<rt>ち</rt></ruby>が<ruby>広<rt>ひろ</rt></ruby>がる</td></tr>
+          <tr><th><ruby>多<rt>おお</rt></ruby>いもの</th><td><ruby>茶畑<rt>ちゃばたけ</rt></ruby>や<ruby>田<rt>た</rt></ruby></td><td><ruby>寺<rt>てら</rt></ruby>や<ruby>神社<rt>じんじゃ</rt></ruby>、<ruby>古<rt>ふる</rt></ruby>い<ruby>町<rt>まち</rt></ruby>なみ</td><td><ruby>家<rt>いえ</rt></ruby>やお<ruby>店<rt>みせ</rt></ruby>、ショッピングセンター</td></tr>
+          <tr><th><ruby>人<rt>ひと</rt></ruby>のようす</th><td>すんでいる<ruby>人<rt>ひと</rt></ruby>は<ruby>少<rt>すく</rt></ruby>なめ</td><td><ruby>観光客<rt>かんこうきゃく</rt></ruby>でにぎわう</td><td><ruby>多<rt>おお</rt></ruby>くの<ruby>人<rt>ひと</rt></ruby>がすんでいる</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="item"><span class="n">(1)</span><ruby>山<rt>やま</rt></ruby>が<ruby>多<rt>おお</rt></ruby>く、<ruby>森林<rt>しんりん</rt></ruby>が<ruby>広<rt>ひろ</rt></ruby>がっているのは、<ruby>東<rt>ひがし</rt></ruby>・<ruby>中央<rt>ちゅうおう</rt></ruby>・<ruby>西<rt>にし</rt></ruby>の どこですか。<span class="paren">（　　　　　）</span></div>
+    <div class="item"><span class="n">(2)</span><ruby>家<rt>いえ</rt></ruby>やお<ruby>店<rt>みせ</rt></ruby>が<ruby>多<rt>おお</rt></ruby>く、ショッピングセンターもあるのは、どこですか。<span class="paren">（　　　　　）</span></div>
+    <div class="item"><span class="n">(3)</span><ruby>寺<rt>てら</rt></ruby>や<ruby>神社<rt>じんじゃ</rt></ruby>が<ruby>多<rt>おお</rt></ruby>く、<ruby>観光客<rt>かんこうきゃく</rt></ruby>でにぎわうのは、どこですか。<span class="paren">（　　　　　）</span></div>
+  </div>
+
+  <!-- 【2】しりょう②：棒グラフ -->
+  <div class="q">
+    <div class="qhead">
+      <span class="qno">2</span>
+      <span class="qttl">グラフから<ruby>考<rt>かんが</rt></ruby>える</span>
+      <span class="tag"><ruby>思考<rt>しこう</rt></ruby>・<ruby>判断<rt>はんだん</rt></ruby>・<ruby>表現<rt>ひょうげん</rt></ruby></span>
+      <span class="pt">（(1)10<ruby>点<rt>てん</rt></ruby>・(2)20<ruby>点<rt>てん</rt></ruby>・<ruby>計<rt>けい</rt></ruby>30<ruby>点<rt>てん</rt></ruby>）</span>
+    </div>
+    <div class="shiryo">
+      <div class="slabel"><span class="schip">しりょう②</span><ruby>近鉄奈良駅<rt>きんてつならえき</rt></ruby>のまわりで<ruby>見<rt>み</rt></ruby>つけたもの<ruby>調<rt>しら</rt></ruby>べ（3<ruby>年生<rt>ねんせい</rt></ruby>のきろく）</div>
+      <svg viewBox="0 0 660 100" style="width:88%;height:auto;display:block;margin:0 auto;" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="えきのまわりでみつけたものしらべのぼうグラフ">
+        <line x1="124" y1="0" x2="124" y2="96" stroke="var(--line)" stroke-width="1.5"/>
+        <text x="118" y="14" text-anchor="end" font-size="12.5" font-weight="800" fill="var(--ink)">おみせ</text>
+        <rect x="125" y="3" width="444" height="13" rx="3" fill="var(--accent)"/>
+        <text x="575" y="14" font-size="12" font-weight="900" fill="var(--ink)">12けん</text>
+        <text x="118" y="33" text-anchor="end" font-size="12.5" font-weight="800" fill="var(--ink)">ぎんこう</text>
+        <rect x="125" y="22" width="148" height="13" rx="3" fill="var(--accent)"/>
+        <text x="279" y="33" font-size="12" font-weight="900" fill="var(--ink)">4けん</text>
+        <text x="118" y="52" text-anchor="end" font-size="12.5" font-weight="800" fill="var(--ink)">ホテル</text>
+        <rect x="125" y="41" width="111" height="13" rx="3" fill="var(--accent)"/>
+        <text x="242" y="52" font-size="12" font-weight="900" fill="var(--ink)">3けん</text>
+        <text x="118" y="71" text-anchor="end" font-size="12.5" font-weight="800" fill="var(--ink)">ゆうびんきょく</text>
+        <rect x="125" y="60" width="74" height="13" rx="3" fill="var(--accent)"/>
+        <text x="205" y="71" font-size="12" font-weight="900" fill="var(--ink)">2けん</text>
+        <text x="118" y="90" text-anchor="end" font-size="12.5" font-weight="800" fill="var(--ink)">こうばん</text>
+        <rect x="125" y="79" width="37" height="13" rx="3" fill="var(--accent)"/>
+        <text x="168" y="90" font-size="12" font-weight="900" fill="var(--ink)">1けん</text>
+      </svg>
+    </div>
+    <div class="item"><span class="n">(1)</span>グラフで、いちばん<ruby>多<rt>おお</rt></ruby>く<ruby>見<rt>み</rt></ruby>つけたものは<span class="paren" style="min-width:90px;">（　　　　）</span>で、<span class="paren" style="min-width:55px;">（　　）</span>けんです。</div>
+    <div class="item"><span class="n">(2)</span><ruby>駅<rt>えき</rt></ruby>のまわりに お<ruby>店<rt>みせ</rt></ruby>が たくさん<ruby>集<rt>あつ</rt></ruby>まっているのは、なぜだと<ruby>思<rt>おも</rt></ruby>いますか。<ruby>駅<rt>えき</rt></ruby>を<ruby>使<rt>つか</rt></ruby>う<ruby>人<rt>ひと</rt></ruby>のことを<ruby>考<rt>かんが</rt></ruby>えて<ruby>書<rt>か</rt></ruby>きましょう。
+      <div class="writebox"></div>
+    </div>
+  </div>
+
+  <!-- 【3】しりょう①＋しりょう③：考えて書く -->
+  <div class="q">
+    <div class="qhead">
+      <span class="qno">3</span>
+      <span class="qttl">しりょうから<ruby>考<rt>かんが</rt></ruby>えて<ruby>書<rt>か</rt></ruby>く</span>
+      <span class="tag"><ruby>思考<rt>しこう</rt></ruby>・<ruby>判断<rt>はんだん</rt></ruby>・<ruby>表現<rt>ひょうげん</rt></ruby></span>
+      <span class="pt">（<ruby>各<rt>かく</rt></ruby>20<ruby>点<rt>てん</rt></ruby>・<ruby>計<rt>けい</rt></ruby>40<ruby>点<rt>てん</rt></ruby>）</span>
+    </div>
+    <div class="item"><span class="n">(1)</span>しりょう①の<ruby>表<rt>ひょう</rt></ruby>から、<ruby>東<rt>ひがし</rt></ruby>のほうと<ruby>西<rt>にし</rt></ruby>のほうの ちがいを くらべて<ruby>書<rt>か</rt></ruby>きましょう。<span class="hint">れい：<ruby>東<rt>ひがし</rt></ruby>のほうは〜だが、<ruby>西<rt>にし</rt></ruby>のほうは〜</span>
+      <div class="writebox"></div>
+    </div>
+    <div class="shiryo" style="margin-top:6px;">
+      <div class="slabel"><span class="schip">しりょう③</span><ruby>世界遺産<rt>せかいいさん</rt></ruby>カード</div>
+      <div class="cards">
+        <div class="card">
+          <div class="chead"><span><ruby>東大寺<rt>とうだいじ</rt></ruby></span><span class="wh"><ruby>世界遺産<rt>せかいいさん</rt></ruby></span></div>
+          <div class="cbody">『<ruby>古都奈良<rt>ことなら</rt></ruby>の<ruby>文化財<rt>ぶんかざい</rt></ruby>』として<ruby>世界遺産<rt>せかいいさん</rt></ruby>に<ruby>登録<rt>とうろく</rt></ruby>。むかしからのこる たてもの。</div>
+        </div>
+        <div class="card">
+          <div class="chead"><span><ruby>春日大社<rt>かすがたいしゃ</rt></ruby></span><span class="wh"><ruby>世界遺産<rt>せかいいさん</rt></ruby></span></div>
+          <div class="cbody"><ruby>東大寺<rt>とうだいじ</rt></ruby>と<ruby>同<rt>おな</rt></ruby>じく<ruby>世界遺産<rt>せかいいさん</rt></ruby>に<ruby>登録<rt>とうろく</rt></ruby>。<ruby>多<rt>おお</rt></ruby>くの<ruby>観光客<rt>かんこうきゃく</rt></ruby>がおとずれる。</div>
+        </div>
+      </div>
+    </div>
+    <div class="item"><span class="n">(2)</span>しりょう③のような むかしからの たてものが、<ruby>今<rt>いま</rt></ruby>も<ruby>奈良<rt>なら</rt></ruby>のまちに のこっているのは、なぜだと<ruby>思<rt>おも</rt></ruby>いますか。<ruby>奈良<rt>なら</rt></ruby>の<ruby>人々<rt>ひとびと</rt></ruby>が してきたことを<ruby>考<rt>かんが</rt></ruby>えて<ruby>書<rt>か</rt></ruby>きましょう。
+      <div class="writebox"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 2ページ目：答え・かいせつ ============ -->
+<div class="page pagebreak">
+  <div class="logo"><ruby>学<rt>まな</rt></ruby>びの<ruby>基地<rt>きち</rt></ruby> <b>⏻</b></div>
+  <div class="ttl" style="margin-top:2px;"><ruby>社会科<rt>しゃかいか</rt></ruby>テスト ⑤　<ruby>答<rt>こた</rt></ruby>えと かいせつ</div>
+  <div class="subttl">しりょう<ruby>問題<rt>もんだい</rt></ruby>（<ruby>奈良市<rt>ならし</rt></ruby>の<ruby>土地<rt>とち</rt></ruby>と<ruby>人<rt>ひと</rt></ruby>）　／　じぶんで○をつけて、ふりかえろう</div>
+
+  <div class="akey">
+    <h2><ruby>答<rt>こた</rt></ruby>え（れい）と <ruby>採点<rt>さいてん</rt></ruby>のめやす</h2>
+    <div class="note">※ <ruby>書<rt>か</rt></ruby>き<ruby>方<rt>かた</rt></ruby>は<ruby>人<rt>ひと</rt></ruby>によってちがってOK。<ruby>緑<rt>みどり</rt></ruby>の「✓ここが<ruby>書<rt>か</rt></ruby>けていれば◯」を<ruby>見<rt>み</rt></ruby>て、じぶんの<ruby>答<rt>こた</rt></ruby>えをたしかめよう。</div>
+
+    <div class="arow"><span class="lab">【1】(1)</span><span class="ans"><ruby>東<rt>ひがし</rt></ruby>（のほう）</span>
+      <span class="pts"><b>✓</b><ruby>表<rt>ひょう</rt></ruby>の「<ruby>土地<rt>とち</rt></ruby>のようす」を よこに<ruby>見<rt>み</rt></ruby>て<ruby>答<rt>こた</rt></ruby>える。「<ruby>東<rt>ひがし</rt></ruby>」だけでも<ruby>正解<rt>せいかい</rt></ruby></span></div>
+
+    <div class="arow"><span class="lab">【1】(2)</span><span class="ans"><ruby>西<rt>にし</rt></ruby>（のほう）</span>
+      <span class="pts"><b>✓</b><ruby>表<rt>ひょう</rt></ruby>の「<ruby>多<rt>おお</rt></ruby>いもの」のだんから。「<ruby>西<rt>にし</rt></ruby>」だけでも<ruby>正解<rt>せいかい</rt></ruby></span></div>
+
+    <div class="arow"><span class="lab">【1】(3)</span><span class="ans"><ruby>中央<rt>ちゅうおう</rt></ruby>（<ruby>奈良<rt>なら</rt></ruby>のまち）</span>
+      <span class="pts"><b>✓</b>「<ruby>中央<rt>ちゅうおう</rt></ruby>」「<ruby>奈良<rt>なら</rt></ruby>のまち」のどちらでも<ruby>正解<rt>せいかい</rt></ruby></span></div>
+
+    <div class="arow"><span class="lab">【2】(1)</span><span class="ans">お<ruby>店<rt>みせ</rt></ruby>（おみせ）・12けん</span>
+      <span class="pts"><b>✓</b>いちばん<ruby>長<rt>なが</rt></ruby>いぼうを<ruby>読<rt>よ</rt></ruby>む。「お<ruby>店<rt>みせ</rt></ruby>」と「12」の<ruby>両方<rt>りょうほう</rt></ruby>が<ruby>書<rt>か</rt></ruby>けていれば◯。ひらがなでも<ruby>正解<rt>せいかい</rt></ruby></span></div>
+
+    <div class="arow"><span class="lab">【2】(2)</span><span class="ans">（れい）<ruby>駅<rt>えき</rt></ruby>は <ruby>電車<rt>でんしゃ</rt></ruby>にのる<ruby>人<rt>ひと</rt></ruby>やおりる<ruby>人<rt>ひと</rt></ruby>が たくさん<ruby>集<rt>あつ</rt></ruby>まる<ruby>場所<rt>ばしょ</rt></ruby>だから、<ruby>買<rt>か</rt></ruby>い<ruby>物<rt>もの</rt></ruby>をする<ruby>人<rt>ひと</rt></ruby>が<ruby>多<rt>おお</rt></ruby>く、お<ruby>店<rt>みせ</rt></ruby>が<ruby>多<rt>おお</rt></ruby>くなる。</span>
+      <span class="pts"><b>✓</b>「<ruby>駅<rt>えき</rt></ruby>には<ruby>人<rt>ひと</rt></ruby>がたくさん<ruby>集<rt>あつ</rt></ruby>まる」→「だからお<ruby>店<rt>みせ</rt></ruby>が<ruby>多<rt>おお</rt></ruby>い」がつながって<ruby>書<rt>か</rt></ruby>けていれば◯。「<ruby>買<rt>か</rt></ruby>い<ruby>物<rt>もの</rt></ruby>をする<ruby>人<rt>ひと</rt></ruby>が<ruby>多<rt>おお</rt></ruby>いから」なども<ruby>正解<rt>せいかい</rt></ruby></span></div>
+
+    <div class="arow"><span class="lab">【3】(1)</span><span class="ans">（れい）<ruby>東<rt>ひがし</rt></ruby>のほうは <ruby>山<rt>やま</rt></ruby>が<ruby>多<rt>おお</rt></ruby>く <ruby>森林<rt>しんりん</rt></ruby>が<ruby>広<rt>ひろ</rt></ruby>がっていて、すんでいる<ruby>人<rt>ひと</rt></ruby>が<ruby>少<rt>すく</rt></ruby>なめだが、<ruby>西<rt>にし</rt></ruby>のほうは <ruby>住<rt>じゅう</rt></ruby>たくが<ruby>多<rt>おお</rt></ruby>く、<ruby>多<rt>おお</rt></ruby>くの<ruby>人<rt>ひと</rt></ruby>がすんでいる。</span>
+      <span class="pts"><b>✓</b><ruby>東<rt>ひがし</rt></ruby>と<ruby>西<rt>にし</rt></ruby>のちがいを、<ruby>表<rt>ひょう</rt></ruby>のことばを<ruby>使<rt>つか</rt></ruby>って くらべて<ruby>書<rt>か</rt></ruby>けていれば◯。「<ruby>東<rt>ひがし</rt></ruby>は<ruby>茶畑<rt>ちゃばたけ</rt></ruby>や<ruby>田<rt>た</rt></ruby>が<ruby>多<rt>おお</rt></ruby>いが、<ruby>西<rt>にし</rt></ruby>は<ruby>家<rt>いえ</rt></ruby>やお<ruby>店<rt>みせ</rt></ruby>が<ruby>多<rt>おお</rt></ruby>い」なども<ruby>正解<rt>せいかい</rt></ruby></span></div>
+
+    <div class="arow"><span class="lab">【3】(2)</span><span class="ans">（れい）<ruby>奈良<rt>なら</rt></ruby>の<ruby>人々<rt>ひとびと</rt></ruby>が、むかしから<ruby>大切<rt>たいせつ</rt></ruby>に<ruby>守<rt>まも</rt></ruby>って、<ruby>受<rt>う</rt></ruby>けついできたから。</span>
+      <span class="pts"><b>✓</b>「<ruby>大切<rt>たいせつ</rt></ruby>に<ruby>守<rt>まも</rt></ruby>ってきた」または「<ruby>受<rt>う</rt></ruby>けついできた」が<ruby>書<rt>か</rt></ruby>けていれば◯。「こわさないように、なおしながら のこしてきたから」なども<ruby>正解<rt>せいかい</rt></ruby></span></div>
+  </div>
+
+  <div class="expl">
+    <h2>かいせつ</h2>
+    <p><span class="lab">【1】</span><ruby>表<rt>ひょう</rt></ruby>は、たてと よこを<ruby>指<rt>ゆび</rt></ruby>でたどって<ruby>読<rt>よ</rt></ruby>みます。<ruby>奈良市<rt>ならし</rt></ruby>は<ruby>場所<rt>ばしょ</rt></ruby>によって<ruby>土地<rt>とち</rt></ruby>のようすが<ruby>大<rt>おお</rt></ruby>きくちがいます。<ruby>東<rt>ひがし</rt></ruby>のほうは<ruby>山<rt>やま</rt></ruby>と<ruby>森林<rt>しんりん</rt></ruby>と<ruby>茶畑<rt>ちゃばたけ</rt></ruby>、<ruby>中央<rt>ちゅうおう</rt></ruby>（<ruby>奈良<rt>なら</rt></ruby>のまち）は<ruby>寺<rt>てら</rt></ruby>や<ruby>神社<rt>じんじゃ</rt></ruby>と<ruby>古<rt>ふる</rt></ruby>い<ruby>町<rt>まち</rt></ruby>なみ、<ruby>西<rt>にし</rt></ruby>のほうは<ruby>住<rt>じゅう</rt></ruby>たく。このちがいがわかると、<ruby>地図<rt>ちず</rt></ruby>もぐっと<ruby>読<rt>よ</rt></ruby>みやすくなります。</p>
+    <p><span class="lab">【2】</span><ruby>駅<rt>えき</rt></ruby>は、<ruby>電車<rt>でんしゃ</rt></ruby>にのる<ruby>人<rt>ひと</rt></ruby>・おりる<ruby>人<rt>ひと</rt></ruby>が たくさん<ruby>集<rt>あつ</rt></ruby>まる<ruby>場所<rt>ばしょ</rt></ruby>です。<ruby>近鉄奈良駅<rt>きんてつならえき</rt></ruby>のまわりには<ruby>商店<rt>しょうてん</rt></ruby>がいが<ruby>広<rt>ひろ</rt></ruby>がっています。<ruby>人<rt>ひと</rt></ruby>が<ruby>集<rt>あつ</rt></ruby>まるところには、お<ruby>店<rt>みせ</rt></ruby>・<ruby>銀行<rt>ぎんこう</rt></ruby>・ゆうびん<ruby>局<rt>きょく</rt></ruby>など、くらしにべんりなものが<ruby>集<rt>あつ</rt></ruby>まってくるのです。</p>
+    <p><span class="lab">【3】</span><ruby>東大寺<rt>とうだいじ</rt></ruby>や<ruby>春日大社<rt>かすがたいしゃ</rt></ruby>などは『<ruby>古都奈良<rt>ことなら</rt></ruby>の<ruby>文化財<rt>ぶんかざい</rt></ruby>』として<ruby>世界遺産<rt>せかいいさん</rt></ruby>に<ruby>登録<rt>とうろく</rt></ruby>されています。むかしからのこる たてものは、<ruby>奈良<rt>なら</rt></ruby>の<ruby>人々<rt>ひとびと</rt></ruby>が<ruby>大切<rt>たいせつ</rt></ruby>に<ruby>守<rt>まも</rt></ruby>り、<ruby>受<rt>う</rt></ruby>けついできた たからものです。こんどは、わたしたちが<ruby>受<rt>う</rt></ruby>けついでいく<ruby>番<rt>ばん</rt></ruby>です。</p>
+  </div>
+</div>
+
+</body>
+</html>

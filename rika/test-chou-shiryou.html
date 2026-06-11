@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>理科テスト ⑤ しりょう問題（モンシロチョウのかんさつ日記）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --ink:#1f2a30; --line:#3a4750; --accent:#168a68; --faint:#9aa7ae; --soft:#cdd5d9; --leaf:#E4F2EB; --egg:#F2CB5A; --eggline:#B98A1F; --larva:#A9D3BC; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; font-family:"M PLUS Rounded 1c",sans-serif; color:var(--ink); background:#eef1f2; }
+  ruby rt{ font-size:.5em; font-weight:600; }
+
+  .toolbar{ max-width:210mm; margin:10px auto; text-align:center; }
+  .toolbar button{ font:inherit; font-weight:900; cursor:pointer; background:var(--accent); color:#fff; border:none; border-radius:10px; padding:9px 20px; }
+  .toolbar span{ color:#667; font-size:12px; margin-left:10px; }
+
+  .page{ width:210mm; min-height:297mm; margin:0 auto 12px; padding:9mm 12mm; background:#fff; }
+  .pagebreak{ break-before:page; }
+
+  .logo{ float:right; font-size:11px; font-weight:800; color:var(--faint); margin-top:1px; }
+  .logo b{ color:var(--accent); }
+
+  .band{ display:flex; align-items:center; gap:10px; border:2px solid var(--accent); border-radius:9px; padding:4px 11px; font-weight:800; font-size:13px; clear:both; }
+  .band .grade{ white-space:nowrap; }
+  .band .nm{ flex:1; display:flex; align-items:center; gap:6px; }
+  .band .nm .fill{ flex:1; border-bottom:1.5px solid var(--soft); min-height:15px; }
+  .band .score{ white-space:nowrap; border:2px solid var(--ink); border-radius:8px; padding:2px 9px; font-weight:900; font-size:13px; }
+  .band .score b{ font-size:15px; }
+
+  .ttl{ text-align:center; font-size:18px; font-weight:900; margin:5px 0 1px; letter-spacing:.5px; }
+  .subttl{ text-align:center; font-size:12px; font-weight:800; color:var(--faint); margin-bottom:5px; }
+  .lead{ font-size:11px; font-weight:800; color:var(--ink); background:#EAF6F1; border:1.6px solid var(--accent); border-radius:9px; padding:5px 11px; margin-bottom:7px; line-height:1.5; }
+
+  /* しりょう（かんさつ日記カード） */
+  .shiryo{ border:2.2px solid var(--ink); border-radius:11px; padding:5px 8px 6px; margin-bottom:8px; }
+  .shiryo .sh{ display:flex; align-items:center; gap:8px; margin-bottom:4px; }
+  .shiryo .sh .slab{ background:var(--ink); color:#fff; font-weight:900; font-size:11.5px; border-radius:6px; padding:2px 10px; }
+  .shiryo .sh .sttl{ font-weight:900; font-size:13px; }
+  .cards{ display:flex; gap:6px; }
+  .card{ flex:1; border:1.6px solid var(--soft); border-radius:8px; padding:4px 6px 5px; background:#FBFDFC; display:flex; flex-direction:column; }
+  .card .cd{ font-size:10.5px; font-weight:900; color:var(--accent); border-bottom:1.4px solid var(--soft); padding-bottom:2px; margin-bottom:3px; white-space:nowrap; }
+  .card svg{ width:100%; height:auto; max-height:13mm; display:block; margin-bottom:3px; }
+  .card .ct{ font-size:9.4px; font-weight:700; line-height:1.45; }
+
+  /* 大問 */
+  .q{ border:1.8px solid var(--soft); border-radius:11px; padding:6px 12px 7px; margin-bottom:8px; }
+  .qhead{ display:flex; align-items:center; gap:9px; border-bottom:2px solid var(--accent); padding-bottom:3px; margin-bottom:6px; flex-wrap:wrap; }
+  .qno{ background:var(--accent); color:#fff; font-weight:900; font-size:14px; border-radius:7px; padding:2px 10px; }
+  .qttl{ font-size:14px; font-weight:900; }
+  .tag{ font-size:10.5px; font-weight:900; color:#fff; background:var(--accent); border-radius:6px; padding:2px 8px; }
+  .tag.kn{ background:#fff; color:var(--accent); border:1.6px solid var(--accent); }
+  .pt{ font-size:11.5px; font-weight:800; color:var(--faint); margin-left:auto; }
+
+  .item{ margin:0 0 6px; font-size:13px; font-weight:700; line-height:1.5; }
+  .item:last-child{ margin-bottom:2px; }
+  .item .n{ font-weight:900; color:var(--accent); margin-right:4px; }
+  .ptn{ font-size:11px; font-weight:900; color:var(--accent); margin-left:4px; }
+  .hint{ display:inline-block; font-size:10.5px; font-weight:800; color:var(--faint); margin-left:5px; }
+
+  /* 選択肢・短答・記述らん */
+  .choices{ display:flex; flex-wrap:wrap; gap:5px 16px; margin:2px 0 0 18px; font-size:12.5px; font-weight:700; }
+  .choices .ch{ display:flex; align-items:center; gap:5px; }
+  .choices .mk{ display:inline-grid; place-items:center; width:19px; height:19px; border:1.6px solid var(--line); border-radius:50%; font-weight:900; font-size:12px; flex:none; }
+  .blank{ display:inline-block; min-width:70px; border-bottom:1.8px solid var(--ink); height:22px; margin:0 4px; vertical-align:bottom; }
+  .ansline{ margin:4px 0 0 18px; }
+  .ansline .lab{ font-size:11.5px; font-weight:800; color:var(--faint); margin-right:6px; }
+  .writebox{ margin:4px 0 0 16px; border:1.6px solid var(--soft); border-radius:7px; min-height:16mm; background:repeating-linear-gradient(transparent,transparent 8mm,var(--soft) 8mm,var(--soft) calc(8mm + 1.2px)); }
+
+  /* 答えページ */
+  .akey{ border:1.8px solid var(--accent); border-radius:11px; padding:12px 15px; margin-bottom:14px; }
+  .akey h2{ font-size:17px; font-weight:900; color:var(--accent); margin:0 0 6px; border-bottom:2px solid var(--accent); padding-bottom:5px; }
+  .akey .note{ font-size:11px; font-weight:800; color:var(--faint); margin-bottom:9px; }
+  .arow{ font-size:12.5px; font-weight:700; line-height:1.8; margin-bottom:9px; }
+  .arow .lab{ display:inline-block; min-width:62px; font-weight:900; color:var(--accent); vertical-align:top; }
+  .arow .ans{ font-weight:900; color:var(--ink); }
+  .arow .pts{ display:block; margin:1px 0 0 62px; font-size:11px; font-weight:800; color:#2E7D5B; }
+  .arow .pts b{ color:#2E7D5B; }
+
+  .expl{ border:1.8px solid var(--soft); border-radius:11px; padding:12px 15px; }
+  .expl h2{ font-size:16px; font-weight:900; color:var(--ink); margin:0 0 9px; border-bottom:2px solid var(--soft); padding-bottom:5px; }
+  .expl p{ font-size:12px; font-weight:700; line-height:1.8; margin:0 0 7px; }
+  .expl p .lab{ font-weight:900; color:var(--accent); margin-right:5px; }
+
+  @media print{
+    html,body{ background:#fff; }
+    .toolbar{ display:none; }
+    .page{ width:auto; min-height:auto; margin:0; padding:8mm 10mm; }
+    @page{ size:A4 portrait; margin:0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button onclick="window.print()">🖨️ 印刷する（A4・たて）</button>
+  <span>※ 1まい目＝もんだい / 2まい目＝答えとかいせつ（じぶんで○つけ）</span>
+</div>
+
+<!-- ============ 1ページ目：もんだい ============ -->
+<div class="page">
+  <div class="logo"><ruby>学<rt>まな</rt></ruby>びの<ruby>基地<rt>きち</rt></ruby> <b>⏻</b></div>
+  <div class="band">
+    <span class="grade">3<ruby>年<rt>ねん</rt></ruby>&nbsp;&nbsp;（&nbsp;&nbsp;）<ruby>組<rt>くみ</rt></ruby>&nbsp;&nbsp;（&nbsp;&nbsp;）<ruby>番<rt>ばん</rt></ruby></span>
+    <span class="nm"><ruby>名前<rt>なまえ</rt></ruby><span class="fill"></span></span>
+    <span class="score">てんすう&nbsp;<b>　</b>&nbsp;／100</span>
+  </div>
+
+  <div class="ttl"><ruby>理科<rt>りか</rt></ruby>テスト ⑤　しりょう<ruby>問題<rt>もんだい</rt></ruby></div>
+  <div class="subttl">モンシロチョウの かんさつ<ruby>日記<rt>にっき</rt></ruby>を<ruby>読<rt>よ</rt></ruby>みとる　／　<ruby>思考<rt>しこう</rt></ruby>・<ruby>判断<rt>はんだん</rt></ruby>・<ruby>表現<rt>ひょうげん</rt></ruby><ruby>中心<rt>ちゅうしん</rt></ruby></div>
+  <div class="lead">★ まず、<b>しりょうの「かんさつ<ruby>日記<rt>にっき</rt></ruby>」①〜⑤をよく<ruby>読<rt>よ</rt></ruby>みましょう。</b>ヒントは ぜんぶ<ruby>日記<rt>にっき</rt></ruby>の<ruby>中<rt>なか</rt></ruby>に。<ruby>書<rt>か</rt></ruby>くもんだいは <ruby>自分<rt>じぶん</rt></ruby>の<ruby>言葉<rt>ことば</rt></ruby>で<ruby>書<rt>か</rt></ruby>ければOK。</div>
+
+  <!-- しりょう：かんさつ日記 -->
+  <div class="shiryo">
+    <div class="sh"><span class="slab">しりょう</span><span class="sttl">みかさんの「チョウの かんさつ<ruby>日記<rt>にっき</rt></ruby>」</span></div>
+    <div class="cards">
+      <!-- ① たまご発見 -->
+      <div class="card">
+        <div class="cd">① 4<ruby>月<rt>がつ</rt></ruby>28<ruby>日<rt>にち</rt></ruby>・はれ</div>
+        <svg viewBox="0 0 110 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M14 30 Q38 6 96 14 Q90 48 36 54 Q18 46 14 30 Z" fill="var(--leaf)" stroke="var(--accent)" stroke-width="2"/>
+          <path d="M20 32 Q55 30 88 18" fill="none" stroke="var(--accent)" stroke-width="1.4"/>
+          <g stroke="var(--eggline)" stroke-width="0.8" fill="var(--egg)">
+            <ellipse cx="50" cy="37" rx="2.4" ry="3.6"/>
+            <ellipse cx="57" cy="39" rx="2.4" ry="3.6"/>
+            <ellipse cx="53" cy="44" rx="2.4" ry="3.6"/>
+          </g>
+          <circle cx="53" cy="40" r="11.5" fill="none" stroke="var(--ink)" stroke-width="1.2" stroke-dasharray="3 2"/>
+        </svg>
+        <div class="ct">キャベツの<ruby>葉<rt>は</rt></ruby>のうらに、<ruby>黄色<rt>きいろ</rt></ruby>の<ruby>小<rt>ちい</rt></ruby>さなつぶを<ruby>見<rt>み</rt></ruby>つけた。<ruby>大<rt>おお</rt></ruby>きさは1mmくらい。</div>
+      </div>
+      <!-- ② よう虫たんじょう -->
+      <div class="card">
+        <div class="cd">② 5<ruby>月<rt>がつ</rt></ruby>2<ruby>日<rt>か</rt></ruby>・くもり</div>
+        <svg viewBox="0 0 110 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M6 52 Q55 40 104 52 L104 60 L6 60 Z" fill="var(--leaf)" stroke="var(--accent)" stroke-width="1.5"/>
+          <path d="M28 44 Q25 34 30 28 L33 32 L36 27 L39 32 L42 28 Q46 36 43 44 Q36 49 28 44 Z" fill="var(--egg)" stroke="var(--eggline)" stroke-width="1"/>
+          <g fill="var(--larva)" stroke="var(--ink)" stroke-width="1">
+            <circle cx="58" cy="45" r="3.2"/><circle cx="64" cy="45" r="3.4"/><circle cx="70" cy="45" r="3.4"/><circle cx="76" cy="45" r="3.2"/>
+          </g>
+          <circle cx="81" cy="44" r="3" fill="#7FBF9D" stroke="var(--ink)" stroke-width="1"/>
+        </svg>
+        <div class="ct">つぶから よう<ruby>虫<rt>ちゅう</rt></ruby>が<ruby>生<rt>う</rt></ruby>まれた！　はじめに、<ruby>自分<rt>じぶん</rt></ruby>が<ruby>入<rt>はい</rt></ruby>っていた たまごのからを<ruby>食<rt>た</rt></ruby>べた。</div>
+      </div>
+      <!-- ③ 皮をぬぐ -->
+      <div class="card">
+        <div class="cd">③ 5<ruby>月<rt>がつ</rt></ruby>15<ruby>日<rt>にち</rt></ruby>・はれ</div>
+        <svg viewBox="0 0 110 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M12 20 Q40 2 92 10 Q88 36 40 42 Q16 36 12 20 Z" fill="var(--leaf)" stroke="var(--accent)" stroke-width="2"/>
+          <circle cx="88" cy="12" r="5" fill="#FBFDFC"/>
+          <circle cx="72" cy="38" r="4" fill="#FBFDFC"/>
+          <g fill="var(--larva)" stroke="var(--ink)" stroke-width="1">
+            <circle cx="34" cy="51" r="5"/><circle cx="43" cy="51" r="5"/><circle cx="52" cy="51" r="5"/><circle cx="61" cy="51" r="5"/>
+          </g>
+          <circle cx="70" cy="50" r="5.5" fill="#7FBF9D" stroke="var(--ink)" stroke-width="1"/>
+          <path d="M12 56 q4 -4 8 0 q4 4 8 0" stroke="var(--faint)" fill="none" stroke-width="1.5"/>
+        </svg>
+        <div class="ct">よう<ruby>虫<rt>ちゅう</rt></ruby>が<ruby>皮<rt>かわ</rt></ruby>をぬいで、<ruby>前<rt>まえ</rt></ruby>より<ruby>大<rt>おお</rt></ruby>きくなった。キャベツの<ruby>葉<rt>は</rt></ruby>をもりもり<ruby>食<rt>た</rt></ruby>べる。</div>
+      </div>
+      <!-- ④ 動かなくなった -->
+      <div class="card">
+        <div class="cd">④ 5<ruby>月<rt>がつ</rt></ruby>24<ruby>日<rt>か</rt></ruby>・あめ</div>
+        <svg viewBox="0 0 110 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <line x1="55" y1="4" x2="55" y2="58" stroke="var(--accent)" stroke-width="3"/>
+          <path d="M55 14 Q63 22 61 36 Q59 48 55 53 Q51 48 49 36 Q47 22 55 14 Z" fill="#CFE3D6" stroke="var(--ink)" stroke-width="1.4"/>
+          <path d="M44 26 Q55 20 66 26" stroke="var(--faint)" fill="none" stroke-width="1.2"/>
+          <path d="M45 34 Q55 29 65 34" stroke="var(--faint)" fill="none" stroke-width="1.2"/>
+        </svg>
+        <div class="ct">よう<ruby>虫<rt>ちゅう</rt></ruby>が<ruby>動<rt>うご</rt></ruby>かなくなった。<ruby>何<rt>なに</rt></ruby>も<ruby>食<rt>た</rt></ruby>べない。<ruby>体<rt>からだ</rt></ruby>はかたく、ぼうのような<ruby>形<rt>かたち</rt></ruby>。</div>
+      </div>
+      <!-- ⑤ せい虫 -->
+      <div class="card">
+        <div class="cd">⑤ 6<ruby>月<rt>がつ</rt></ruby>3<ruby>日<rt>か</rt></ruby>・はれ</div>
+        <svg viewBox="0 0 110 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <g stroke="var(--ink)" stroke-width="1.4" fill="#FFFFFF">
+            <path d="M52 30 Q30 8 18 16 Q12 28 36 36 Q16 38 20 48 Q30 56 50 38 Z"/>
+            <path d="M58 30 Q80 8 92 16 Q98 28 74 36 Q94 38 90 48 Q80 56 60 38 Z"/>
+          </g>
+          <circle cx="32" cy="22" r="2.6" fill="var(--ink)"/>
+          <circle cx="78" cy="22" r="2.6" fill="var(--ink)"/>
+          <ellipse cx="55" cy="34" rx="3" ry="10" fill="var(--ink)"/>
+          <path d="M52 25 Q48 16 44 13 M58 25 Q62 16 66 13" stroke="var(--ink)" fill="none" stroke-width="1.2"/>
+        </svg>
+        <div class="ct">かたい<ruby>皮<rt>かわ</rt></ruby>がわれて、<ruby>白<rt>しろ</rt></ruby>い<ruby>羽<rt>はね</rt></ruby>の<ruby>虫<rt>むし</rt></ruby>が<ruby>出<rt>で</rt></ruby>てきた！　<ruby>空<rt>そら</rt></ruby>へとんでいった。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 【1】日記を読みとる -->
+  <div class="q">
+    <div class="qhead">
+      <span class="qno">1</span>
+      <span class="qttl">かんさつ<ruby>日記<rt>にっき</rt></ruby>を<ruby>読<rt>よ</rt></ruby>みとる</span>
+      <span class="tag kn"><ruby>知識<rt>ちしき</rt></ruby>・<ruby>技能<rt>ぎのう</rt></ruby></span>
+      <span class="pt">（<ruby>各<rt>かく</rt></ruby>15<ruby>点<rt>てん</rt></ruby>・<ruby>計<rt>けい</rt></ruby>30<ruby>点<rt>てん</rt></ruby>）</span>
+    </div>
+    <div class="item"><span class="n">(1)</span>①の<ruby>日記<rt>にっき</rt></ruby>にある「<ruby>黄色<rt>きいろ</rt></ruby>の<ruby>小<rt>ちい</rt></ruby>さなつぶ」があった<ruby>場所<rt>ばしょ</rt></ruby>を、<ruby>日記<rt>にっき</rt></ruby>から<ruby>見<rt>み</rt></ruby>つけて<ruby>答<rt>こた</rt></ruby>えましょう。
+      <div class="choices">
+        <span class="ch"><span class="mk">ア</span><ruby>花<rt>はな</rt></ruby>の<ruby>上<rt>うえ</rt></ruby></span>
+        <span class="ch"><span class="mk">イ</span>キャベツの<ruby>葉<rt>は</rt></ruby>のうら</span>
+        <span class="ch"><span class="mk">ウ</span><ruby>土<rt>つち</rt></ruby>の<ruby>中<rt>なか</rt></ruby></span>
+      </div>
+    </div>
+    <div class="item"><span class="n">(2)</span>②の<ruby>日<rt>ひ</rt></ruby>、<ruby>生<rt>う</rt></ruby>まれたばかりの よう<ruby>虫<rt>ちゅう</rt></ruby>が「はじめに<ruby>食<rt>た</rt></ruby>べたもの」は<ruby>何<rt>なん</rt></ruby>ですか。
+      <div class="choices">
+        <span class="ch"><span class="mk">ア</span>キャベツの<ruby>葉<rt>は</rt></ruby></span>
+        <span class="ch"><span class="mk">イ</span><ruby>花<rt>はな</rt></ruby>のみつ</span>
+        <span class="ch"><span class="mk">ウ</span><ruby>自分<rt>じぶん</rt></ruby>が<ruby>入<rt>はい</rt></ruby>っていた たまごのから</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 【2】日記から考える -->
+  <div class="q">
+    <div class="qhead">
+      <span class="qno">2</span>
+      <span class="qttl"><ruby>日記<rt>にっき</rt></ruby>から<ruby>考<rt>かんが</rt></ruby>える</span>
+      <span class="tag"><ruby>思考<rt>しこう</rt></ruby>・<ruby>判断<rt>はんだん</rt></ruby>・<ruby>表現<rt>ひょうげん</rt></ruby></span>
+      <span class="pt">（<ruby>計<rt>けい</rt></ruby>70<ruby>点<rt>てん</rt></ruby>）</span>
+    </div>
+    <div class="item"><span class="n">(1)</span>たまごを<ruby>見<rt>み</rt></ruby>つけた4<ruby>月<rt>がつ</rt></ruby>28<ruby>日<rt>にち</rt></ruby>から、せい<ruby>虫<rt>ちゅう</rt></ruby>になった6<ruby>月<rt>がつ</rt></ruby>3<ruby>日<rt>か</rt></ruby>まで、<ruby>何日<rt>なんにち</rt></ruby>かかりましたか。<span class="ptn">10<ruby>点<rt>てん</rt></ruby></span><span class="hint">ヒント：4<ruby>月<rt>がつ</rt></ruby>は30<ruby>日<rt>にち</rt></ruby>まで、5<ruby>月<rt>がつ</rt></ruby>は31<ruby>日<rt>にち</rt></ruby>まであります</span>
+      <div class="ansline"><span class="lab">こたえ</span>（<span class="blank"></span>）<ruby>日<rt>にち</rt></ruby></div>
+    </div>
+    <div class="item"><span class="n">(2)</span>④の<ruby>日記<rt>にっき</rt></ruby>で、よう<ruby>虫<rt>ちゅう</rt></ruby>は「<ruby>動<rt>うご</rt></ruby>かなくなって、<ruby>何<rt>なに</rt></ruby>も<ruby>食<rt>た</rt></ruby>べない」とあります。よう<ruby>虫<rt>ちゅう</rt></ruby>はどうなったのですか。<b>「さなぎ」という<ruby>言葉<rt>ことば</rt></ruby>を<ruby>使<rt>つか</rt></ruby>って</b><ruby>書<rt>か</rt></ruby>きましょう。<span class="ptn">20<ruby>点<rt>てん</rt></ruby></span><span class="hint">れい：よう<ruby>虫<rt>ちゅう</rt></ruby>は…。さなぎは…</span>
+      <div class="writebox"></div>
+    </div>
+    <div class="item"><span class="n">(3)</span>この<ruby>日記<rt>にっき</rt></ruby>のせい<ruby>虫<rt>ちゅう</rt></ruby>が、このあと たまごをうむとしたら、どんな<ruby>葉<rt>は</rt></ruby>にうむと<ruby>考<rt>かんが</rt></ruby>えられますか。<b><ruby>葉<rt>は</rt></ruby>の<ruby>名前<rt>なまえ</rt></ruby>と、そう<ruby>考<rt>かんが</rt></ruby>えたわけ</b>を<ruby>書<rt>か</rt></ruby>きましょう。<span class="ptn">20<ruby>点<rt>てん</rt></ruby></span>
+      <div class="writebox"></div>
+    </div>
+    <div class="item"><span class="n">(4)</span>みかさんの<ruby>日記<rt>にっき</rt></ruby>には、かんさつのきろくとして「よいところ」がいくつもあります。よいところを<b>1つ<ruby>見<rt>み</rt></ruby>つけて</b><ruby>書<rt>か</rt></ruby>きましょう。<span class="ptn">20<ruby>点<rt>てん</rt></ruby></span><span class="hint">れい：…が<ruby>書<rt>か</rt></ruby>いてあるところ。</span>
+      <div class="writebox"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 2ページ目：答え・かいせつ ============ -->
+<div class="page pagebreak">
+  <div class="logo"><ruby>学<rt>まな</rt></ruby>びの<ruby>基地<rt>きち</rt></ruby> <b>⏻</b></div>
+  <div class="ttl" style="margin-top:2px;"><ruby>理科<rt>りか</rt></ruby>テスト ⑤　<ruby>答<rt>こた</rt></ruby>えと かいせつ</div>
+  <div class="subttl">しりょう<ruby>問題<rt>もんだい</rt></ruby>（モンシロチョウの かんさつ<ruby>日記<rt>にっき</rt></ruby>）　／　じぶんで○をつけて、ふりかえろう</div>
+
+  <div class="akey">
+    <h2><ruby>答<rt>こた</rt></ruby>え（れい）と <ruby>採点<rt>さいてん</rt></ruby>のめやす</h2>
+    <div class="note">※ <ruby>記号<rt>きごう</rt></ruby>と<ruby>数<rt>かず</rt></ruby>のもんだいは、<ruby>答<rt>こた</rt></ruby>えが<ruby>合<rt>あ</rt></ruby>っていれば◯。<ruby>書<rt>か</rt></ruby>くもんだいは、<ruby>書<rt>か</rt></ruby>き<ruby>方<rt>かた</rt></ruby>が<ruby>人<rt>ひと</rt></ruby>によってちがってOK。<ruby>緑<rt>みどり</rt></ruby>の「✓ここが<ruby>書<rt>か</rt></ruby>けていれば◯」を<ruby>見<rt>み</rt></ruby>て、じぶんの<ruby>答<rt>こた</rt></ruby>えをたしかめよう。</div>
+
+    <div class="arow"><span class="lab">【1】(1)</span><span class="ans">イ　キャベツの<ruby>葉<rt>は</rt></ruby>のうら</span></div>
+    <div class="arow"><span class="lab">【1】(2)</span><span class="ans">ウ　<ruby>自分<rt>じぶん</rt></ruby>が<ruby>入<rt>はい</rt></ruby>っていた たまごのから</span></div>
+
+    <div class="arow"><span class="lab">【2】(1)</span><span class="ans">36<ruby>日<rt>にち</rt></ruby></span>
+      <span class="pts"><b>✓</b>「4<ruby>月<rt>がつ</rt></ruby>のこり2<ruby>日<rt>にち</rt></ruby>＋5<ruby>月<rt>がつ</rt></ruby>31<ruby>日<rt>にち</rt></ruby>＋6<ruby>月<rt>がつ</rt></ruby>3<ruby>日<rt>か</rt></ruby>」と<ruby>月<rt>つき</rt></ruby>ごとに<ruby>分<rt>わ</rt></ruby>けて<ruby>計算<rt>けいさん</rt></ruby>できていれば◯（かぞえ<ruby>方<rt>かた</rt></ruby>は かいせつを<ruby>見<rt>み</rt></ruby>てね）</span></div>
+
+    <div class="arow"><span class="lab">【2】(2)</span><span class="ans">（れい）よう<ruby>虫<rt>ちゅう</rt></ruby>は さなぎに なった。さなぎの<ruby>間<rt>あいだ</rt></ruby>は <ruby>動<rt>うご</rt></ruby>かないで、<ruby>何<rt>なに</rt></ruby>も<ruby>食<rt>た</rt></ruby>べない。</span>
+      <span class="pts"><b>✓</b>「さなぎになった」が<ruby>書<rt>か</rt></ruby>けていれば◯。「さなぎになる じゅんびを していた」なども<ruby>正解<rt>せいかい</rt></ruby>。「<ruby>動<rt>うご</rt></ruby>かない・<ruby>食<rt>た</rt></ruby>べない」まで<ruby>書<rt>か</rt></ruby>けていたら すばらしい！</span></div>
+
+    <div class="arow"><span class="lab">【2】(3)</span><span class="ans">（れい）キャベツの<ruby>葉<rt>は</rt></ruby>（のうら）にうむ。たまごから<ruby>生<rt>う</rt></ruby>まれた よう<ruby>虫<rt>ちゅう</rt></ruby>が、その<ruby>葉<rt>は</rt></ruby>を<ruby>食<rt>た</rt></ruby>べるから。</span>
+      <span class="pts"><b>✓</b>「キャベツ（またはアブラナ）の<ruby>葉<rt>は</rt></ruby>」＋「よう<ruby>虫<rt>ちゅう</rt></ruby>が<ruby>食<rt>た</rt></ruby>べるから」がつながって<ruby>書<rt>か</rt></ruby>けていれば◯。「えさのある<ruby>場所<rt>ばしょ</rt></ruby>だから」なども<ruby>正解<rt>せいかい</rt></ruby>。</span></div>
+
+    <div class="arow"><span class="lab">【2】(4)</span><span class="ans">（れい）<ruby>日<rt>ひ</rt></ruby>づけと<ruby>天気<rt>てんき</rt></ruby>が<ruby>書<rt>か</rt></ruby>いてあるところ。</span>
+      <span class="pts"><b>✓</b>「<ruby>日<rt>ひ</rt></ruby>づけ・<ruby>天気<rt>てんき</rt></ruby>を<ruby>書<rt>か</rt></ruby>いている」「<ruby>大<rt>おお</rt></ruby>きさを<ruby>数字<rt>すうじ</rt></ruby>（1mm）で<ruby>書<rt>か</rt></ruby>いている」「<ruby>色<rt>いろ</rt></ruby>や<ruby>形<rt>かたち</rt></ruby>・<ruby>食<rt>た</rt></ruby>べたものなど<ruby>気<rt>き</rt></ruby>づいたことを<ruby>書<rt>か</rt></ruby>いている」のどれか1つで◯。ほかに<ruby>日記<rt>にっき</rt></ruby>から<ruby>見<rt>み</rt></ruby>つけたことも<ruby>正解<rt>せいかい</rt></ruby>。</span></div>
+  </div>
+
+  <div class="expl">
+    <h2>もっとくわしく</h2>
+    <p><span class="lab">【1】</span>モンシロチョウは、よう<ruby>虫<rt>ちゅう</rt></ruby>のえさになる<b>キャベツやアブラナの<ruby>葉<rt>は</rt></ruby>のうら</b>にたまごをうみます。<ruby>生<rt>う</rt></ruby>まれたばかりのよう<ruby>虫<rt>ちゅう</rt></ruby>は、まず<ruby>自分<rt>じぶん</rt></ruby>が<ruby>入<rt>はい</rt></ruby>っていたたまごのからを<ruby>食<rt>た</rt></ruby>べ、それからキャベツの<ruby>葉<rt>は</rt></ruby>を<ruby>食<rt>た</rt></ruby>べて、<ruby>皮<rt>かわ</rt></ruby>をぬぎながら<ruby>大<rt>おお</rt></ruby>きくなります。ちなみにアゲハは、ミカンやサンショウの<ruby>葉<rt>は</rt></ruby>にたまごをうみます。</p>
+    <p><span class="lab">【2】(1)</span><ruby>日数<rt>にっすう</rt></ruby>のかぞえ<ruby>方<rt>かた</rt></ruby>：4<ruby>月<rt>がつ</rt></ruby>は30<ruby>日<rt>にち</rt></ruby>までなので、28<ruby>日<rt>にち</rt></ruby>から30<ruby>日<rt>にち</rt></ruby>までで<b>2<ruby>日<rt>にち</rt></ruby></b>。5<ruby>月<rt>がつ</rt></ruby>はまるごと<b>31<ruby>日<rt>にち</rt></ruby></b>。6<ruby>月<rt>がつ</rt></ruby>は3<ruby>日<rt>か</rt></ruby>までで<b>3<ruby>日<rt>か</rt></ruby></b>。2＋31＋3＝<b>36<ruby>日<rt>にち</rt></ruby></b>です。</p>
+    <p><span class="lab">【2】(2)(3)</span>チョウは「たまご→よう<ruby>虫<rt>ちゅう</rt></ruby>→さなぎ→せい<ruby>虫<rt>ちゅう</rt></ruby>」のじゅんに<ruby>育<rt>そだ</rt></ruby>ちます。さなぎは<ruby>動<rt>うご</rt></ruby>かず<ruby>何<rt>なに</rt></ruby>も<ruby>食<rt>た</rt></ruby>べませんが、<ruby>中<rt>なか</rt></ruby>では せい<ruby>虫<rt>ちゅう</rt></ruby>の<ruby>体<rt>からだ</rt></ruby>が<ruby>少<rt>すこ</rt></ruby>しずつ できています。せい<ruby>虫<rt>ちゅう</rt></ruby>になると、また よう<ruby>虫<rt>ちゅう</rt></ruby>のえさになる<ruby>葉<rt>は</rt></ruby>に たまごをうみます。<ruby>命<rt>いのち</rt></ruby>が ぐるっと つながっているのですね。</p>
+    <p><span class="lab">【2】(4)</span>きろくカードには、<b><ruby>日<rt>ひ</rt></ruby>づけ・<ruby>天気<rt>てんき</rt></ruby>・<ruby>名前<rt>なまえ</rt></ruby>・<ruby>大<rt>おお</rt></ruby>きさ・<ruby>形<rt>かたち</rt></ruby>・<ruby>色<rt>いろ</rt></ruby>・<ruby>気<rt>き</rt></ruby>づいたこと</b>を<ruby>書<rt>か</rt></ruby>きます。<ruby>大<rt>おお</rt></ruby>きさを「1mm」のように<ruby>数字<rt>すうじ</rt></ruby>で<ruby>書<rt>か</rt></ruby>くと、<ruby>前<rt>まえ</rt></ruby>のきろくとくらべられて、<ruby>育<rt>そだ</rt></ruby>ちのへんかが よくわかります。みなさんも かんさつするときに まねしてみましょう。</p>
+  </div>
+</div>
+
+</body>
+</html>
