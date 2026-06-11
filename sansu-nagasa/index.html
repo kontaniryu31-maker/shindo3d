@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D 自由進度表 — 長いものの長さのはかり方と表し方（長さ）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  ruby rt { font-size: 0.5em; font-weight: 600; user-select: none; letter-spacing: 0; }
+  /* 演出をオフにしたい子・教室向け：OSの「視差効果を減らす」を尊重 */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef } = React;
+
+/* window.storage（Claude artifact）が無い環境用：localStorage シム */
+if (typeof window !== "undefined" && !window.storage) {
+  window.storage = {
+    async get(k) { const v = localStorage.getItem(k); return v == null ? null : { value: v }; },
+    async set(k, v) { localStorage.setItem(k, v); },
+    async delete(k) { localStorage.removeItem(k); },
+  };
+}
+
+/* ===== カラー（水色=すすむ／金の濃淡=ふかめる／緑=つなげる） ===== */
+const AQUA = "#4DB6C7";          // ヘッダー帯など装飾の水色
+const BLUE = "#2E91A8";          // 進度＝落ち着いた水色
+const AMBER = ["#DCE7EC", "#F2DDC8", "#E7E1F2", "#F5E6B4"];    // 深度＝錆浅葱→銅→藤→金
+const AMBER_DK = ["#5E7E8C", "#B16A3C", "#6E5DA8", "#B58A2A"]; // 同・濃いめ（枠線・文字・見出し用）
+const AMBER_MAIN = "#8A6A1E";    // 深度の代表色＝濃い金
+const GREEN = "#3FA98C";          // 伸度＝緑（線・面・帯用）
+const GREEN_TX = "#1f7a5f";       // 伸度の文字用
+const GRAY = "#8a97a0";
+const INK = "#2A3B40";
+const SUB = "#5b6a72";
+const darken = (hex, amt) => { const n = parseInt(hex.slice(1), 16); const r = Math.round(((n >> 16) & 255) * (1 - amt)), g = Math.round(((n >> 8) & 255) * (1 - amt)), b = Math.round((n & 255) * (1 - amt)); return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1); };
+const grad = (hex) => `linear-gradient(165deg, ${hex} 0%, ${hex} 48%, ${darken(hex, 0.14)} 100%)`;
+/* 教科テーマ：算数＝青系（--c-math #2B7FFF系）。3軸の色は変えない＝統一感は維持 */
+const THEME = { accent: "#2B7FFF", bg: "radial-gradient(1200px 700px at 78% -8%, #EAF1FB 0%, #EEF4FB 45%, #E8EFF8 100%)" };
+/* RPGレイヤーのアクセント＝金色 */
+const GOLD = "#FFC400";
+const GOLD_DK = "#A87E00";
+const GOLD_TX = "#5d4500";
+
+/* ╔══════════════════════════════════════════════════════════════════╗
+   ║  ★★★ 単元データ（ここを差し替えれば 別単元の3D自由進度表になる）★★★  ║
+   ╚══════════════════════════════════════════════════════════════════╝
+   単元：東京書籍「新しい算数3」上 単元5「長いものの長さのはかり方と表し方」
+   ⚠️ 教科書ページわり（p.56〜65）は目安です。手元の教科書で確認して
+      readPage / page / explain.page を直してください（年度版で前後します）。
+   RPGクエストレイヤー（XP・レベル・称号・ボスせん）は学習構造の上の演出層。
+   3軸構造・PLAN・色ぬり進度のしくみは sansu（筆算）と同じです。 */
+
+const UNIT = "5. 長いものの 長さの はかり方と 表し方（長さ）";
+const BOOK = "東京書籍「新しい算数3」上巻（教科書 p.56〜65 ※目安）";
+const CORE = "まきじゃくと たんいを つかうと、長い ものや とおい ところまでの 長さも はかれて、くらべられる。1km=1000m。道のり(道にそった長さ)と きょり(まっすぐの長さ)は ちがう。";
+
+const STAGES = [
+  { n: 1, title: "まきじゃく", sub: "めもりの読み方", ex: "3m70cm" },
+  { n: 2, title: "長さのたんい", sub: "km・1km=1000m", ex: "2km300m=□m" },
+  { n: 3, title: "道のりと きょり", sub: "ちがいと もとめ方", ex: "絵地図で くらべる" },
+  { n: 4, title: "長さの計算", sub: "km・mの たしひき", ex: "700m+600m" },
+  { n: 5, title: "たしかめ・まとめ", sub: "ボスせんへ！", ex: "ぜんぶミックス" },
+];
+const DEPTH = [
+  { lv: 1, name: "読む", desc: "音読→線引き", badge: "📖", badgeName: "読破" },
+  { lv: 2, name: "つかう", desc: "問題をとく", badge: "✏️", badgeName: "できた" },
+  { lv: 3, name: "せつめい", desc: "QNKSで せつめい", badge: "💡", badgeName: "QNKSできた" },
+  { lv: 4, name: "高め合う", desc: "友だちと", badge: "🤝", badgeName: "高め合い" },
+];
+
+/* ===== RPGクエストレイヤー（演出層）=====
+   XPは「ぬったマス(done)」からの導出値。保存が増えるのは lvseen と bosswin だけ。 */
+const XP_BY_LV = [10, 20, 30, 40];           // 読む/つかう/せつめい/高め合う
+const BOSS_XP = 100;                          // ボスをたおすと +100XP
+const xpOf = (d, bossWin) =>
+  STAGES.reduce((acc, s) => acc + XP_BY_LV.reduce((a2, v, k) => a2 + (d[`${s.n}-${k}`] ? v : 0), 0), 0)
+  + (bossWin ? BOSS_XP : 0);
+const lvOf = (xp) => Math.min(10, Math.floor(xp / 60) + 1);
+const TITLES = [
+  { stage: 1, emoji: "📏", name: "まきじゃくマスター" },
+  { stage: 2, emoji: "📐", name: "たんいはかせ" },
+  { stage: 3, emoji: "🗺️", name: "道のりたんけん{家|か}" },
+  { stage: 4, emoji: "🧮", name: "計算ヒーロー" },
+  { stage: 5, emoji: "🏅", name: "まとめの達人" },
+  { boss: true, emoji: "⚔️", name: "長さの勇者" },
+];
+
+/* つなげる：系統チェーン（解説用） */
+const FROM_CHAIN = [
+  { grade: "2年", label: "長さのたんい（cm・mm）・ものさし", think: "めもりを 読んで 長さを 数で 表す" },
+  { grade: "2年", label: "100cmは 1m（mの たんい）", think: "大きい たんいに まとめると 表しやすい" },
+];
+/* つなげる先カード（リンクは実在確認済みURLのみ。単元専用ページは確認できなかったため教科書表記） */
+const NEXT_CARDS = [
+  {
+    key: "omosa", grade: "3年", title: "重さの たんいと はかり方",
+    think: "1kg＝1000g。「1000の かんけい」は 1km＝1000mと 同じ！",
+    concept: "重さにも たんいが あるよ。1kg＝1000g。長さの 1km＝1000mと そっくり！ 1000の まとまりに 名前を つけるのは たんいの きほん。はかりの めもりの 読み方も、まきじゃくと 同じだよ。",
+    video: null,
+    links: [{ t: "eboard：算数 単元一覧", url: "https://www.eboard.jp/list/7/" }, { t: "NHK for School 算数", url: "https://edu.web.nhk/school/sansuu/" }],
+    gen: "omosaTanni", genLabel: "重さの たんいクイズ（無限）",
+  },
+  {
+    key: "shosu", grade: "3年", title: "小数（はしたの 表し方）",
+    think: "1mmは 0.1cm。はしたの 長さも 数で 表せる",
+    concept: "1cmより みじかい はしたは どうする？ 1cmを 10こに {分|わ}けた 1つが 1mm。これを 0.1cmと 書くのが「小数」。3cm5mm＝3.5cm。はしたの 長さも 数で 表せる！",
+    video: null,
+    links: [{ t: "eboard：算数 単元一覧", url: "https://www.eboard.jp/list/7/" }, { t: "NHK for School 算数", url: "https://edu.web.nhk/school/sansuu/" }],
+    gen: "shosuLen", genLabel: "小数で 長さを 表す（無限）",
+  },
+  {
+    key: "menseki", grade: "4年", title: "面積（広さ）",
+    think: "長さ×長さで 広さが わかる（たてと よこ）",
+    concept: "長さが 2つ そろうと「広さ」が わかるよ。たて3cm・よこ5cmの 長方形には、1辺が 1cmの ましかくが 3×5＝15こ ならぶ。長さは 広さの もとに なる！",
+    video: null,
+    links: [{ t: "eboard：算数 単元一覧", url: "https://www.eboard.jp/list/7/" }],
+    gen: "menseki", genLabel: "長方形の ましかくクイズ（無限）",
+  },
+  {
+    key: "chizu", grade: "3年・社会", title: "地図と 道のり（社会）",
+    think: "地図の 道のりを 読む——社会でも つかう 長さの 力",
+    concept: "社会の 地図でも 長さが かつやく。地図から 道のりを 読めると、たんけんの 計画が 立てられるよ。道のりと きょりの ちがいは、社会の まち たんけんでも 大事！",
+    video: null,
+    links: [{ t: "地図ちょう（社会）", url: null }, { t: "NHK for School 算数", url: "https://edu.web.nhk/school/sansuu/" }],
+    gen: "michinori", genLabel: "道のりクイズ（無限）",
+  },
+];
+
+/* ===== 共通の教材リンク（右パネル＝お助けアイテム。URLはcurlで実在確認済みのみ） ===== */
+const COMMON_LINKS = [
+  { t: "eboard：算数 単元一覧（どうがを さがす）", url: "https://www.eboard.jp/list/7/" },
+  { t: "NHK for School 算数", url: "https://edu.web.nhk/school/sansuu/" },
+  { t: "教科書 上 p.56〜65（長さ）", url: null },
+];
+
+/* ===== やるべきこと：PLAN[stage][lv] =====
+   全5ステージ × 全4Lv（0:読む 1:つかう 2:せつめい 3:高め合う）。
+   Lv3(index2 せつめい)は QNKS（問い→ノート→説明→先生OK）運用（kind:"explain_print"）。
+   ⚠️ readPage / page のページは目安。教科書で確認して直してください。 */
+const PLAN = {
+  1: { // まきじゃく
+    0: { ready: true, kind: "read", readPage: "教科書 上 p.56〜58",
+      goal: "教科書を 音読し、大事な ことば（まきじゃく・めもり）に 線を引ける。",
+      prep: ["教科書", "赤えんぴつ", "ノート"],
+      asks: ["まきじゃくは どんな ときに つかう？", "めもりは どこから 読む？", "線を引いた ことばで 1文 言える？"],
+      teacher: ["大事な語に 自分で 線を引けているか", "用語を 自分のことばで 言いかえられるか"],
+      links: [{ t: "教科書", url: null }],
+    },
+    1: { ready: true, kind: "use", page: "教科書 上 p.56〜58", drill: "計算ドリル（長さの ところ）",
+      goal: "まきじゃくの めもりを 正しく 読める。はかる ものに 合う どうぐを えらべる。",
+      prep: ["教科書", "まきじゃく", "ノート"],
+      asks: ["0の めもりに きちんと 合わせた？", "1めもりは いくつ ぶん？", "ものさしと まきじゃく、どちらが いい？ なぜ？"],
+      teacher: ["0の位置を そろえて はかっているか", "めもりの 1きざみを 読みとれているか"],
+      links: [{ t: "計算ドリル（長さ）", url: null }, { t: "eboard：算数 単元一覧", url: "https://www.eboard.jp/list/7/" }],
+    },
+    2: { ready: true, kind: "explain_print",
+      explain: { problem: "まきじゃくが ものさしより べんりなのは どんなとき？", page: "教科書 上 p.57",
+        point: "まきじゃくは 長い ものや まるい ものを はかるのに べんり。ものさしは みじかい 直線に べんり。どうぐは はかる ものに 合わせて えらぶ。",
+        goalShort: "まきじゃくが べんりな ときを 説明できる。" },
+      goal: "まきじゃくと ものさしの つかい分けを、わけと いっしょに 説明できる。",
+      flow: ["①問いを 読む（Q）", "②ノートに 考えを あつめる（N）", "③くみたてて 書く（K）", "④友だち・先生に 説明（S）して OKなら ぬる"],
+      prep: ["教科書 上 p.57", "ノート", "赤えんぴつ"],
+      asks: ["まるい ものは どうして まきじゃくが いい？", "長い ものは どうして？", "ことばだけでなく れいでも 言える？"],
+      teacher: ["長い・まるい＝まきじゃく と つかい分けを 言えるか", "れいを あげて 説明できるか"],
+      links: [{ t: "教科書 上 p.57", url: null }],
+    },
+    3: { ready: true, kind: "together",
+      goal: "まきじゃくの つかい方と めもりの 読み方を 友だちと 説明し合い、高め合える。",
+      prep: ["自分の 説明", "ノート"],
+      asks: ["友だちの 説明で なるほど と思った所は？", "めもりの 読みまちがいは どこで おこりそう？"],
+      teacher: ["友だちの説明を 聞いて 取り入れているか"],
+      links: [{ t: "（ペアで 説明し合う）", url: null }],
+    },
+  },
+
+  2: { // 長さのたんい km
+    0: { ready: true, kind: "read", readPage: "教科書 上 p.59〜60",
+      goal: "教科書を 音読し、大事な ことば（キロメートル・km・1km＝1000m）に 線を引ける。",
+      prep: ["教科書", "赤えんぴつ", "ノート"],
+      asks: ["「km」は どこに 出てくる？", "1kmは 何m？", "線を引いた ことばで 1文 言える？"],
+      teacher: ["大事な語に 線を引けているか", "1km＝1000mを 言えるか"],
+      links: [{ t: "教科書", url: null }],
+    },
+    1: { ready: true, kind: "use", page: "教科書 上 p.59〜60", drill: "計算ドリル（長さの ところ）",
+      goal: "1km＝1000mを つかって、たんいを かえられる（2km300m＝2300m など）。",
+      prep: ["教科書", "計算ドリル", "ノート"],
+      asks: ["kmを mに する とき 何を した？", "1500mは 何km何m？", "どの たんいが ぴったり？ なぜ？"],
+      teacher: ["1km＝1000mで 正しく かえられるか", "たんいの えらび方が 言えるか"],
+      links: [{ t: "計算ドリル（長さ）", url: null }, { t: "eboard：算数 単元一覧", url: "https://www.eboard.jp/list/7/" }],
+    },
+    2: { ready: true, kind: "explain_print",
+      explain: { problem: "1kmは なぜ 1000mと いえる？", page: "教科書 上 p.59",
+        point: "1000mの まとまりに「1km」と 名前を つけた。1cm＝10mm・1m＝100cmと 同じで、たんいは まとまりに つけた 名前。",
+        goalShort: "1km＝1000mの わけを 説明できる。" },
+      goal: "たんいの しくみ（まとまりに 名前を つける）を つかって 1km＝1000mを 説明できる。",
+      flow: ["①問いを 読む（Q）", "②ノートに 考えを あつめる（N）", "③くみたてて 書く（K）", "④友だち・先生に 説明（S）して OKなら ぬる"],
+      prep: ["教科書 上 p.59", "ノート", "赤えんぴつ"],
+      asks: ["1m＝100cmと 同じところは？", "なぜ 大きい たんいが あると べんり？"],
+      teacher: ["「まとまりに 名前」という 見方で 説明できるか", "ほかの たんいと つなげているか"],
+      links: [{ t: "教科書 上 p.59", url: null }],
+    },
+    3: { ready: true, kind: "together",
+      goal: "たんいの しくみを 友だちと 説明し合い、よりよい 言い方に できる。",
+      prep: ["自分の 説明", "ノート"],
+      asks: ["友だちの 説明の よい所は？", "自分の 説明に 足したい ことばは？"],
+      teacher: ["表現を 高めているか"],
+      links: [{ t: "（ペアで 説明し合う）", url: null }],
+    },
+  },
+
+  3: { // 道のりと きょり
+    0: { ready: true, kind: "read", readPage: "教科書 上 p.60〜62",
+      goal: "教科書を 音読し、大事な ことば（道のり・きょり）に 線を引ける。",
+      prep: ["教科書", "赤えんぴつ", "ノート"],
+      asks: ["「道のり」は どんな 長さ？", "「きょり」は どんな 長さ？", "2つの ことばの ちがいは？"],
+      teacher: ["道のり・きょりに 線を引けているか", "ちがいに 気づいているか"],
+      links: [{ t: "教科書", url: null }],
+    },
+    1: { ready: true, kind: "use", page: "教科書 上 p.60〜62", drill: "計算ドリル（長さの ところ）",
+      goal: "絵地図から 道のりと きょりを 読みとって、もとめられる。",
+      prep: ["教科書", "計算ドリル", "ノート"],
+      asks: ["道のりは どの 線を たどった？", "きょりは どの 線？", "どちらが 長い？ なぜ？"],
+      teacher: ["道に そった 長さを 道のりと よべるか", "まっすぐの 長さを きょりと よべるか"],
+      links: [{ t: "計算ドリル（長さ）", url: null }, { t: "eboard：算数 単元一覧", url: "https://www.eboard.jp/list/7/" }],
+    },
+    2: { ready: true, kind: "explain_print",
+      explain: { problem: "道のりと きょりは どうちがう？", page: "教科書 上 p.61",
+        point: "道のり＝道に そって はかった 長さ。きょり＝まっすぐに はかった 長さ。だから 道のりは きょりより 長く なる ことが 多い。",
+        goalShort: "道のりと きょりの ちがいを 図で 説明できる。" },
+      goal: "道のりと きょりの ちがいを、絵地図の 図と ことばで 説明できる。",
+      flow: ["①問いを 読む（Q）", "②ノートに 考えを あつめる（N）", "③くみたてて 書く（K）", "④友だち・先生に 説明（S）して OKなら ぬる"],
+      prep: ["教科書 上 p.61", "ノート", "赤えんぴつ"],
+      asks: ["どちらが 長く なりやすい？ なぜ？", "図に かいて 言える？"],
+      teacher: ["図（道と 直線）と ことばを 対応づけているか"],
+      links: [{ t: "教科書 上 p.61", url: null }],
+    },
+    3: { ready: true, kind: "together",
+      goal: "道のりと きょりの ちがいを 友だちと 説明し合い、高め合える。",
+      prep: ["自分の 説明", "ノート"],
+      asks: ["友だちは どんな 図を かいた？", "学校の まわりで れいを 言える？"],
+      teacher: ["身のまわりの れいに ひろげられているか"],
+      links: [{ t: "（ペアで 説明し合う）", url: null }],
+    },
+  },
+
+  4: { // 長さの計算
+    0: { ready: true, kind: "read", readPage: "教科書 上 p.62〜63",
+      goal: "教科書を 音読し、大事な ことば（長さの 計算・たんいを そろえる）に 線を引ける。",
+      prep: ["教科書", "赤えんぴつ", "ノート"],
+      asks: ["長さの たし算は 何に 気をつける？", "1000mを こえたら どう 表す？"],
+      teacher: ["「たんいを そろえる」に 気づいているか"],
+      links: [{ t: "教科書", url: null }],
+    },
+    1: { ready: true, kind: "use", page: "教科書 上 p.62〜63", drill: "計算ドリル（長さの ところ）",
+      goal: "700m＋600m＝1km300m のように、長さの たし算・ひき算が できる。",
+      prep: ["教科書", "計算ドリル", "ノート"],
+      asks: ["同じ たんいどうしを 計算した？", "1000mを こえたら どうした？", "答えの たんいは あっている？"],
+      teacher: ["同じ たんいどうしで 計算しているか", "kmとmの 書きかえが 正しいか"],
+      links: [{ t: "計算ドリル（長さ）", url: null }, { t: "eboard：算数 単元一覧", url: "https://www.eboard.jp/list/7/" }],
+    },
+    2: { ready: true, kind: "explain_print",
+      explain: { problem: "700m＋600mは どう 計算する？", page: "教科書 上 p.62",
+        point: "同じ たんいどうしを 計算する。700m＋600m＝1300m。1000mを こえたら 1km300mと 表せる（1km＝1000m）。",
+        goalShort: "たんいを そろえて 計算する わけを 説明できる。" },
+      goal: "長さの 計算で「たんいを そろえる」わけを 説明できる。",
+      flow: ["①問いを 読む（Q）", "②ノートに 考えを あつめる（N）", "③くみたてて 書く（K）", "④友だち・先生に 説明（S）して OKなら ぬる"],
+      prep: ["教科書 上 p.62", "ノート", "赤えんぴつ"],
+      asks: ["mと kmを そのまま たすと どう なる？", "筆算の「位をそろえる」と にている ところは？"],
+      teacher: ["たんいを そろえる 理由を 言えるか", "筆算の 位そろえと つなげているか"],
+      links: [{ t: "教科書 上 p.62", url: null }],
+    },
+    3: { ready: true, kind: "together",
+      goal: "長さの 計算の しかたを 友だちと 説明し合い、高め合える。",
+      prep: ["自分の 説明", "ノート"],
+      asks: ["友だちの とき方の よい所は？", "まちがえやすい ところは どこ？"],
+      teacher: ["つまずきを 教え合えているか"],
+      links: [{ t: "（ペアで 説明し合う）", url: null }],
+    },
+  },
+
+  5: { // たしかめ・まとめ
+    0: { ready: true, kind: "read", readPage: "教科書 上 p.64〜65",
+      goal: "教科書の まとめを 音読し、たんげんの 大事な ことばを ふりかえられる。",
+      prep: ["教科書", "赤えんぴつ", "ノート"],
+      asks: ["この たんげんで ならった ことばを 3つ 言える？", "いちばん 大事な ことは？"],
+      teacher: ["たんげんの ことばを ふりかえれているか"],
+      links: [{ t: "教科書", url: null }],
+    },
+    1: { ready: true, kind: "use", page: "教科書 上 p.64〜65", drill: "計算ドリル（長さの ところ）",
+      extra: ["👑 ボスせんにも ちょうせんする。"],
+      goal: "たんげんの まとめ問題が とける。ボスせんで 8もん 正かいを めざす。",
+      prep: ["教科書", "計算ドリル", "ノート"],
+      asks: ["どの もんだいが いちばん むずかしかった？", "まちがえた もんだいは なぜ まちがえた？"],
+      teacher: ["まちがいの 原因を 自分で 言えるか"],
+      links: [{ t: "計算ドリル（長さ）", url: null }, { t: "eboard：算数 単元一覧", url: "https://www.eboard.jp/list/7/" }],
+    },
+    2: { ready: true, kind: "explain_print",
+      explain: { problem: "この たんげんで いちばん 大事な ことは？", page: "教科書 上 p.64",
+        point: "たんいを つかうと 長い 長さも 数で 表せて、くらべたり 計算したり できる。1km＝1000m。道のりと きょりは ちがう。",
+        goalShort: "『いちばん大事』を 自分の ことばで 言える。" },
+      goal: "たんげん ぜんたいの『いちばん大事』を 自分の ことばで まとめて 説明できる。",
+      flow: ["①問いを 読む（Q）", "②ノートに 考えを あつめる（N）", "③くみたてて 書く（K）", "④友だち・先生に 説明（S）して OKなら ぬる"],
+      prep: ["教科書 上 p.64", "ノート", "赤えんぴつ"],
+      asks: ["まきじゃく・km・道のり、ぜんぶに 通じる ことは？", "2年生に 教えるなら 何と 言う？"],
+      teacher: ["たんげんを ひとことで まとめられるか"],
+      links: [{ t: "教科書 上 p.64", url: null }],
+    },
+    3: { ready: true, kind: "together",
+      goal: "たんげんの まとめを 友だちと 説明し合い、高め合える。",
+      prep: ["自分の 説明", "ノート"],
+      asks: ["友だちの まとめの よい所は？", "たんげんを ひとことで 言うと？"],
+      teacher: ["たんげんを まとめられるか"],
+      links: [{ t: "（ペアで 説明し合う）", url: null }],
+    },
+  },
+};
+
+/* ╔══════════════════════════════════════════════════════════════════╗
+   ║  ↓↓↓ ここから下は「エンジン」：基本さわらない（色・立体・App本体）↓↓↓  ║
+   ╚══════════════════════════════════════════════════════════════════╝ */
+
+/* ===== 立体（アイソメ） ===== */
+const CW = 130, CH = 54, GX = 4, HEADER = 58, DEEP = 120;
+const N = STAGES.length;
+const FW = N * CW + (N - 1) * GX;
+const FH = HEADER + DEPTH.length * CH;
+const ZX = 0.62, ZY = -0.45;
+const px = (x, y, z) => ({ left: x + z * ZX, top: y + z * ZY });
+const OX = 180, OY = 116;
+const DRAW_W = 980, DRAW_H = 430;
+const wrap = (p) => ({ left: OX + p.left, top: OY + p.top });
+
+const STORE_KEY = "shindo3d_nagasa_v1"; // ★単元ごとに変える（保存の混在を防ぐ）
+const LVSEEN_KEY = STORE_KEY + "_lvseen";   // 前回見たぼうけんレベル
+const BOSS_KEY = STORE_KEY + "_bosswin";    // ボスをたおしたフラグ
+
+const REDUCE_MOTION = typeof window !== "undefined" && window.matchMedia &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* window.storage が無い環境でも落ちない安全ラッパ */
+const hasStore = typeof window !== "undefined" && window.storage &&
+  typeof window.storage.get === "function";
+const store = {
+  async get(k) { if (!hasStore) return null; try { return await window.storage.get(k); } catch (e) { return null; } },
+  async set(k, v) { if (!hasStore) return; try { await window.storage.set(k, v); } catch (e) {} },
+  async del(k) { if (!hasStore) return; try { await window.storage.delete(k); } catch (e) {} },
+};
+
+/* ===== ふりがな：3年生が ひとりで 読めるように 漢字へ ルビ ===== */
+const FURI_DICT = [
+  ["長方形","ちょうほうけい"], ["絵地図","えちず"], ["図書館","としょかん"],
+  ["教科書","きょうかしょ"], ["計算","けいさん"], ["道のり","みちのり"],
+  ["説明","せつめい"], ["問題","もんだい"], ["解説","かいせつ"], ["苦手","にがて"],
+  ["授業","じゅぎょう"], ["大事","だいじ"], ["直線","ちょくせん"], ["地図","ちず"],
+  ["学校","がっこう"], ["公園","こうえん"], ["勇者","ゆうしゃ"], ["称号","しょうごう"],
+  ["達人","たつじん"], ["王様","おうさま"], ["音読","おんどく"], ["名前","なまえ"],
+  ["点線","てんせん"], ["数字","すうじ"], ["小数","しょうすう"], ["面積","めんせき"],
+  ["先生","せんせい"], ["自分","じぶん"], ["計画","けいかく"], ["原因","げんいん"],
+  ["筆算","ひっさん"], ["位","くらい"], ["用語","ようご"], ["対応","たいおう"],
+  ["友","とも"], ["学","まな"], ["読","よ"], ["線","せん"], ["引","ひ"], ["見","み"],
+  ["合","あ"], ["言","い"], ["方","かた"], ["考","かんが"], ["多","おお"], ["作","つく"],
+  ["高","たか"], ["長","なが"], ["短","みじか"], ["何","なん"], ["駅","えき"],
+  ["家","いえ"], ["道","みち"], ["書","か"], ["同","おな"], ["数","かず"],
+  ["小","ちい"], ["正","ただ"], ["力","ちから"], ["表","あらわ"], ["図","ず"],
+  ["赤","あか"], ["文","ぶん"], ["歩","ある"], ["通","とお"], ["前","まえ"],
+  ["走","はし"], ["体","からだ"], ["広","ひろ"], ["重","おも"], ["辺","へん"],
+  ["足","た"], ["教","おし"], ["気","き"], ["出","で"], ["立","た"], ["身","み"],
+];
+// 「上」は じょう(教科書 上)で読みが割れるため辞書に入れず個別指定。
+const dataFuri = (s) => String(s == null ? "" : s).replace(/教科書\s*上/g, "{教科書|きょうかしょ} {上|じょう}");
+const titleFuri = (s) => String(s == null ? "" : s);
+const chromeFuri = (s) => String(s == null ? "" : s);
+let _rbKey = 0;
+function rb(input) {
+  if (input == null) return input;
+  let text = String(input);
+  const slots = [];
+  const ph = (k, y) => { slots.push([k, y]); return "‹‹" + (slots.length - 1) + "‹‹"; };
+  text = text.replace(/\{([^|{}]+)\|([^|{}]+)\}/g, (m, k, y) => ph(k, y));
+  const dict = [...FURI_DICT].sort((a, b) => b[0].length - a[0].length);
+  for (const [k, y] of dict) { if (text.indexOf(k) >= 0) text = text.split(k).join(ph(k, y)); }
+  return text.split(/(‹‹\d+‹‹)/).map((p, i) => {
+    const m = /^‹‹(\d+)‹‹$/.exec(p);
+    if (m) { const [k, y] = slots[+m[1]]; return <ruby key={"r" + i + "_" + (_rbKey++)}>{k}<rt>{y}</rt></ruby>; }
+    return p;
+  });
+}
+
+/* ===== 乱数・選択肢ヘルパ ===== */
+const ri = (n) => Math.floor(Math.random() * n);
+const shuffle = (arr) => { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = ri(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+/* m → 「1km300m」表記（1000未満は m のまま） */
+const fmtM = (m) => m >= 1000 ? (m % 1000 === 0 ? `${m / 1000}km` : `${Math.floor(m / 1000)}km${m % 1000}m`) : `${m}m`;
+/* 正解＋候補から 4択を組む（重複・正解かぶりは除外） */
+function choiceSet(correct, cands) {
+  const ds = [];
+  for (const c of cands) { if (c !== correct && ds.indexOf(c) < 0) ds.push(c); if (ds.length >= 3) break; }
+  let extra = 1;
+  while (ds.length < 3) { const f = correct + "?".repeat(extra); if (ds.indexOf(f) < 0) ds.push(f); extra++; }
+  const opts = shuffle([correct, ...ds]);
+  return { choices: opts, ansIndex: opts.indexOf(correct) };
+}
+
+/* ╔════════════════════════════════════════════════╗
+   ║  ∞問題ジェネレーター（長さ・SVG scene対応）        ║
+   ╚════════════════════════════════════════════════╝
+   make() が { scene?, display, choices, ansIndex, explain } を返す。
+   問題文はすべてオリジナル（出題タイプのみ教科書を参考）。数値は毎回ランダム・検算ロジック付き。 */
+
+/* --- SVG：まきじゃく --- */
+function TapeSVG({ majors, frac }) {
+  const x0 = 26, x1 = 314, W = 340, H = 100;
+  const X = (f) => x0 + f * (x1 - x0);
+  const ax = X(frac);
+  const ticks = [];
+  for (let i = 0; i <= 20; i++) {
+    const f = i / 20, x = X(f), major = i % 2 === 0;
+    ticks.push(<line key={"t" + i} x1={x} y1={40} x2={x} y2={major ? 66 : 54} stroke="#A87E00" strokeWidth={major ? 2 : 1.2} />);
+  }
+  return (
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ background: "#fff", borderRadius: 12, border: "2px solid #cdd8dd", maxWidth: "100%" }}>
+      <rect x={x0 - 14} y={40} width={x1 - x0 + 28} height={26} fill="#FFF8E1" stroke="#A87E00" strokeWidth="2" rx="4" />
+      {ticks}
+      {majors.map((t, i) => (
+        <text key={"m" + i} x={X(i / 10)} y={84} fontSize={i === 0 || i === 10 ? 13 : 10.5} fontWeight="900" textAnchor="middle" fill={i === 0 || i === 10 ? "#B16A3C" : "#5b6a72"}>{t}</text>
+      ))}
+      <polygon points={`${ax},38 ${ax - 7},24 ${ax + 7},24`} fill="#D14B3D" />
+      <line x1={ax} y1={40} x2={ax} y2={66} stroke="#D14B3D" strokeWidth="2.4" strokeDasharray="3,2" />
+      <text x={ax} y={18} fontSize="12" fontWeight="900" textAnchor="middle" fill="#D14B3D">▼ここ</text>
+    </svg>
+  );
+}
+/* a) めもり読み：0〜1m（5cmきざみ）／○m〜○+1m（10cmきざみ） */
+function makeMemori() {
+  if (Math.random() < 0.5) {
+    const v = 5 * (1 + ri(19)); // 5〜95cm
+    const majors = ["0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "1m"];
+    const { choices, ansIndex } = choiceSet(`${v}cm`,
+      [v + 5, v - 5, v + 10, v - 10, 100 - v, v + 15].filter((x) => x > 0 && x < 100).map((x) => `${x}cm`));
+    return {
+      scene: <TapeSVG majors={majors} frac={v / 100} />,
+      display: "まきじゃくの ▼の めもりは 何cm？",
+      choices, ansIndex,
+      explain: `大きい めもりは 10cm、小さい めもりは 5cm。▼は ${v}cm だよ。`,
+    };
+  }
+  const a = 1 + ri(8);            // 1〜8m
+  const c = 10 * (1 + ri(9));     // 10〜90cm
+  const majors = [`${a}m`, "10", "20", "30", "40", "50", "60", "70", "80", "90", `${a + 1}m`];
+  const cands = [`${a}m${c / 10}cm`, `${a + 1}m${c}cm`, c + 10 <= 90 ? `${a}m${c + 10}cm` : `${a}m${c - 10}cm`, `${a}m${100 - c}cm`];
+  const { choices, ansIndex } = choiceSet(`${a}m${c}cm`, cands);
+  return {
+    scene: <TapeSVG majors={majors} frac={c / 100} />,
+    display: "まきじゃくの ▼の めもりは 何m何cm？",
+    choices, ansIndex,
+    explain: `${a}mから 大きい めもり（10cm）が ${c / 10}こ目。だから ${a}m${c}cm。`,
+  };
+}
+
+/* b) たんい変換：1km=1000m */
+function makeTanni() {
+  const t = ri(3);
+  if (t === 0) {
+    const k = 1 + ri(8), m = 100 * (1 + ri(9));
+    const ans = k * 1000 + m;
+    const { choices, ansIndex } = choiceSet(`${ans}m`, [`${k * 100 + m}m`, `${k * 10000 + m}m`, `${m}m`, `${ans + 1000}m`]);
+    return {
+      display: `${k}km${m}m ＝ □m\n□に あてはまる 数は？`,
+      choices, ansIndex,
+      explain: `1km＝1000m。${k}km＝${k * 1000}m と ${m}m を 合わせて ${ans}m。`,
+    };
+  }
+  if (t === 1) {
+    const k = 1 + ri(8), rest = 100 * (1 + ri(9));
+    const total = k * 1000 + rest;
+    const cands = [`${k}km${rest / 10}m`, `${k * 10 + rest / 100}km`, `${k}km${rest + 100 <= 900 ? rest + 100 : rest - 100}m`, `${k + 1}km${rest}m`];
+    const { choices, ansIndex } = choiceSet(`${k}km${rest}m`, cands);
+    return {
+      display: `${total}m ＝ 何km何m？`,
+      choices, ansIndex,
+      explain: `1000mが ${k}こで ${k}km。のこりは ${rest}m。だから ${k}km${rest}m。`,
+    };
+  }
+  const base = [
+    { q: "1km ＝ □m", a: "1000m", c: ["100m", "10000m", "10m"] },
+    { q: "1mの 1000こ分の 長さは？", a: "1km", c: ["100m", "10km", "1m"] },
+    { q: "3km ＝ □m", a: "3000m", c: ["300m", "30000m", "3100m"] },
+  ][ri(3)];
+  const { choices, ansIndex } = choiceSet(base.a, base.c);
+  return { display: base.q, choices, ansIndex, explain: "1km＝1000m を つかおう。" };
+}
+
+/* --- SVG：道のり絵地図（家→ポスト→駅＝道のり、家→駅の点線＝きょり） --- */
+function MichiSVG({ l1, l2, kyori }) {
+  const H = { x: 42, y: 148 }, P = { x: 160, y: 50 }, S = { x: 286, y: 148 };
+  return (
+    <svg width="330" height="196" viewBox="0 0 330 196" style={{ background: "#F6FBF4", borderRadius: 12, border: "2px solid #cdd8dd", maxWidth: "100%" }}>
+      <polyline points={`${H.x},${H.y} ${P.x},${P.y} ${S.x},${S.y}`} fill="none" stroke="#C8A36A" strokeWidth="13" strokeLinejoin="round" strokeLinecap="round" />
+      <polyline points={`${H.x},${H.y} ${P.x},${P.y} ${S.x},${S.y}`} fill="none" stroke="#fff" strokeWidth="2" strokeDasharray="6,6" />
+      <line x1={H.x} y1={H.y} x2={S.x} y2={S.y} stroke="#2E91A8" strokeWidth="2.6" strokeDasharray="7,5" />
+      <text x={(H.x + P.x) / 2 - 30} y={(H.y + P.y) / 2 - 8} fontSize="14" fontWeight="900" fill="#8a5a2b">{l1}m</text>
+      <text x={(P.x + S.x) / 2 + 4} y={(P.y + S.y) / 2 - 8} fontSize="14" fontWeight="900" fill="#8a5a2b">{l2}m</text>
+      <text x={(H.x + S.x) / 2} y={H.y + 22} fontSize="12.5" fontWeight="900" textAnchor="middle" fill="#2E91A8">きょり {kyori}m</text>
+      <text x={H.x} y={H.y + 8} fontSize="26" textAnchor="middle">🏠</text>
+      <text x={H.x} y={H.y - 22} fontSize="11" fontWeight="900" textAnchor="middle" fill="#2A3B40">いえ</text>
+      <text x={P.x} y={P.y + 6} fontSize="24" textAnchor="middle">📮</text>
+      <text x={P.x} y={P.y - 18} fontSize="11" fontWeight="900" textAnchor="middle" fill="#2A3B40">ポスト</text>
+      <text x={S.x} y={S.y + 8} fontSize="26" textAnchor="middle">🚉</text>
+      <text x={S.x} y={S.y - 22} fontSize="11" fontWeight="900" textAnchor="middle" fill="#2A3B40">えき</text>
+      <text x={12} y={188} fontSize="10" fontWeight="800" fill="#5b6a72">━ みち（みちのり）　- - きょり（まっすぐ）</text>
+    </svg>
+  );
+}
+/* c) 道のりと きょり */
+function makeMichinori() {
+  const l1 = 50 * (4 + ri(13));               // 200〜800m
+  const l2 = 50 * (4 + ri(13));
+  const michi = l1 + l2;
+  const delta = 50 * (2 + ri(5));             // 100〜300m
+  const kyori = michi - delta;
+  const scene = <MichiSVG l1={l1} l2={l2} kyori={kyori} />;
+  const t = ri(3);
+  if (t === 0) {
+    const { choices, ansIndex } = choiceSet(fmtM(michi), [fmtM(kyori), fmtM(michi + 100), fmtM(michi - 50), fmtM(l1)]);
+    return {
+      scene,
+      display: "家から ポストの 前を 通って 駅まで 行く「道のり」は どれ？",
+      choices, ansIndex,
+      explain: `道のりは 道に そって たした 長さ：${l1}m＋${l2}m＝${fmtM(michi)}。`,
+    };
+  }
+  if (t === 1) {
+    const cands = [`${delta + 50}m`, delta - 50 > 0 ? `${delta - 50}m` : `${delta + 100}m`, fmtM(michi), fmtM(kyori)];
+    const { choices, ansIndex } = choiceSet(`${delta}m`, cands);
+    return {
+      scene,
+      display: "家から 駅までの「道のり」と「きょり」の ちがいは 何m？",
+      choices, ansIndex,
+      explain: `道のり ${l1}m＋${l2}m＝${fmtM(michi)}。きょりは ${fmtM(kyori)}。ちがいは ${michi}−${kyori}＝${delta}m。`,
+    };
+  }
+  const { choices, ansIndex } = choiceSet(fmtM(kyori), [fmtM(michi), `${delta}m`, fmtM(kyori + 100), fmtM(l2)]);
+  return {
+    scene,
+    display: "家から 駅までの「きょり」は どれ？",
+    choices, ansIndex,
+    explain: `きょりは まっすぐ はかった 長さ。点線の ${fmtM(kyori)} だよ。`,
+  };
+}
+
+/* d) たんいの感覚（mm/cm/m/km から えらぶ） */
+const KANKAKU_ITEMS = [
+  ["プールの たての 長さ", 25, "m"],
+  ["えんぴつの 長さ", 17, "cm"],
+  ["ノートの あつさ", 5, "mm"],
+  ["きょうしつの たての 長さ", 7, "m"],
+  ["学校から となりの 駅までの 道のり", 2, "km"],
+  ["つくえの 高さ", 60, "cm"],
+  ["ありの 体の 長さ", 5, "mm"],
+  ["バスの 長さ", 10, "m"],
+  ["マラソンで 走る 道のり", 42, "km"],
+  ["くつの 長さ", 21, "cm"],
+];
+function makeKankaku() {
+  const [text, num, ans] = KANKAKU_ITEMS[ri(KANKAKU_ITEMS.length)];
+  const choices = ["mm", "cm", "m", "km"];
+  return {
+    display: `□に あてはまる たんいは どれ？\n${text} …… ${num}□`,
+    choices, ansIndex: choices.indexOf(ans),
+    explain: `${text}は ${num}${ans} ぐらい。たんいを かえて たしかめよう。`,
+  };
+}
+
+/* 文章題（ボスせん用。問題文はオリジナル・数値ランダム・検算済み） */
+function makeBunshou() {
+  const t = ri(3);
+  if (t === 0) {
+    const l1 = 100 * (3 + ri(6)), l2 = 100 * (3 + ri(6));
+    const sum = l1 + l2;
+    const { choices, ansIndex } = choiceSet(fmtM(sum), [fmtM(sum + 100), fmtM(sum - 100), fmtM(Math.abs(l1 - l2) || 100), fmtM(sum + 200)]);
+    return {
+      display: `家から 公園までは ${l1}m、公園から 学校までは ${l2}mです。\n家から 公園の 前を 通って 学校まで 行く 道のりは？`,
+      choices, ansIndex,
+      explain: `${l1}m＋${l2}m＝${sum}m。${sum >= 1000 ? `1000mを こえたから ${fmtM(sum)}。` : ""}`,
+    };
+  }
+  if (t === 1) {
+    const total = 1000 + 100 * (1 + ri(8)), walked = 100 * (3 + ri(6));
+    const rem = total - walked;
+    const { choices, ansIndex } = choiceSet(fmtM(rem), [fmtM(rem + 100), fmtM(rem - 100), fmtM(total + walked), fmtM(rem + 200)]);
+    return {
+      display: `${fmtM(total)}の 道のりの うち、${walked}m 歩きました。\nのこりの 道のりは？`,
+      choices, ansIndex,
+      explain: `${fmtM(total)}＝${total}m。${total}m−${walked}m＝${rem}m＝${fmtM(rem)}。`,
+    };
+  }
+  const a = 100 * (8 + ri(8));
+  const b = a - 100 * (1 + ri(4));
+  const d = a - b;
+  const { choices, ansIndex } = choiceSet(`${d}m`, [`${d + 100}m`, d - 100 > 0 ? `${d - 100}m` : `${d + 200}m`, fmtM(a), fmtM(b)]);
+  return {
+    display: `学校までの 道のりは ${fmtM(a)}、きょりは ${fmtM(b)}です。\nちがいは 何mですか。`,
+    choices, ansIndex,
+    explain: `${a}m−${b}m＝${d}m。道のりの ほうが 長いんだね。`,
+  };
+}
+
+/* e) ぜんぶミックス（ボスせん用＝これ） */
+function makeNagasaMix() {
+  const r = ri(10);
+  if (r < 2) return makeMemori();
+  if (r < 4) return makeTanni();
+  if (r < 6) return makeMichinori();
+  if (r < 8) return makeKankaku();
+  return makeBunshou();
+}
+
+/* --- つなげる先の ∞問題 --- */
+function makeOmosa() {
+  if (Math.random() < 0.5) {
+    const k = 1 + ri(8), g = 100 * (1 + ri(9));
+    const ans = k * 1000 + g;
+    const { choices, ansIndex } = choiceSet(`${ans}g`, [`${k * 100 + g}g`, `${k * 10000 + g}g`, `${g}g`, `${ans + 1000}g`]);
+    return { display: `${k}kg${g}g ＝ □g\n□に あてはまる 数は？`, choices, ansIndex, explain: `1kg＝1000g。1km＝1000mと 同じ「1000の かんけい」！ 答えは ${ans}g。` };
+  }
+  const k = 1 + ri(8), rest = 100 * (1 + ri(9));
+  const total = k * 1000 + rest;
+  const { choices, ansIndex } = choiceSet(`${k}kg${rest}g`, [`${k}kg${rest / 10}g`, `${k * 10 + rest / 100}kg`, `${k + 1}kg${rest}g`]);
+  return { display: `${total}g ＝ 何kg何g？`, choices, ansIndex, explain: `1000gが ${k}こで ${k}kg。のこり ${rest}g。` };
+}
+function makeShosuLen() {
+  const a = 1 + ri(9), b = 1 + ri(9);
+  const correct = `${a}.${b}cm`;
+  const cands = [`${a}${b}cm`, `${b}.${a}cm`, `0.${a}${b}cm`, `${a}.${b === 9 ? 1 : b + 1}cm`];
+  const { choices, ansIndex } = choiceSet(correct, cands);
+  if (Math.random() < 0.5) {
+    return { display: `${a}cm${b}mm ＝ □cm\n小数で 表すと？`, choices, ansIndex, explain: `1mm＝0.1cm。だから ${a}cm${b}mm＝${correct}。` };
+  }
+  return { display: `${a * 10 + b}mm ＝ □cm\n小数で 表すと？`, choices, ansIndex, explain: `10mm＝1cm。${a * 10 + b}mmは ${a}cmと ${b}mm。だから ${correct}。` };
+}
+function MensekiSVG({ a, b }) {
+  const cell = 24, x0 = 56, y0 = 30;
+  const lines = [];
+  for (let i = 0; i <= a; i++) lines.push(<line key={"h" + i} x1={x0} y1={y0 + i * cell} x2={x0 + b * cell} y2={y0 + i * cell} stroke="#2E91A8" strokeWidth="1.4" />);
+  for (let j = 0; j <= b; j++) lines.push(<line key={"v" + j} x1={x0 + j * cell} y1={y0} x2={x0 + j * cell} y2={y0 + a * cell} stroke="#2E91A8" strokeWidth="1.4" />);
+  const W = x0 + b * cell + 20, H = y0 + a * cell + 28;
+  return (
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ background: "#fff", borderRadius: 12, border: "2px solid #cdd8dd", maxWidth: "100%" }}>
+      <rect x={x0} y={y0} width={b * cell} height={a * cell} fill="#EAF1FB" />
+      {lines}
+      <text x={x0 - 10} y={y0 + (a * cell) / 2 + 5} fontSize="13" fontWeight="900" textAnchor="end" fill="#2A3B40">{a}cm</text>
+      <text x={x0 + (b * cell) / 2} y={y0 + a * cell + 20} fontSize="13" fontWeight="900" textAnchor="middle" fill="#2A3B40">{b}cm</text>
+      <text x={x0 + cell / 2} y={y0 + cell / 2 + 4} fontSize="9" fontWeight="800" textAnchor="middle" fill="#2E91A8">1cm</text>
+    </svg>
+  );
+}
+function makeMenseki() {
+  const a = 2 + ri(4), b = 3 + ri(4);
+  const ans = a * b;
+  const { choices, ansIndex } = choiceSet(`${ans}こ`, [`${a + b}こ`, `${ans + a}こ`, `${(a + b) * 2}こ`, `${ans - 1}こ`]);
+  return {
+    scene: <MensekiSVG a={a} b={b} />,
+    display: `たて${a}cm・よこ${b}cmの 長方形。\n1辺が 1cmの ましかくは ぜんぶで 何こ？`,
+    choices, ansIndex,
+    explain: `1だんに ${b}こが ${a}だん。${a}×${b}＝${ans}こ。これが 4年生の「面積」に つながるよ。`,
+  };
+}
+
+/* ===== ボス：メジャーキング（まきじゃくの王様）SVG ===== */
+function MeasureKing({ size, mood }) {
+  const m = mood || "normal";
+  return (
+    <svg width={size} height={size * 1.1} viewBox="0 0 100 110" style={{ display: "block" }}>
+      {/* 王かん */}
+      <polygon points="30,20 36,6 50,16 64,6 70,20" fill={GOLD} stroke={GOLD_DK} strokeWidth="2.5" strokeLinejoin="round" />
+      <rect x="29" y="19" width="42" height="7" rx="2.5" fill={GOLD} stroke={GOLD_DK} strokeWidth="2" />
+      <circle cx="38" cy="13" r="2.4" fill="#D14B3D" />
+      <circle cx="50" cy="11" r="2.4" fill="#2E91A8" />
+      <circle cx="62" cy="13" r="2.4" fill="#D14B3D" />
+      {/* まきじゃくの体 */}
+      <g transform={m === "down" ? "rotate(14 50 60)" : undefined}>
+        <rect x="20" y="28" width="60" height="56" rx="15" fill="#FFD54F" stroke={GOLD_DK} strokeWidth="3" />
+        <circle cx="50" cy="56" r="15" fill="#fff" stroke={GOLD_DK} strokeWidth="2.5" />
+        <circle cx="50" cy="56" r="5.5" fill={GOLD} stroke={GOLD_DK} strokeWidth="1.5" />
+        {/* テープの先 */}
+        <rect x="74" y="68" width="22" height="9" fill="#FFF8E1" stroke={GOLD_DK} strokeWidth="2" />
+        <line x1="79" y1="68" x2="79" y2="74" stroke={GOLD_DK} strokeWidth="1.4" />
+        <line x1="85" y1="68" x2="85" y2="77" stroke={GOLD_DK} strokeWidth="1.4" />
+        <line x1="91" y1="68" x2="91" y2="74" stroke={GOLD_DK} strokeWidth="1.4" />
+        <rect x="94" y="66" width="4" height="13" rx="1.5" fill={GOLD_DK} />
+        {/* かお */}
+        {m === "normal" && (<g>
+          <circle cx="38" cy="42" r="3" fill="#5d4500" />
+          <circle cx="62" cy="42" r="3" fill="#5d4500" />
+          <path d="M42,74 Q50,80 58,74" fill="none" stroke="#5d4500" strokeWidth="2.6" strokeLinecap="round" />
+        </g>)}
+        {m === "hit" && (<g>
+          <path d="M34,40 L42,45 M42,40 L34,45" stroke="#5d4500" strokeWidth="2.4" strokeLinecap="round" />
+          <path d="M58,40 L66,45 M66,40 L58,45" stroke="#5d4500" strokeWidth="2.4" strokeLinecap="round" />
+          <ellipse cx="50" cy="76" rx="5" ry="4" fill="none" stroke="#5d4500" strokeWidth="2.4" />
+        </g>)}
+        {m === "down" && (<g>
+          <path d="M34,40 L42,45 M42,40 L34,45" stroke="#8a97a0" strokeWidth="2.6" strokeLinecap="round" />
+          <path d="M58,40 L66,45 M66,40 L58,45" stroke="#8a97a0" strokeWidth="2.6" strokeLinecap="round" />
+          <path d="M42,77 Q50,72 58,77" fill="none" stroke="#8a97a0" strokeWidth="2.4" strokeLinecap="round" />
+        </g>)}
+      </g>
+    </svg>
+  );
+}
+
+function App() {
+  const [openStage, setOpenStage] = useState(1);
+  const [openLv, setOpenLv] = useState(0);
+  const [done, setDone] = useState({});
+  const [showBack, setShowBack] = useState(false);
+  const [activeCard, setActiveCard] = useState("omosa");
+  const [showBoss, setShowBoss] = useState(false);   // 👑ボスせん（たしかめテスト）
+  const [bossWin, setBossWin] = useState(false);      // ボスをたおしたフラグ（保存）
+  const [lvSeen, setLvSeen] = useState(null);         // 前回見たレベル（保存）
+  const [lvUp, setLvUp] = useState(null);             // レベルアップ演出
+  const [loaded, setLoaded] = useState(false);
+
+  /* ===== RPG導出値：XP・ぼうけんレベル ===== */
+  const xp = xpOf(done, bossWin);
+  const level = lvOf(xp);
+  const MAX_XP = STAGES.length * (10 + 20 + 30 + 40) + BOSS_XP; // 600
+  const lvBase = (level - 1) * 60;
+  const lvPct = level >= 10 ? 100 : Math.round(((xp - lvBase) / 60) * 100);
+  const xpToNext = level >= 10 ? 0 : (level * 60) - xp;
+
+  // 立体シーンをコンテナ幅に合わせて自動縮小
+  const sceneBoxRef = useRef(null);
+  const [fit, setFit] = useState(1);
+  useEffect(() => {
+    const el = sceneBoxRef.current;
+    if (!el) return;
+    const calc = () => { const w = el.clientWidth; setFit(Math.min(1.3, w / DRAW_W)); };
+    calc();
+    let ro;
+    if (typeof ResizeObserver !== "undefined") { ro = new ResizeObserver(calc); ro.observe(el); }
+    else { window.addEventListener("resize", calc); }
+    return () => { if (ro) ro.disconnect(); else window.removeEventListener("resize", calc); };
+  }, []);
+
+  /* ===== 永続保存：読み込み ===== */
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const r = await store.get(STORE_KEY);
+      if (alive && r && r.value) {
+        try { const v = JSON.parse(r.value); setDone(v.done || {}); } catch (e) {}
+      }
+      const rb_ = await store.get(BOSS_KEY);
+      if (alive && rb_ && rb_.value === "1") setBossWin(true);
+      const rl = await store.get(LVSEEN_KEY);
+      if (alive && rl && rl.value) setLvSeen(parseInt(rl.value, 10) || 1);
+      if (alive) setLoaded(true);
+    })();
+    return () => { alive = false; };
+  }, []);
+  /* ===== 永続保存：書き込み ===== */
+  useEffect(() => {
+    if (!loaded) return;
+    store.set(STORE_KEY, JSON.stringify({ done }));
+  }, [done, loaded]);
+
+  /* ===== レベルアップ検知（前回見たレベルと比較） ===== */
+  useEffect(() => {
+    if (!loaded) return;
+    if (lvSeen === null) { setLvSeen(level); store.set(LVSEEN_KEY, String(level)); return; }
+    if (level > lvSeen) {
+      if (!REDUCE_MOTION) setLvUp(level); // 演出（reduced-motionではスキップ＝表示だけ更新）
+      setLvSeen(level);
+      store.set(LVSEEN_KEY, String(level));
+    }
+  }, [level, loaded, lvSeen]);
+
+  const winBoss = () => {
+    if (!bossWin) { setBossWin(true); store.set(BOSS_KEY, "1"); }
+  };
+
+  const toggleDone = (s, k) => setDone((d) => ({ ...d, [`${s}-${k}`]: !d[`${s}-${k}`] }));
+  const resetAll = async () => {
+    if (typeof window !== "undefined" && window.confirm &&
+        !window.confirm("ぬった ところ・レベル・ボスの きろくを ぜんぶ けします。よろしいですか？")) return;
+    setDone({});
+    setBossWin(false);
+    setLvSeen(1);
+    await store.del(STORE_KEY);
+    await store.del(BOSS_KEY);
+    await store.set(LVSEEN_KEY, "1");
+  };
+
+  const st = STAGES.find((s) => s.n === openStage);
+  const plan = (PLAN[openStage] && PLAN[openStage][openLv]) ? PLAN[openStage][openLv] : { ready: false };
+  const showGuide = openLv != null;
+
+  // 箱頂点
+  const A = px(-20, -20, 0), B = px(FW + 20, -20, 0), Cc = px(FW + 20, FH + 20, 0), D = px(-20, FH + 20, 0);
+  const A2 = px(-20, -20, DEEP), B2 = px(FW + 20, -20, DEEP), C2 = px(FW + 20, FH + 20, DEEP), D2 = px(-20, FH + 20, DEEP);
+
+  return (
+    <div style={{
+      fontFamily: "'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Hiragino Sans',sans-serif",
+      background: THEME.bg,
+      minHeight: "100vh", color: INK, padding: "16px 18px 26px", boxSizing: "border-box",
+    }}>
+      <style>{`@keyframes popUp{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes cellPop{0%{transform:scale(1)}45%{transform:scale(1.07)}100%{transform:scale(1)}}
+@keyframes lvPop{0%{opacity:0;transform:scale(.6)}55%{opacity:1;transform:scale(1.08)}100%{opacity:1;transform:scale(1)}}
+@keyframes confettiFall{0%{opacity:1;transform:translateY(-10px) rotate(0deg)}100%{opacity:0;transform:translateY(150px) rotate(260deg)}}
+@keyframes hpCrack{0%{transform:scale(1)}40%{transform:scale(1.35) rotate(8deg)}100%{transform:scale(1)}}
+@keyframes bossShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}`}</style>
+
+      {/* ヘッダー */}
+      <div style={{ display: "flex", alignItems: "center", gap: 13, flexWrap: "wrap" }}>
+        <div style={{ width: 46, height: 46, borderRadius: 12, background: THEME.accent, color: "#fff", fontWeight: 900, fontSize: 16, display: "grid", placeItems: "center", flex: "none", boxShadow: "0 5px 0 rgba(0,0,0,.14)" }}>3D</div>
+        <div style={{ flex: 1, minWidth: 240 }}>
+          <div style={{ fontSize: 22, fontWeight: 900, color: THEME.accent, lineHeight: 1.05 }}>3D 自由進度表 <span style={{ fontSize: 13, color: GOLD_DK }}>⚔️クエスト版</span></div>
+          <div style={{ fontSize: 12.5, fontWeight: 800, marginTop: 2 }}>たんげん：<span style={{ color: THEME.accent }}>{rb(chromeFuri(UNIT))}</span></div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: SUB, marginTop: 1 }}>{BOOK}　／　{rb("いちばん大事")}：{rb(chromeFuri(CORE))}</div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
+          <div style={{ fontSize: 11, fontWeight: 800, color: SUB, textAlign: "right", lineHeight: 1.5 }}>
+            <span style={{ color: BLUE }}>━</span>すすむ　<span style={{ color: AMBER_MAIN }}>━</span>ふかめる（わかりの ふかさ）　<span style={{ color: GREEN_TX }}>━</span>つなげる
+          </div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+            <button onClick={() => { setShowBoss(true); setShowBack(false); }} style={{
+              fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "5px 13px", borderRadius: 13,
+              color: GOLD_TX, background: GOLD, border: `1.5px solid ${GOLD_DK}`, boxShadow: "0 2px 0 rgba(168,126,0,.35)",
+            }}>👑 ボスせん</button>
+            <button onClick={() => { setShowBack((v) => !v); }} style={{
+              fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "5px 13px", borderRadius: 13,
+              color: "#fff", background: GREEN, border: "none", boxShadow: "0 2px 0 rgba(63,169,140,.3)",
+            }}>{showBack ? "◀ おもてに もどる" : "つなげる（うらを見る）↗"}</button>
+            <button onClick={resetAll} style={{ fontSize: 11, fontWeight: 800, cursor: "pointer", padding: "5px 11px", borderRadius: 13, color: SUB, background: "#fff", border: "1.5px solid #cdd8dd" }}>リセット</button>
+          </div>
+        </div>
+      </div>
+
+      {/* ===== RPGバー：ぼうけんレベル＋XP＋称号 ===== */}
+      <div style={{ marginTop: 10, border: `2px solid ${GOLD_DK}33`, background: "linear-gradient(180deg,#FFFDF4,#FFF7DC)", borderRadius: 14, padding: "9px 13px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7, background: GOLD, border: `2px solid ${GOLD_DK}`, color: GOLD_TX, borderRadius: 12, padding: "5px 13px", fontSize: 14, fontWeight: 900, flex: "none", boxShadow: "0 2px 0 rgba(168,126,0,.3)" }}>
+            ⚔️ {rb("ぼうけんレベル")} <span style={{ fontSize: 18 }}>Lv{level}</span>
+          </div>
+          <div style={{ flex: "1 1 200px", minWidth: 180 }}>
+            <div style={{ height: 14, background: "#EFE6C8", borderRadius: 8, overflow: "hidden", border: `1.5px solid ${GOLD_DK}55` }}>
+              <div style={{ width: `${Math.max(2, Math.min(100, lvPct))}%`, height: "100%", background: `linear-gradient(90deg, ${GOLD}, #FFB000)`, transition: "width .5s" }} />
+            </div>
+            <div style={{ fontSize: 10, fontWeight: 800, color: GOLD_DK, marginTop: 3 }}>
+              {level >= 10 ? rb("さいこうレベル！ ぼうけん かんりょう も ちかい！") : rb(`つぎの Lvまで あと ${xpToNext}XP`)}
+            </div>
+          </div>
+          <div style={{ flex: "none", fontSize: 12, fontWeight: 900, color: GOLD_DK }}>✨ {xp} / {MAX_XP} XP</div>
+        </div>
+        {/* 称号チップ列（done から導出。獲得＝金・未獲得＝灰＋？） */}
+        <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+          <span style={{ fontSize: 10, fontWeight: 900, color: GOLD_DK, flex: "none" }}>{rb("🏆 称号：")}</span>
+          {TITLES.map((t, i) => {
+            const earned = t.boss ? bossWin : DEPTH.every((d, k) => done[`${t.stage}-${k}`]);
+            return (
+              <span key={i} title={t.boss ? "ボスを たおすと ゲット" : `ステージ${t.stage}を ぜんぶ ぬると ゲット`} style={{
+                fontSize: 10.5, fontWeight: 900, borderRadius: 10, padding: "3px 10px",
+                color: earned ? GOLD_TX : GRAY,
+                background: earned ? GOLD : "#fff",
+                border: earned ? `1.5px solid ${GOLD_DK}` : "1.5px dashed #c3ccd1",
+                boxShadow: earned ? "0 1px 0 rgba(168,126,0,.3)" : "none",
+              }}>{earned ? `${t.emoji} ` : "？ "}{rb(t.name)}</span>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ===== 上段：立体ビュー ===== */}
+      <div ref={sceneBoxRef} style={{
+        marginTop: 10, height: DRAW_H * fit, borderRadius: 16, border: "1px solid #e1e8ea",
+        background: "linear-gradient(180deg,#FBFEFE,#E9F4F6)", position: "relative", overflow: "hidden", perspective: 1500,
+      }}>
+        <div style={{ position: "absolute", left: "50%", top: 0, width: DRAW_W, height: DRAW_H, transform: `translateX(-50%) scale(${fit})`, transformOrigin: "top center" }}>
+        <div style={{
+          position: "absolute", inset: 0, transformStyle: "preserve-3d",
+          transform: showBack ? "rotateY(-180deg) rotateX(-8deg)" : "rotateY(0deg)",
+          transition: "transform .8s cubic-bezier(.3,.7,.2,1)",
+        }}>
+          {/* ---------- おもて面 ---------- */}
+          <div style={{ position: "absolute", inset: 0, backfaceVisibility: "hidden" }}>
+            <svg width="100%" height="100%" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+              {[[A2, B2], [B2, C2], [C2, D2], [D2, A2], [A, A2], [B, B2], [Cc, C2], [D, D2]].map(([p, q], i) => (
+                <line key={i} x1={OX + p.left} y1={OY + p.top} x2={OX + q.left} y2={OY + q.top} stroke="#c2d2d8" strokeWidth="1.6" strokeDasharray="3,4" />
+              ))}
+              {[[A, B], [B, Cc], [Cc, D], [D, A]].map(([p, q], i) => (
+                <line key={"f" + i} x1={OX + p.left} y1={OY + p.top} x2={OX + q.left} y2={OY + q.top} stroke="#9fb6bd" strokeWidth="2" />
+              ))}
+              {(() => {
+                const o = px(-46, -46, 0);
+                const ox = px(FW + 14, -46, 0);
+                const oy = px(-46, FH + 22, 0);
+                const oz = px(-46, -46, DEEP * 0.5);
+                const L = (p, q, col) => <line x1={OX + p.left} y1={OY + p.top} x2={OX + q.left} y2={OY + q.top} stroke={col} strokeWidth="3.5" strokeLinecap="round" markerEnd={`url(#ah-${col.replace('#','')})`} />;
+                const mk = (col) => <marker id={`ah-${col.replace('#','')}`} markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" refX="4" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill={col} /></marker>;
+                return (<>
+                  <defs>{mk(BLUE)}{mk(AMBER_MAIN)}{mk(GREEN)}</defs>
+                  {L(o, ox, BLUE)}{L(o, oy, AMBER_MAIN)}{L(o, oz, GREEN)}
+                </>);
+              })()}
+            </svg>
+            {(() => {
+              const labelShadow = "0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff, 1px 1px 2px #fff";
+              const ox = wrap(px(FW - 82, -64, 0));
+              const oy = wrap(px(-122, FH + 12, 0));
+              const oz = wrap(px(-30, -44, DEEP * 0.5));
+              const base = { position: "absolute", fontSize: 13, fontWeight: 900, whiteSpace: "nowrap", textShadow: labelShadow };
+              return (<>
+                <div style={{ ...base, ...ox, color: BLUE }}>すすむ →</div>
+                <div style={{ ...base, ...oy, color: AMBER_MAIN }}>ふかめる ↓</div>
+                <div style={{ ...base, ...oz, color: GREEN_TX }}>つなげる ↗</div>
+              </>);
+            })()}
+            {/* 上面・右側面 */}
+            <svg width="100%" height="100%" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+              {(() => { const tl = px(-20, -20, 0), tr = px(FW + 20, -20, 0), tr2 = px(FW + 20, -20, DEEP), tl2 = px(-20, -20, DEEP);
+                return <polygon points={[tl, tr, tr2, tl2].map(p => `${OX + p.left},${OY + p.top}`).join(" ")} fill="rgba(58,123,213,.06)" stroke="#bcd0d7" strokeWidth="1.4" />; })()}
+              {(() => { const a = px(FW + 20, -20, 0), b = px(FW + 20, FH + 20, 0), c = px(FW + 20, FH + 20, DEEP), d = px(FW + 20, -20, DEEP);
+                return <polygon points={[a, b, c, d].map(p => `${OX + p.left},${OY + p.top}`).join(" ")} fill="rgba(120,140,150,.10)" stroke="#bcd0d7" strokeWidth="1.4" />; })()}
+            </svg>
+
+            {/* ステージ見出し */}
+            {STAGES.map((s, i) => {
+              const p = wrap(px(i * (CW + GX), 0, 0));
+              const isOpen = openStage === s.n;
+              const built = !!(PLAN[s.n] && PLAN[s.n][0] && PLAN[s.n][0].ready);
+              return (
+                <button key={s.n} onClick={() => { setOpenStage(s.n); setOpenLv(0); }} style={{
+                  position: "absolute", ...p, width: CW, height: HEADER - 6,
+                  background: isOpen ? grad(BLUE) : "#EFF5FB", color: isOpen ? "#fff" : INK,
+                  border: `2px solid ${BLUE}`, borderRadius: 8, cursor: "pointer", padding: "5px 8px", boxSizing: "border-box", textAlign: "left",
+                  boxShadow: isOpen ? "0 4px 12px rgba(58,123,213,.35)" : "none",
+                }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ width: 19, height: 19, borderRadius: "50%", background: isOpen ? "#fff" : BLUE, color: isOpen ? BLUE : "#fff", fontSize: 10.5, fontWeight: 900, display: "grid", placeItems: "center", flex: "none" }}>{s.n}</span>
+                    <span style={{ fontSize: 11.5, fontWeight: 900, lineHeight: 1.15 }}>{rb(titleFuri(s.title))}<br /><span style={{ fontSize: 8.5, opacity: .85, fontWeight: 800 }}>{rb(titleFuri(s.sub))}</span></span>
+                  </div>
+                  <div style={{ fontSize: 8, fontWeight: 800, color: isOpen ? "#cfe0ff" : (built ? GREEN : SUB), textAlign: "right", marginTop: 1 }}>{built ? "✓つかえる" : "じゅんび中"}</div>
+                </button>
+              );
+            })}
+
+            {/* 深度マス */}
+            {STAGES.map((s, i) =>
+              DEPTH.map((d, k) => {
+                const p = wrap(px(i * (CW + GX), HEADER + k * CH, 0));
+                const isDone = !!done[`${s.n}-${k}`];
+                const isOpenCell = openStage === s.n && openLv === k;
+                return (
+                  <div key={`${s.n}-${k}-${isDone ? 1 : 0}`} onClick={() => { setOpenStage(s.n); setOpenLv(k); }} style={{
+                    position: "absolute", ...p, width: CW, height: CH - 6,
+                    background: isDone ? AMBER[k] : "#fff", border: `1.5px solid ${isDone ? AMBER_DK[k] : "#E4E9EB"}`,
+                    outline: isOpenCell ? `2.5px solid ${AMBER_DK[k]}` : "none", outlineOffset: 1,
+                    borderRadius: 9, cursor: "pointer", boxSizing: "border-box", display: "flex", alignItems: "center", gap: 2,
+                    boxShadow: isDone ? "none" : "0 1px 2px rgba(20,40,60,.05)",
+                    animation: isDone ? "cellPop .3s ease" : "none",
+                  }}>
+                    <span style={{ width: 6, height: "100%", background: AMBER_DK[k], borderRadius: "5px 0 0 5px", flex: "none", opacity: isDone ? 1 : .85 }} />
+                    <span style={{ fontSize: 12, flex: "none", marginLeft: 2 }}>{d.badge}</span>
+                    <span style={{ fontSize: 11.5, fontWeight: 900, color: INK, flex: 1, whiteSpace: "nowrap", letterSpacing: "-0.3px" }}>{rb(d.name)}</span>
+                    <span style={{ fontSize: 8, fontWeight: 800, color: isDone ? INK : AMBER_DK[k], paddingRight: 4, flex: "none" }}>+{XP_BY_LV[k]}XP</span>
+                  </div>
+                );
+              })
+            )}
+            {/* 👑 ボスせん塔：ゴール塔をボススキンに（すすむ軸の右端に常設） */}
+            {(() => {
+              const p = wrap(px(FW + 14, 0, 0));
+              const h = HEADER - 6 + DEPTH.length * CH;
+              const allDone = STAGES.every((s) => DEPTH.every((d, k) => done[`${s.n}-${k}`]));
+              return (
+                <button onClick={() => { setShowBack(false); setShowBoss(true); }} style={{
+                  position: "absolute", ...p, width: CW + 8, height: h,
+                  background: `linear-gradient(165deg, #FFE082 0%, ${GOLD} 50%, #E8A800 100%)`, color: GOLD_TX,
+                  border: `2.5px solid ${GOLD_DK}`, borderRadius: 13, cursor: "pointer",
+                  boxShadow: (allDone || bossWin) ? "0 0 0 4px #FCE9C6, 0 8px 18px rgba(168,126,0,.5)" : "0 6px 16px rgba(168,126,0,.4)",
+                  padding: "8px 6px", boxSizing: "border-box",
+                  display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, textAlign: "center",
+                }}>
+                  <span style={{ fontSize: 20 }}>👑</span>
+                  <MeasureKing size={52} mood={bossWin ? "down" : "normal"} />
+                  <span style={{ fontSize: 14.5, fontWeight: 900, lineHeight: 1.25 }}>ボスせん</span>
+                  <span style={{ fontSize: 9.5, fontWeight: 800, lineHeight: 1.4 }}>{bossWin ? rb("たおした！ +100XP") : rb("10もん中 8もんで\nたおせる！")}</span>
+                  <span style={{ marginTop: 2, fontSize: 10, fontWeight: 900, background: "#fff", color: GOLD_DK, borderRadius: 8, padding: "3px 9px" }}>{bossWin ? "もう一回 →" : "ちょうせん →"}</span>
+                </button>
+              );
+            })()}
+            {/* 深度ラベル左 */}
+            {DEPTH.map((d, k) => {
+              const p = wrap(px(-150, HEADER + k * CH, 0));
+              return (
+                <div key={"dl" + k} style={{ position: "absolute", ...p, width: 140, height: CH - 6, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ fontSize: 14 }}>{d.badge}</span>
+                    <span style={{ fontSize: 11.5, fontWeight: 900 }}>Lv{d.lv} {rb(d.name)}</span>
+                  </div>
+                  <span style={{ fontSize: 9, fontWeight: 700, color: SUB, marginLeft: 20 }}>{d.desc}</span>
+                </div>
+              );
+            })}
+            <div style={{ position: "absolute", right: 14, bottom: 10, fontSize: 10, fontWeight: 800, color: SUB }}>マスを タップ → 下に「やるべきこと」</div>
+          </div>
+
+          {/* ---------- うら面（つなげる） ---------- */}
+          <div style={{
+            position: "absolute", inset: 0, backfaceVisibility: "hidden",
+            transform: "rotateY(180deg)", background: "linear-gradient(180deg,#F3FBF7,#e6f4ee)",
+            padding: "16px 20px", boxSizing: "border-box", display: "flex", flexDirection: "column",
+          }}>
+            <div style={{ fontSize: 15, fontWeight: 900, color: GREEN_TX }}>↗ つなげる（伸度）：この単元は どこから来て、どこへ つながる？</div>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: SUB, marginTop: 2 }}>カードを えらぶと、下に くわしく（系統の話・リンク・チャレンジ問題）が出るよ</div>
+
+            <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 10.5, fontWeight: 900, color: GRAY }}>← どこから：</span>
+              {FROM_CHAIN.map((c, i) => (
+                <span key={i} title={c.think} style={{ fontSize: 10.5, fontWeight: 800, color: "#5b6a72", background: "#fff", border: "1.5px dashed #9aa7ad", borderRadius: 10, padding: "3px 9px" }}>
+                  {c.grade}：{c.label}
+                </span>
+              ))}
+              <span style={{ fontSize: 11, fontWeight: 900, color: BLUE, background: "rgba(58,123,213,.1)", border: `2px solid ${BLUE}`, borderRadius: 10, padding: "3px 10px" }}>● 3年：この単元</span>
+            </div>
+
+            <div style={{ marginTop: 12, fontSize: 10.5, fontWeight: 900, color: GREEN_TX }}>↗ この先（カードを えらぶ）</div>
+            <div style={{ marginTop: 7, display: "flex", gap: 10, flexWrap: "wrap" }}>
+              {NEXT_CARDS.map((c) => {
+                const on = activeCard === c.key;
+                return (
+                  <button key={c.key} onClick={() => setActiveCard(c.key)} style={{
+                    flex: "1 1 160px", minWidth: 150, textAlign: "left", cursor: "pointer",
+                    background: on ? "#fff" : "#ffffffcc", border: `2px solid ${on ? GREEN : "#bfe0d2"}`,
+                    borderRadius: 12, padding: "10px 12px", boxShadow: on ? "0 4px 14px rgba(29,158,117,.25)" : "none",
+                  }}>
+                    <div style={{ fontSize: 9, fontWeight: 800, color: GREEN_TX }}>{c.grade}</div>
+                    <div style={{ fontSize: 14, fontWeight: 900, color: INK, lineHeight: 1.15 }}>{c.title}</div>
+                    <div style={{ fontSize: 9.5, fontWeight: 700, color: SUB, marginTop: 3, lineHeight: 1.35 }}>{c.think}</div>
+                    {c.gen && <div style={{ marginTop: 5, display: "inline-block", fontSize: 9, fontWeight: 900, color: "#fff", background: GREEN, borderRadius: 8, padding: "1px 8px" }}>∞ チャレンジ問題あり</div>}
+                  </button>
+                );
+              })}
+            </div>
+            <div style={{ marginTop: "auto", fontSize: 10, fontWeight: 700, color: SUB }}>★長さで ならった「1000の かんけい」「たんいを そろえる」は、重さ・かさ・小数でも 同じ 考え方！</div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      {/* ===== 👑ボスせんゾーン（まとめ＝ステージ5のとき） ===== */}
+      {!showBack && openStage === 5 && (
+        <div style={{ marginTop: 12, borderRadius: 16, overflow: "hidden", border: `2.5px solid ${GOLD_DK}`, boxShadow: "0 6px 0 rgba(168,126,0,.25)" }}>
+          <div style={{ background: `linear-gradient(180deg,#FFD54F,${GOLD})`, color: GOLD_TX, padding: "14px 18px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+              <MeasureKing size={64} mood={bossWin ? "down" : "normal"} />
+              <div style={{ flex: "1 1 240px", minWidth: 220 }}>
+                <div style={{ fontSize: 17, fontWeight: 900 }}>{rb("👑 ボスせん：メジャーキング（まきじゃくの王様）")}</div>
+                <div style={{ fontSize: 12.5, fontWeight: 800, marginTop: 3, lineHeight: 1.6 }}>
+                  {rb("10もん中 8もん 正かいで ボスを たおせる！まちがえても ダメージは うけないよ。たおすと 称号『長さの勇者』と +100XP！")}
+                </div>
+              </div>
+              <button onClick={() => { setShowBoss(true); setShowBack(false); }} style={{ fontSize: 15, fontWeight: 900, cursor: "pointer", color: GOLD_DK, background: "#fff", border: "none", borderRadius: 12, padding: "11px 20px", boxShadow: "0 3px 0 rgba(0,0,0,.15)", whiteSpace: "nowrap" }}>
+                {bossWin ? "👑 もう一回 たたかう →" : "👑 ボスせんを はじめる →"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== 下段 ===== */}
+      {!showBack && showGuide && (
+        <div key={`guide-${openStage}-${openLv}`} style={{ display: "flex", gap: 14, marginTop: 12, alignItems: "flex-start", flexWrap: "wrap", animation: "popUp .32s cubic-bezier(.2,.8,.2,1)" }}>
+          {/* 左＝学習ガイド */}
+          <div style={{ flex: "1 1 420px", minWidth: 360, border: `2px solid ${plan.ready ? AMBER_DK[openLv] : "#cdd8dd"}`, borderRadius: 14, background: "#fff", overflow: "hidden" }}>
+            <div style={{ background: plan.ready ? grad(AMBER_DK[openLv]) : "#cdd8dd", color: "#fff", padding: "10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 20 }}>{DEPTH[openLv].badge}</span>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 800, opacity: .9 }}>ステージ{st.n}「{rb(titleFuri(st.title))}{rb(titleFuri(st.sub))}」</div>
+                <div style={{ fontSize: 16, fontWeight: 900 }}>ふかめる Lv{DEPTH[openLv].lv}：{rb(DEPTH[openLv].name)}　<span style={{ fontSize: 11, opacity: .9 }}>クリアで +{XP_BY_LV[openLv]}XP</span></div>
+              </div>
+            </div>
+
+            {(plan.ready) ? (
+              <div style={{ padding: "11px 13px" }}>
+                {/* 🎯 やること（これだけ・特大） */}
+                {(() => {
+                  const acc = AMBER_DK[openLv];
+                  const Card = ({ children }) => (
+                    <div style={{ borderRadius: 16, overflow: "hidden", border: `3px solid ${acc}`, boxShadow: `0 5px 0 ${acc}33` }}>
+                      <div style={{ background: grad(acc), color: "#fff", padding: "9px 16px", display: "flex", alignItems: "center", gap: 9 }}>
+                        <span style={{ fontSize: 22 }}>{DEPTH[openLv].badge}</span>
+                        <span style={{ fontSize: 16, fontWeight: 900, letterSpacing: 1 }}>やること</span>
+                      </div>
+                      <div style={{ padding: "20px 18px", background: "#fff" }}>{children}</div>
+                    </div>
+                  );
+
+                  // 高め合う（Lv4）＝つぎの3つの どれか1つ
+                  if (plan.kind === "together") {
+                    const choices = [
+                      ["🗺️", "学びマップを 作る", null],
+                      ["📝", "みんプリ（問題と 解説）を 作る", null],
+                      ["🧑‍🏫", "友だちの 苦手を 考えて 授業を する", null],
+                    ];
+                    return (
+                      <Card>
+                        <div style={{ fontSize: 16, fontWeight: 900, color: acc, marginBottom: 12 }}>{rb("つぎの どれか 1つが できたら クリア")}</div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                          {choices.map(([emo, txt, href], i) => (
+                            <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, border: `2px solid ${acc}`, borderRadius: 12, padding: "13px 15px", background: "#FFFDF8" }}>
+                              <span style={{ fontSize: 26, flex: "none" }}>{emo}</span>
+                              <span style={{ fontSize: 21, fontWeight: 900, color: INK, lineHeight: 1.5, flex: 1 }}>{rb(txt)}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ marginTop: 14, borderRadius: 12, border: `2.5px dashed ${BLUE}`, background: "linear-gradient(180deg,#F4FBFD,#E8F5F8)", padding: "13px 15px" }}>
+                          <div style={{ fontSize: 13, fontWeight: 900, color: BLUE, marginBottom: 5 }}>{rb("🎯 ゴール（これが できたら クリア）")}</div>
+                          <div style={{ fontSize: 18, fontWeight: 900, color: INK, lineHeight: 1.55 }}>{rb("ならった しくみを 友だちに 説明できる。")}</div>
+                        </div>
+                        <div style={{ marginTop: 12, borderRadius: 12, border: "2.5px solid #E59A1C", background: "linear-gradient(180deg,#FFF7E8,#FFEFD0)", padding: "13px 15px" }}>
+                          <div style={{ fontSize: 13, fontWeight: 900, color: "#B5740A", marginBottom: 5 }}>{rb("⤴ もっと レベルアップ！")}</div>
+                          <div style={{ fontSize: 16, fontWeight: 900, color: INK, lineHeight: 1.6 }}>{rb("いつもの 友だちだけでなく、もっと 多くの 友だちを まきこんで いっしょに できたら さらに レベルアップ！")}</div>
+                        </div>
+                      </Card>
+                    );
+                  }
+
+                  const lines = [];
+                  if (plan.kind === "read") {
+                    lines.push(dataFuri(plan.readPage) + " を 読む。");
+                    lines.push("大事な ことばに 線を引く。");
+                  } else if (plan.kind === "use") {
+                    if (plan.page)  lines.push(dataFuri(plan.page) + " を とく。");
+                    if (plan.drill) lines.push(plan.drill + " を とく。");
+                    if (plan.extra) plan.extra.forEach((t) => lines.push(t));
+                  } else if (plan.kind === "explain_print") {
+                    lines.push("「" + plan.explain.problem + "」を QNKSで 説明する。");
+                  }
+                  const goalText = plan.kind === "explain_print" ? plan.explain.goalShort : null;
+                  return (
+                    <Card>
+                      {lines.map((t, i) => (
+                        <div key={i} style={{ fontSize: 27, fontWeight: 900, color: INK, lineHeight: 1.6, letterSpacing: "-0.3px" }}>{rb(t)}</div>
+                      ))}
+                      {goalText && (
+                        <div style={{ marginTop: 18, borderRadius: 13, border: `2.5px dashed ${BLUE}`, background: "linear-gradient(180deg,#F4FBFD,#E8F5F8)", padding: "14px 16px" }}>
+                          <div style={{ fontSize: 13, fontWeight: 900, color: BLUE, marginBottom: 6 }}>{rb("🎯 ゴール（これが 言えたら クリア）")}</div>
+                          <div style={{ fontSize: 20, fontWeight: 900, color: INK, lineHeight: 1.6 }}>{rb(goalText)}</div>
+                        </div>
+                      )}
+                    </Card>
+                  );
+                })()}
+
+                {/* クリア（ぬる） */}
+                <div style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", borderTop: "1px dashed #d3dde1", paddingTop: 12 }}>
+                  <button onClick={() => toggleDone(st.n, openLv)} style={{
+                    flex: "1 1 200px", fontSize: 14, fontWeight: 900, cursor: "pointer",
+                    color: done[`${st.n}-${openLv}`] ? INK : AMBER_DK[openLv],
+                    background: done[`${st.n}-${openLv}`] ? AMBER[openLv] : "#fff",
+                    border: `2px solid ${AMBER_DK[openLv]}`, borderRadius: 10, padding: "10px 0",
+                  }}>{done[`${st.n}-${openLv}`]
+                    ? <>✓ {DEPTH[openLv].badge} {rb(DEPTH[openLv].name)} ぬれた！（+{XP_BY_LV[openLv]}XP）</>
+                    : <>できたら ぬる（{DEPTH[openLv].badge}{rb(DEPTH[openLv].name)}　+{XP_BY_LV[openLv]}XP）</>}</button>
+                </div>
+
+              </div>
+            ) : (
+              <div style={{ padding: "26px 18px", textAlign: "center" }}>
+                <div style={{ fontSize: 30, marginBottom: 8 }}>🚧</div>
+                <div style={{ fontSize: 14, fontWeight: 900, color: SUB }}>このマスは じゅんび中です</div>
+                <div style={{ fontSize: 11.5, fontWeight: 700, color: SUB, marginTop: 6, lineHeight: 1.6 }}>
+                  ほかの マスを タップして、できる ところから すすめてね。<br />
+                  （先生へ：このマスの 内容は <b style={{ color: BLUE }}>PLAN</b> に <code>ready:true</code> で 追加できます）
+                </div>
+                <button onClick={() => { setOpenStage(1); setOpenLv(0); }} style={{ marginTop: 12, fontSize: 12.5, fontWeight: 900, cursor: "pointer", color: "#fff", background: BLUE, border: "none", borderRadius: 11, padding: "8px 16px" }}>はじめの マスを 見る →</button>
+              </div>
+            )}
+          </div>
+
+          {/* 右＝こまった ときの お助けアイテム */}
+          <div style={{ flex: "1 1 300px", minWidth: 280, border: `2px solid ${AQUA}`, borderRadius: 14, background: "#fff", overflow: "hidden", alignSelf: "flex-start" }}>
+            <div style={{ background: AQUA, color: "#fff", padding: "11px 14px" }}>
+              <div style={{ fontSize: 11, fontWeight: 800, opacity: .9 }}>{rb("やり方が わからず こまった ときは…")}</div>
+              <div style={{ fontSize: 16, fontWeight: 900 }}>{rb("🆘 お助けアイテム")}</div>
+            </div>
+            <div style={{ padding: "12px 13px" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: SUB, lineHeight: 1.6, marginBottom: 9 }}>{rb("こまった ときだけ つかおう。どうがや 教科書で たしかめられるよ。")}</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                {COMMON_LINKS.map((l, i) => <LinkChip key={i} item={l} block />)}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* つなげる先：下段（裏面表示中） */}
+      {showBack && (() => {
+        const c = NEXT_CARDS.find((x) => x.key === activeCard);
+        return (
+          <div key={`card-${activeCard}`} style={{ display: "flex", gap: 14, marginTop: 12, alignItems: "flex-start", flexWrap: "wrap", animation: "popUp .32s cubic-bezier(.2,.8,.2,1)" }}>
+            {/* 左：系統の解説＋リンク */}
+            <div style={{ flex: "1 1 360px", minWidth: 320, border: `2px solid ${GREEN}`, borderRadius: 14, background: "#fff", overflow: "hidden" }}>
+              <div style={{ background: GREEN, color: "#fff", padding: "10px 14px" }}>
+                <div style={{ fontSize: 11, fontWeight: 800, opacity: .9 }}>つなげる先 ／ {c.grade}</div>
+                <div style={{ fontSize: 17, fontWeight: 900 }}>{c.title}</div>
+              </div>
+              <div style={{ padding: "11px 13px" }}>
+                <SectionTitle color={GRAY} icon="←" text="どこから つながってきた？" />
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {FROM_CHAIN.map((f, i) => (
+                    <div key={i} style={{ border: "1.5px dashed #9aa7ad", borderRadius: 8, padding: "6px 10px", background: "#f7f8f9" }}>
+                      <div style={{ fontSize: 9.5, fontWeight: 800, color: GRAY }}>{f.grade}</div>
+                      <div style={{ fontSize: 12, fontWeight: 900, color: INK }}>{f.label}</div>
+                      <div style={{ fontSize: 10, fontWeight: 800, color: GRAY, marginTop: 2 }}>🧠 {f.think}</div>
+                    </div>
+                  ))}
+                  <div style={{ border: `2px solid ${BLUE}`, borderRadius: 8, padding: "6px 10px", background: "rgba(58,123,213,.08)" }}>
+                    <div style={{ fontSize: 9.5, fontWeight: 800, color: BLUE }}>● 3年・この単元</div>
+                    <div style={{ fontSize: 12, fontWeight: 900, color: INK }}>長いものの 長さ（まきじゃく・km・道のり）</div>
+                    <div style={{ fontSize: 10, fontWeight: 800, color: BLUE, marginTop: 2 }}>🧠 たんいを えらんで はかる・くらべる・計算する</div>
+                  </div>
+                </div>
+
+                <SectionTitle color={GREEN} icon="🧠" text="この先への つなぐ考え方" mt />
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#1c5a45", background: "#F3FBF7", border: `1.5px solid ${GREEN}`, borderRadius: 9, padding: "9px 12px", lineHeight: 1.55 }}>{c.think}</div>
+
+                {c.concept && (<>
+                  <SectionTitle color={GREEN} icon="📘" text="くわしく（3年生にも わかる せつめい）" mt />
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: INK, background: "#fff", border: `1.5px dashed ${GREEN}`, borderRadius: 9, padding: "9px 12px", lineHeight: 1.6 }}>{rb(c.concept)}</div>
+                </>)}
+
+                <SectionTitle color="#c0392b" icon="🎬" text="動画" mt />
+                {c.video
+                  ? <a href={c.video.url} target="_blank" rel="noreferrer" style={{ display: "block", fontSize: 12, fontWeight: 800, color: "#fff", background: "#c0392b", borderRadius: 9, padding: "10px 12px", textDecoration: "none", lineHeight: 1.4 }}>▶ {c.video.t}</a>
+                  : <div style={{ fontSize: 11.5, fontWeight: 800, color: SUB, background: "#f7f8f9", borderRadius: 8, padding: "10px 12px", textAlign: "center" }}>（動画リンク：後で）</div>}
+
+                <SectionTitle color={GREEN} icon="🔗" text="リンク" mt />
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {c.links.map((l, i) => <LinkChip key={i} item={l} />)}
+                </div>
+              </div>
+            </div>
+
+            {/* 右：チャレンジ問題（無限生成） */}
+            <div style={{ flex: "1 1 320px", minWidth: 300, border: `2px solid ${AMBER_MAIN}`, borderRadius: 14, background: "#fff", overflow: "hidden" }}>
+              <div style={{ background: AMBER_MAIN, color: "#fff", padding: "10px 14px" }}>
+                <div style={{ fontSize: 11, fontWeight: 800, opacity: .9 }}>チャレンジ問題（できる子は やってみよう）</div>
+                <div style={{ fontSize: 16, fontWeight: 900 }}>∞ {c.genLabel}</div>
+              </div>
+              <div style={{ padding: "14px 15px" }}>
+                {(() => {
+                  const Gen = c.gen ? GENERATORS[c.gen] : null;
+                  if (Gen) return <Gen />;
+                  return (
+                    <div style={{ textAlign: "center", padding: "26px 0", color: SUB }}>
+                      <div style={{ fontSize: 28, marginBottom: 8 }}>🛠️</div>
+                      <div style={{ fontSize: 12.5, fontWeight: 800 }}>この問題は じゅんび中です</div>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ===== 👑ボスせん（たしかめテスト＝ボススキン） ===== */}
+      {showBoss && <BossBattle onClose={() => setShowBoss(false)} bossWin={bossWin} onWin={winBoss} />}
+
+      {/* ===== ⭐レベルアップ演出 ===== */}
+      {lvUp != null && <LevelUpOverlay lv={lvUp} onClose={() => setLvUp(null)} />}
+
+    </div>
+  );
+}
+
+/* ===== ⭐レベルアップ オーバーレイ（1.8秒で自動で消える／タップで閉じる） ===== */
+function LevelUpOverlay({ lv, onClose }) {
+  useEffect(() => {
+    const t = setTimeout(onClose, 1800);
+    return () => clearTimeout(t);
+  }, []);
+  const colors = [GOLD, "#FF7043", "#4DB6C7", "#3FA98C", "#6E5DA8", "#FFB000"];
+  const pieces = Array.from({ length: 14 }, (_, i) => ({
+    left: 8 + ((i * 17) % 84),
+    delay: (i % 6) * 0.1,
+    color: colors[i % colors.length],
+    rot: (i * 47) % 90,
+  }));
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(20,40,45,.35)", zIndex: 90, display: "grid", placeItems: "center", cursor: "pointer" }}>
+      <div style={{ position: "relative", background: "#fff", border: `4px solid ${GOLD}`, borderRadius: 22, padding: "30px 44px", textAlign: "center", boxShadow: `0 0 0 6px ${GOLD}44, 0 18px 50px rgba(0,0,0,.3)`, animation: "lvPop .45s cubic-bezier(.2,.8,.3,1.2)", overflow: "hidden" }}>
+        {pieces.map((p, i) => (
+          <span key={i} style={{
+            position: "absolute", top: -6, left: `${p.left}%`, width: 7, height: 11,
+            background: p.color, borderRadius: 2, transform: `rotate(${p.rot}deg)`,
+            animation: `confettiFall 1.4s ease-in ${p.delay}s forwards`,
+          }} />
+        ))}
+        <div style={{ fontSize: 40 }}>⭐</div>
+        <div style={{ fontSize: 26, fontWeight: 900, color: GOLD_DK, marginTop: 4 }}>{rb("レベルアップ！")}</div>
+        <div style={{ fontSize: 34, fontWeight: 900, color: INK, marginTop: 2 }}>⚔️ Lv{lv}</div>
+        <div style={{ fontSize: 11, fontWeight: 800, color: SUB, marginTop: 8 }}>{rb("タップで とじる")}</div>
+      </div>
+    </div>
+  );
+}
+
+/* ===== 無限：選択式クイズ（∞チャレンジ用。make()が {scene?, display, choices, ansIndex, explain} を返す） ===== */
+function InfiniteChoiceQuiz({ make }) {
+  const [q, setQ] = useState(make);
+  const [picked, setPicked] = useState(null);
+  const [streak, setStreak] = useState(0);
+  const [count, setCount] = useState(0);
+  const choose = (k) => {
+    if (picked !== null) return;
+    setPicked(k);
+    setCount((c) => c + 1);
+    setStreak((s) => (k === q.ansIndex ? s + 1 : 0));
+  };
+  const next = () => { setQ(make()); setPicked(null); };
+  const isOK = picked !== null && picked === q.ansIndex;
+  return (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, fontWeight: 800, color: SUB, marginBottom: 8 }}>
+        <span>れんぞく正かい：<b style={{ color: GREEN_TX }}>{streak}</b></span>
+        <span>といた数：{count}</span>
+      </div>
+      <div style={{ background: "#F3EDFB", border: `2px solid ${AMBER_MAIN}`, borderRadius: 12, padding: "14px 13px" }}>
+        {q.scene && <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>{q.scene}</div>}
+        <div style={{ fontSize: 15, fontWeight: 900, color: INK, lineHeight: 1.6, whiteSpace: "pre-line", textAlign: "center" }}>{rb(q.display)}</div>
+        <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 7 }}>
+          {q.choices.map((c, k) => {
+            const chosen = picked === k;
+            const correct = picked !== null && k === q.ansIndex;
+            const bg = correct ? "#E7F6EF" : chosen ? "#FCE9E2" : "#fff";
+            const bd = correct ? GREEN : chosen ? "#D85A30" : "#cdd8dd";
+            return (
+              <button key={k} onClick={() => choose(k)} disabled={picked !== null} style={{
+                fontSize: 14.5, fontWeight: 900, textAlign: "left", cursor: picked !== null ? "default" : "pointer",
+                color: INK, background: bg, border: `2px solid ${bd}`, borderRadius: 10, padding: "10px 13px",
+              }}>{rb(c)}{correct ? "　⭕" : chosen ? "　❌" : ""}</button>
+            );
+          })}
+        </div>
+      </div>
+      {picked !== null && (
+        <div style={{ marginTop: 10, fontSize: 12.5, fontWeight: 800, color: isOK ? GREEN : "#D85A30", background: "#fff", border: `1.5px dashed ${isOK ? GREEN : "#D85A30"}`, borderRadius: 9, padding: "9px 12px", lineHeight: 1.5 }}>
+          {isOK ? "⭕ せいかい！　" : "❌ おしい…　"}{rb(q.explain)}
+        </div>
+      )}
+      <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+        {picked !== null && <button onClick={next} style={btnMain(GREEN)}>つぎの問題 →</button>}
+      </div>
+    </div>
+  );
+}
+const btnMain = (c) => ({ flex: 1, fontSize: 14, fontWeight: 900, cursor: "pointer", color: "#fff", background: c, border: "none", borderRadius: 10, padding: "11px 0" });
+
+/* ===== 👑ボスせん：メジャーキング（たしかめテスト10問＝makeNagasaMix）=====
+   正解するたび ボスHPセグメント(10個)が1つ割れる。8問以上正解で討伐。
+   まちがえても 子どもはダメージを受けない（罰しない設計）。 */
+function BossBattle({ onClose, bossWin, onWin }) {
+  const TOTAL = 10, NEED = 8;
+  const build = () => Array.from({ length: TOTAL }, () => makeNagasaMix());
+  const [list, setList] = useState(build);
+  const [idx, setIdx] = useState(1);
+  const [picked, setPicked] = useState(null);
+  const [score, setScore] = useState(0);
+  const [finished, setFinished] = useState(false);
+  const q = list[idx - 1];
+  const isOK = picked !== null && picked === q.ansIndex;
+  const win = finished && score >= NEED;
+
+  const choose = (k) => { if (picked !== null) return; setPicked(k); if (k === q.ansIndex) setScore((s) => s + 1); };
+  const next = () => {
+    if (idx >= TOTAL) { setFinished(true); if (score >= NEED) onWin(); return; }
+    setIdx((i) => i + 1); setPicked(null);
+  };
+  const restart = () => { setList(build()); setIdx(1); setPicked(null); setScore(0); setFinished(false); };
+  const mood = finished ? (win ? "down" : "normal") : (picked !== null && isOK ? "hit" : "normal");
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(20,40,45,.5)", zIndex: 50, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: 18, overflow: "auto" }}>
+      <div style={{ width: "min(620px,100%)", background: "#fff", borderRadius: 18, overflow: "hidden", marginTop: 24, boxShadow: "0 20px 60px rgba(0,0,0,.3)" }}>
+        <div style={{ background: `linear-gradient(180deg,#FFD54F,${GOLD})`, color: GOLD_TX, padding: "13px 18px", display: "flex", alignItems: "center", gap: 10 }}>
+          <span style={{ fontSize: 24 }}>👑</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 17, fontWeight: 900 }}>{rb("ボスせん：メジャーキング")}</div>
+            <div style={{ fontSize: 11.5, fontWeight: 800, opacity: .95 }}>{rb("まきじゃくの王様。10もん中 8もん 正かいで たおせる！")}</div>
+          </div>
+          <button onClick={onClose} style={{ fontSize: 13, fontWeight: 900, cursor: "pointer", color: GOLD_TX, background: "rgba(255,255,255,.5)", border: "none", borderRadius: 10, padding: "8px 14px" }}>✕ とじる</button>
+        </div>
+
+        <div style={{ padding: "16px 18px" }}>
+          {!finished ? (
+            <>
+              {/* ボス＆HP */}
+              <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 12, flexWrap: "wrap" }}>
+                <div style={{ flex: "none", animation: picked !== null && isOK ? "bossShake .4s ease" : "none" }}>
+                  <MeasureKing size={72} mood={mood} />
+                </div>
+                <div style={{ flex: 1, minWidth: 200 }}>
+                  <div style={{ fontSize: 12, fontWeight: 900, color: GOLD_DK }}>{rb("ボスの HP")}　<span style={{ color: INK }}>{TOTAL - score} / {TOTAL}</span></div>
+                  <div style={{ display: "flex", gap: 4, marginTop: 5 }}>
+                    {Array.from({ length: TOTAL }, (_, i) => {
+                      const broken = i < score;
+                      return (
+                        <span key={`seg-${i}-${broken ? 1 : 0}`} style={{
+                          flex: 1, height: 18, borderRadius: 5,
+                          background: broken ? "#E8ECEE" : `linear-gradient(180deg,#FFD54F,${GOLD})`,
+                          border: `1.5px solid ${broken ? "#c3ccd1" : GOLD_DK}`,
+                          display: "grid", placeItems: "center", fontSize: 10, fontWeight: 900, color: broken ? "#b3bcc1" : GOLD_TX,
+                          animation: broken ? "hpCrack .5s ease" : "none",
+                        }}>{broken ? "✕" : ""}</span>
+                      );
+                    })}
+                  </div>
+                  <div style={{ fontSize: 10, fontWeight: 800, color: SUB, marginTop: 4 }}>{rb("正かいすると ボスに 1ダメージ！ まちがえても きみは ダメージを うけないよ。")}</div>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12, fontWeight: 900, color: SUB, marginBottom: 10 }}>
+                <span>第 {idx} / {TOTAL} もん</span>
+                <span>あたえた ダメージ：<b style={{ color: GOLD_DK }}>{score}</b></span>
+              </div>
+
+              {/* 問題（scene対応） */}
+              <div style={{ background: "#FFFBEF", border: `2px solid ${GOLD_DK}`, borderRadius: 12, padding: "14px 13px" }}>
+                {q.scene && <div style={{ display: "flex", justifyContent: "center", marginBottom: 10 }}>{q.scene}</div>}
+                <div style={{ fontSize: 16, fontWeight: 900, color: INK, lineHeight: 1.7, whiteSpace: "pre-line", textAlign: "center" }}>{rb(q.display)}</div>
+                <div style={{ marginTop: 13, display: "flex", flexDirection: "column", gap: 8 }}>
+                  {q.choices.map((c, k) => {
+                    const chosen = picked === k;
+                    const correct = picked !== null && k === q.ansIndex;
+                    const bg = correct ? "#E7F6EF" : chosen ? "#FCE9E2" : "#fff";
+                    const bd = correct ? GREEN : chosen ? "#D85A30" : "#d3dde1";
+                    return (
+                      <button key={k} onClick={() => choose(k)} disabled={picked !== null} style={{
+                        fontSize: 15.5, fontWeight: 900, textAlign: "left", cursor: picked !== null ? "default" : "pointer",
+                        color: INK, background: bg, border: `2px solid ${bd}`, borderRadius: 11, padding: "12px 14px",
+                      }}>{rb(c)}{correct ? "　⭕" : chosen ? "　❌" : ""}</button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {picked !== null && (
+                <div style={{ marginTop: 11, fontSize: 13, fontWeight: 800, color: isOK ? GREEN : "#D85A30", background: "#fff", border: `1.5px dashed ${isOK ? GREEN : "#D85A30"}`, borderRadius: 10, padding: "10px 13px", lineHeight: 1.55 }}>
+                  {isOK ? rb("⭕ せいかい！ ボスに 1ダメージ！💥　") : rb("❌ おしい… でも だいじょうぶ、ダメージは うけないよ。　")}{rb(q.explain)}
+                </div>
+              )}
+              {picked !== null && (
+                <button onClick={next} style={{ marginTop: 12, width: "100%", fontSize: 15, fontWeight: 900, cursor: "pointer", color: GOLD_TX, background: GOLD, border: `2px solid ${GOLD_DK}`, borderRadius: 11, padding: "12px 0" }}>
+                  {idx >= TOTAL ? "けっかを 見る →" : "つぎの もんだい →"}
+                </button>
+              )}
+            </>
+          ) : (
+            <div style={{ textAlign: "center", padding: "10px 0 6px" }}>
+              <div style={{ display: "grid", placeItems: "center" }}>
+                <MeasureKing size={86} mood={win ? "down" : "normal"} />
+              </div>
+              {win ? (
+                <>
+                  <div style={{ fontSize: 24, fontWeight: 900, color: GOLD_DK, marginTop: 8 }}>{rb("👑💥 ボスを たおした！")}</div>
+                  <div style={{ fontSize: 16, fontWeight: 900, color: INK, marginTop: 6 }}>{score} / {TOTAL} もん せいかい！</div>
+                  <div style={{ marginTop: 12, display: "inline-block", background: GOLD, border: `2.5px solid ${GOLD_DK}`, color: GOLD_TX, borderRadius: 14, padding: "10px 20px", fontSize: 16, fontWeight: 900, boxShadow: "0 3px 0 rgba(168,126,0,.35)" }}>
+                    🏆 {rb("称号『長さの勇者』を ゲット！ ＋100XP")}
+                  </div>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: SUB, marginTop: 10, lineHeight: 1.7 }}>{rb("メジャーキング「まいった！ きみは もう 長さの 達人じゃ…」")}</div>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: SUB, marginTop: 8 }}>{rb("ボスは にげた…また ちょうせんしよう！")}</div>
+                  <div style={{ fontSize: 16, fontWeight: 900, color: INK, marginTop: 6 }}>{score} / {TOTAL} もん せいかい</div>
+                  <div style={{ fontSize: 12.5, fontWeight: 800, color: SUB, marginTop: 8, lineHeight: 1.7 }}>{rb("8もん 正かいで たおせるよ。まちがえた もんだいの「せつめい」を 読みなおして、もう一回！")}</div>
+                </>
+              )}
+              <div style={{ marginTop: 14, display: "flex", gap: 8 }}>
+                <button onClick={restart} style={{ ...btnMain(GOLD), color: GOLD_TX, border: `2px solid ${GOLD_DK}` }}>もう一回 たたかう</button>
+                <button onClick={onClose} style={btnMain(GREEN)}>とじる</button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ===== ∞チャレンジ問題：ジェネレータ登録制 =====
+   新しい無限問題を 足すとき：
+   ①make関数を作る（{scene?, display, choices, ansIndex, explain} を返す）
+   ②下の GENERATORS に  キー: コンポーネント  を 1行 追加
+   ③単元データの NEXT_CARDS で その カードに  gen:"キー"  を 指定する */
+const GENERATORS = {
+  memori: () => <InfiniteChoiceQuiz make={makeMemori} />,
+  tanni: () => <InfiniteChoiceQuiz make={makeTanni} />,
+  michinori: () => <InfiniteChoiceQuiz make={makeMichinori} />,
+  kankaku: () => <InfiniteChoiceQuiz make={makeKankaku} />,
+  nagasaMix: () => <InfiniteChoiceQuiz make={makeNagasaMix} />,
+  omosaTanni: () => <InfiniteChoiceQuiz make={makeOmosa} />,
+  shosuLen: () => <InfiniteChoiceQuiz make={makeShosuLen} />,
+  menseki: () => <InfiniteChoiceQuiz make={makeMenseki} />,
+};
+
+/* ===== 小物 ===== */
+function LinkChip({ item, block }) {
+  const base = { fontSize: 11, fontWeight: 800, borderRadius: 11, padding: "5px 11px", textDecoration: "none", display: block ? "block" : "inline-block" };
+  const has = item && item.url;
+  if (has) {
+    return <a href={item.url} target="_blank" rel="noreferrer" style={{ ...base, color: "#fff", background: GREEN, border: `1.5px solid ${GREEN}` }}>{item.t} ↗</a>;
+  }
+  return <span style={{ ...base, color: SUB, border: "1.5px dashed #cdd8dd", background: "#fff" }}>{item.t}</span>;
+}
+function SectionTitle({ color, icon, text, mt }) {
+  return <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 900, color, margin: mt ? "12px 0 6px" : "0 0 6px" }}><span>{icon}</span>{text}</div>;
+}
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+</script>
+</body>
+</html>
