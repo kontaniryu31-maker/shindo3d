@@ -94,7 +94,7 @@ const TITLES = [
   { stage: 3, emoji: "🗺️", name: "道のりたんけん{家|か}" },
   { stage: 4, emoji: "🧮", name: "計算ヒーロー" },
   { stage: 5, emoji: "🏅", name: "まとめの達人" },
-  { boss: true, emoji: "⚔️", name: "長さの勇者" },
+  { boss: true, emoji: "⭐️", name: "長さの勇者" },
 ];
 
 /* つなげる：系統チェーン（解説用） */
@@ -151,14 +151,18 @@ const COMMON_LINKS = [
    ⚠️ readPage / page のページは目安。教科書で確認して直してください。 */
 const PLAN = {
   1: { // まきじゃく
-    0: { ready: true, kind: "read", readPage: "教科書 上 p.56〜58",
+    0: { ready: true, kind: "read", readPage: "教科書 上 p.56〜58", drill: "計算ドリル26「1.長いものの長さのはかり方」（教科書 p.57〜59）",
+      mame: {
+        title: "むかしは『体』が ものさしだった",
+        body: "ずっと むかし、長さを はかる どうぐが なかった ころは、{人|ひと}の 体を ものさしに していたよ。{日本|にほん}では ひじの {先|さき}までを「尺（しゃく）」、おや指の はばを「寸（すん）」と よんだ。{英語|えいご}の foot（フット）は『{足|あし}』、inch（インチ）は『おや指』の ことなんだ。でも {人|ひと}に よって 体の {大|おお}きさが ちがうから、同じ 1尺でも 長さが ちがって とても こまった。だから「みんなで 同じ」に きめた どうぐ＝まきじゃくや ものさしが できたんだよ。",
+      },
       goal: "教科書を 音読し、大事な ことば（まきじゃく・めもり）に 線を引ける。",
       prep: ["教科書", "赤えんぴつ", "ノート"],
       asks: ["まきじゃくは どんな ときに つかう？", "めもりは どこから 読む？", "線を引いた ことばで 1文 言える？"],
       teacher: ["大事な語に 自分で 線を引けているか", "用語を 自分のことばで 言いかえられるか"],
       links: [{ t: "教科書", url: null }],
     },
-    1: { ready: true, kind: "use", page: "教科書 上 p.56〜58", drill: "計算ドリル（長さの ところ）",
+    1: { ready: true, kind: "use", page: "教科書 上 p.56〜58", drill: "計算ドリル26「1.長いものの長さのはかり方」（教科書 p.57〜59）",
       goal: "まきじゃくの めもりを 正しく 読める。はかる ものに 合う どうぐを えらべる。",
       prep: ["教科書", "まきじゃく", "ノート"],
       asks: ["0の めもりに きちんと 合わせた？", "1めもりは いくつ ぶん？", "ものさしと まきじゃく、どちらが いい？ なぜ？"],
@@ -186,14 +190,22 @@ const PLAN = {
   },
 
   2: { // 長さのたんい km
-    0: { ready: true, kind: "read", readPage: "教科書 上 p.59〜60",
+    0: { ready: true, kind: "read", readPage: "教科書 上 p.59〜60", drill: "計算ドリル27「2.長い長さのたんい」（教科書 p.60）",
+      mame: {
+        title: "メートルは『だれでも 同じ』に するための 発明",
+        body: "むかしは {国|くに}に よって 長さの たんいが バラバラで、ぼうえき（{外国|がいこく}との 売り買い）が とても {大変|たいへん}だった。そこで フランスで かくめい（{大|おお}きな かわり目）が おきた ころ、「だれが はかっても 同じ」たんいを 作ろうと きめた。{北きょく|ほっきょく}から せきどう（{地球|ちきゅう}の まんなか）までの 長さを 1000{万|まん}{分|ぶん}の 1に した 1つ{分|ぶん}を「1メートル」と したんだ。{地球|ちきゅう}を ものさしに したから、{世界|せかい}じゅうの {人|ひと}が 同じ 1mを つかえる。これが メートルの はじまり。1km＝1000mの「1000」も、この {十進|じっしん}の 考え方だよ。",
+      },
+      mame2: {
+        title: "なぜ 10ずつ 分ける？",
+        body: "{人|ひと}の {手|て}の 指は 10{本|ほん}。だから むかしから {人|ひと}は 10の まとまりで 数を かぞえてきた（これを {十進法|じっしんほう}と いう）。10ずつだと、くり上がりが 位取り（くらいどり）と 同じに なって 計算が ラク。1cm＝10mm、1m＝100cm、1km＝1000m、ぜんぶ 10の まとまり！ もし 12や 60で {分|わ}けると、{変かん|へんかん}が {大変|たいへん}。じっさい、{時間|じかん}（1{時間|じかん}＝60{分|ふん}）や {角度|かくど}は {今|いま}でも その 計算で {苦労|くろう}しているね。",
+      },
       goal: "教科書を 音読し、大事な ことば（キロメートル・km・1km＝1000m）に 線を引ける。",
       prep: ["教科書", "赤えんぴつ", "ノート"],
       asks: ["「km」は どこに 出てくる？", "1kmは 何m？", "線を引いた ことばで 1文 言える？"],
       teacher: ["大事な語に 線を引けているか", "1km＝1000mを 言えるか"],
       links: [{ t: "教科書", url: null }],
     },
-    1: { ready: true, kind: "use", page: "教科書 上 p.59〜60", drill: "計算ドリル（長さの ところ）",
+    1: { ready: true, kind: "use", page: "教科書 上 p.59〜60", drill: "計算ドリル27「2.長い長さのたんい」（教科書 p.60）",
       goal: "1km＝1000mを つかって、たんいを かえられる（2km300m＝2300m など）。",
       prep: ["教科書", "計算ドリル", "ノート"],
       asks: ["kmを mに する とき 何を した？", "1500mは 何km何m？", "どの たんいが ぴったり？ なぜ？"],
@@ -221,14 +233,18 @@ const PLAN = {
   },
 
   3: { // 道のりと きょり
-    0: { ready: true, kind: "read", readPage: "教科書 上 p.60〜62",
+    0: { ready: true, kind: "read", readPage: "教科書 上 p.60〜62", drill: "計算ドリル27「2.長い長さのたんい」（教科書 p.60）",
+      mame: {
+        title: "たんいは『社会の 地図記号』と 同じ なかま",
+        body: "たんい（cm・m・km）は「だれが 見ても 同じ 長さ」を 表す ための 約束（やくそく）。じつは これ、社会で ならう「地図記号」と 同じ 考え方なんだ。地図記号も「だれが 見ても 同じ いみ」に なるように みんなで きめた ルール。たんいも 地図記号も、世界じゅう・国じゅうの 人が こまらない ために 作られた『みんなで 同じ 約束』。だから 道のりや きょりも、たんいを つかえば だれに でも つたわるよ。",
+      },
       goal: "教科書を 音読し、大事な ことば（道のり・きょり）に 線を引ける。",
       prep: ["教科書", "赤えんぴつ", "ノート"],
       asks: ["「道のり」は どんな 長さ？", "「きょり」は どんな 長さ？", "2つの ことばの ちがいは？"],
       teacher: ["道のり・きょりに 線を引けているか", "ちがいに 気づいているか"],
       links: [{ t: "教科書", url: null }],
     },
-    1: { ready: true, kind: "use", page: "教科書 上 p.60〜62", drill: "計算ドリル（長さの ところ）",
+    1: { ready: true, kind: "use", page: "教科書 上 p.60〜62", drill: "計算ドリル27「2.長い長さのたんい」（教科書 p.60）",
       goal: "絵地図から 道のりと きょりを 読みとって、もとめられる。",
       prep: ["教科書", "計算ドリル", "ノート"],
       asks: ["道のりは どの 線を たどった？", "きょりは どの 線？", "どちらが 長い？ なぜ？"],
@@ -377,6 +393,13 @@ const FURI_DICT = [
   ["赤","あか"], ["文","ぶん"], ["歩","ある"], ["通","とお"], ["前","まえ"],
   ["走","はし"], ["体","からだ"], ["広","ひろ"], ["重","おも"], ["辺","へん"],
   ["足","た"], ["教","おし"], ["気","き"], ["出","で"], ["立","た"], ["身","み"],
+  /* ===== まめちしき（長さの 歴史・たんいの 約束）用に 追加（あいまいな 単漢字は 入れず 熟語で 固定） ===== */
+  ["約束","やくそく"], ["発明","はつめい"], ["地図記号","ちずきごう"], ["記号","きごう"],
+  ["世界じゅう","せかいじゅう"], ["世界","せかい"], ["十進法","じっしんほう"], ["十進","じっしん"],
+  ["角度","かくど"], ["時間","じかん"], ["大変","たいへん"], ["外国","がいこく"],
+  ["北きょく","ほっきょく"], ["地球","ちきゅう"], ["変かん","へんかん"], ["指","ゆび"],
+  ["国","くに"], ["人","ひと"], ["手","て"], ["今","いま"], ["本","ほん"],
+  ["社会","しゃかい"], ["教室","きょうしつ"], ["予想","よそう"],
 ];
 // 「上」は じょう(教科書 上)で読みが割れるため辞書に入れず個別指定。
 const dataFuri = (s) => String(s == null ? "" : s).replace(/教科書\s*上/g, "{教科書|きょうかしょ} {上|じょう}");
@@ -829,7 +852,7 @@ function App() {
       <div style={{ display: "flex", alignItems: "center", gap: 13, flexWrap: "wrap" }}>
         <div style={{ width: 46, height: 46, borderRadius: 12, background: THEME.accent, color: "#fff", fontWeight: 900, fontSize: 16, display: "grid", placeItems: "center", flex: "none", boxShadow: "0 5px 0 rgba(0,0,0,.14)" }}>3D</div>
         <div style={{ flex: 1, minWidth: 240 }}>
-          <div style={{ fontSize: 22, fontWeight: 900, color: THEME.accent, lineHeight: 1.05 }}>3D 自由進度表 <span style={{ fontSize: 13, color: GOLD_DK }}>⚔️クエスト版</span></div>
+          <div style={{ fontSize: 22, fontWeight: 900, color: THEME.accent, lineHeight: 1.05 }}>3D 自由進度表 <span style={{ fontSize: 13, color: GOLD_DK }}>⭐️クエスト版</span></div>
           <div style={{ fontSize: 12.5, fontWeight: 800, marginTop: 2 }}>たんげん：<span style={{ color: THEME.accent }}>{rb(chromeFuri(UNIT))}</span></div>
           <div style={{ fontSize: 10, fontWeight: 700, color: SUB, marginTop: 1 }}>{BOOK}　／　{rb("いちばん大事")}：{rb(chromeFuri(CORE))}</div>
         </div>
@@ -855,7 +878,7 @@ function App() {
       <div style={{ marginTop: 10, border: `2px solid ${GOLD_DK}33`, background: "linear-gradient(180deg,#FFFDF4,#FFF7DC)", borderRadius: 14, padding: "9px 13px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 7, background: GOLD, border: `2px solid ${GOLD_DK}`, color: GOLD_TX, borderRadius: 12, padding: "5px 13px", fontSize: 14, fontWeight: 900, flex: "none", boxShadow: "0 2px 0 rgba(168,126,0,.3)" }}>
-            ⚔️ {rb("ぼうけんレベル")} <span style={{ fontSize: 18 }}>Lv{level}</span>
+            ⭐️ {rb("ぼうけんレベル")} <span style={{ fontSize: 18 }}>Lv{level}</span>
           </div>
           <div style={{ flex: "1 1 200px", minWidth: 180 }}>
             <div style={{ height: 14, background: "#EFE6C8", borderRadius: 8, overflow: "hidden", border: `1.5px solid ${GOLD_DK}55` }}>
@@ -1118,6 +1141,12 @@ function App() {
                       ["📝", "みんプリ（問題と 解説）を 作る", null],
                       ["🧑‍🏫", "友だちの 苦手を 考えて 授業を する", null],
                     ];
+                    // 🔎 長さ単元の 探究ネタ（体ものさし／1kmマップ／長さランキング）
+                    const tankyu = [
+                      ["🦶", "「自分の 体ものさし」を つくる", "自分の {歩|ほ}はば・手のひらが 何cmか まきじゃくで しらべて、きょうしつや ろうかなど {大|おお}きい ものを『体』で はかってみよう。何{歩|ほ}で わたれる？"],
+                      ["🌍", "「学校から 1kmは どこまで？」を 地図で しらべる", "地図を つかって、学校から 1km（＝1000m）の ところは どこか さがそう。社会の まち たんけんと つながる！ 道のりと きょりの ちがいも 見えるよ。"],
+                      ["🏆", "教室の「長いものランキング」を 予想→実測", "きょうしつで いちばん 長い ものは？を みんなで 予想してから、まきじゃくで ほんとうに はかって たしかめよう。予想と くらべると おもしろい！"],
+                    ];
                     return (
                       <Card>
                         <div style={{ fontSize: 16, fontWeight: 900, color: acc, marginBottom: 12 }}>{rb("つぎの どれか 1つが できたら クリア")}</div>
@@ -1128,6 +1157,24 @@ function App() {
                               <span style={{ fontSize: 21, fontWeight: 900, color: INK, lineHeight: 1.5, flex: 1 }}>{rb(txt)}</span>
                             </div>
                           ))}
+                        </div>
+                        {/* 🔎 探究タイム（長さ版）：もっと たしかめたい子へ */}
+                        <div style={{ marginTop: 14, borderRadius: 14, overflow: "hidden", border: `2.5px solid ${GREEN}` }}>
+                          <div style={{ background: GREEN, color: "#fff", padding: "8px 14px", display: "flex", alignItems: "center", gap: 8 }}>
+                            <span style={{ fontSize: 18 }}>🔎</span>
+                            <span style={{ fontSize: 14.5, fontWeight: 900 }}>{rb("たんきゅうタイム（長さで ためしてみよう）")}</span>
+                          </div>
+                          <div style={{ padding: "11px 13px", background: "#F3FBF7", display: "flex", flexDirection: "column", gap: 9 }}>
+                            {tankyu.map(([emo, ttl, desc], i) => (
+                              <div key={i} style={{ border: `1.5px solid ${GREEN}`, borderRadius: 11, padding: "10px 12px", background: "#fff" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                  <span style={{ fontSize: 20, flex: "none" }}>{emo}</span>
+                                  <span style={{ fontSize: 15, fontWeight: 900, color: GREEN_TX, lineHeight: 1.4 }}>{rb(ttl)}</span>
+                                </div>
+                                <div style={{ fontSize: 12.5, fontWeight: 700, color: INK, lineHeight: 1.7, marginTop: 5 }}>{rb(desc)}</div>
+                              </div>
+                            ))}
+                          </div>
                         </div>
                         <div style={{ marginTop: 14, borderRadius: 12, border: `2.5px dashed ${BLUE}`, background: "linear-gradient(180deg,#F4FBFD,#E8F5F8)", padding: "13px 15px" }}>
                           <div style={{ fontSize: 13, fontWeight: 900, color: BLUE, marginBottom: 5 }}>{rb("🎯 ゴール（これが できたら クリア）")}</div>
@@ -1158,6 +1205,12 @@ function App() {
                       {lines.map((t, i) => (
                         <div key={i} style={{ fontSize: 27, fontWeight: 900, color: INK, lineHeight: 1.6, letterSpacing: "-0.3px" }}>{rb(t)}</div>
                       ))}
+                      {plan.kind === "read" && plan.drill && (
+                        <div style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 800, color: AMBER_MAIN, background: "#FFF7E0", border: `1.5px dashed ${AMBER_MAIN}`, borderRadius: 10, padding: "9px 12px", lineHeight: 1.55 }}>
+                          <span style={{ fontSize: 16, flex: "none" }}>📕</span>
+                          <span>{rb("あわせて：") + rb(dataFuri(plan.drill))}</span>
+                        </div>
+                      )}
                       {goalText && (
                         <div style={{ marginTop: 18, borderRadius: 13, border: `2.5px dashed ${BLUE}`, background: "linear-gradient(180deg,#F4FBFD,#E8F5F8)", padding: "14px 16px" }}>
                           <div style={{ fontSize: 13, fontWeight: 900, color: BLUE, marginBottom: 6 }}>{rb("🎯 ゴール（これが 言えたら クリア）")}</div>
@@ -1167,6 +1220,21 @@ function App() {
                     </Card>
                   );
                 })()}
+
+                {/* 📜 まめちしき（読むLvだけ・長さの 歴史と たんいの 約束） */}
+                {plan.kind === "read" && plan.mame && (
+                  <div style={{ marginTop: 14 }}>
+                    {[plan.mame, plan.mame2].filter(Boolean).map((mm, i) => (
+                      <div key={i} style={{ marginTop: i === 0 ? 0 : 10, borderRadius: 14, overflow: "hidden", border: "2.5px solid #B58A2A", boxShadow: "0 3px 0 rgba(181,138,42,.22)" }}>
+                        <div style={{ background: "linear-gradient(180deg,#F5E6B4,#E9CE7C)", color: "#6b4e09", padding: "8px 14px", display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ fontSize: 20 }}>📜</span>
+                          <span style={{ fontSize: 15, fontWeight: 900, letterSpacing: .5 }}>{rb("まめちしき")}：{rb(mm.title)}</span>
+                        </div>
+                        <div style={{ padding: "13px 15px", background: "#FFFDF5", fontSize: 14, fontWeight: 700, color: INK, lineHeight: 1.85 }}>{rb(mm.body)}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* クリア（ぬる） */}
                 <div style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", borderTop: "1px dashed #d3dde1", paddingTop: 12 }}>
@@ -1316,7 +1384,7 @@ function LevelUpOverlay({ lv, onClose }) {
         ))}
         <div style={{ fontSize: 40 }}>⭐</div>
         <div style={{ fontSize: 26, fontWeight: 900, color: GOLD_DK, marginTop: 4 }}>{rb("レベルアップ！")}</div>
-        <div style={{ fontSize: 34, fontWeight: 900, color: INK, marginTop: 2 }}>⚔️ Lv{lv}</div>
+        <div style={{ fontSize: 34, fontWeight: 900, color: INK, marginTop: 2 }}>⭐️ Lv{lv}</div>
         <div style={{ fontSize: 11, fontWeight: 800, color: SUB, marginTop: 8 }}>{rb("タップで とじる")}</div>
       </div>
     </div>

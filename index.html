@@ -4,241 +4,230 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>学びの地図｜子どもの学びポータル</title>
-<meta name="description" content="計画→実行→振り返りのサイクルを地図で回す学びのポータル。進度表と教材リンク。">
+<meta name="description" content="4つのワールドをめぐって学びを進める、宇宙をテーマにした子どもの学びポータル。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#16181F; --subink:#5B5E6B;
-    --primary:#FF4E3A;                /* バーミリオン：意味のある1か所だけ */
-    --c-math:#2B7FFF; --c-science:#1AA179; --c-social:#F5B400; --gold:#FFC400;
-    --line:rgba(22,24,31,.12); --dash:rgba(22,24,31,.18);
-    --star-empty:rgba(22,24,31,.20);
-    --bg:#ffffff;
-    --shadow:0 12px 30px -16px rgba(22,24,31,.35);
-    --shadow-lg:0 22px 44px -18px rgba(22,24,31,.45);
-    --shadow-sm:0 8px 18px -12px rgba(22,24,31,.3);
+    --ink:#EEF1FF; --subink:#A4ADD6;
+    --primary:#FF6B4A;
+    --c-math:#4D8BFF; --c-science:#2BD49B; --c-social:#FFC24B; --c-length:#9B7BFF;
+    --gold:#FFCB47; --gold-deep:#E0A521; --gold-soft:#5A4A1E;
+    --bg-deep:#06081C; --bg-2:#0E1338;
+    --line:rgba(255,255,255,.12); --line-soft:rgba(255,255,255,.07);
+    --glass:rgba(255,255,255,.055);
+    --glass-2:rgba(18,24,58,.55);
+    --glass-bd:rgba(255,255,255,.14);
+    --shadow:0 18px 44px -18px rgba(0,0,0,.7);
+    --shadow-lg:0 30px 70px -22px rgba(0,0,0,.8);
+    --shadow-sm:0 10px 26px -14px rgba(0,0,0,.6);
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   html{scroll-behavior:smooth;}
   body{
     font-family:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN','Hiragino Sans',sans-serif;
-    color:var(--ink); font-size:17px; line-height:1.75; min-height:100vh; font-weight:500;
-    background:#fff;
-    background-image:radial-gradient(rgba(22,24,31,.045) .9px, transparent .9px);
-    background-size:26px 26px; background-attachment:fixed;
+    color:var(--ink); font-size:17px; line-height:1.7; min-height:100vh; font-weight:500;
+    background:
+      radial-gradient(1100px 760px at 84% -6%, rgba(155,123,255,.30), transparent 58%),
+      radial-gradient(1000px 720px at 8% 6%, rgba(77,139,255,.24), transparent 56%),
+      radial-gradient(1200px 820px at 50% 116%, rgba(43,212,155,.16), transparent 60%),
+      linear-gradient(180deg,#080A24 0%, var(--bg-deep) 40%, #04050F 100%);
+    background-attachment:fixed;
     -webkit-font-smoothing:antialiased;
   }
   body.big{font-size:20px;}
-  body.big .unit{font-size:21px;} body.big .wp{font-size:17px;} body.big .stars{font-size:19px;}
-  body.big .mas{font-size:15px;} body.big .core{font-size:14.5px;} body.big .nudge{font-size:13px;}
-  .wrap{max-width:1060px;margin:0 auto;padding:0 24px;}
+  body.hide-furi rt{display:none;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px;}
   .num-f{font-feature-settings:"tnum";}
+  ruby rt{font-size:.52em;font-weight:700;color:var(--subink);}
 
-  /* ===== ヘッダー（白・無彩・スッキリ） ===== */
-  .nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.9);
-    backdrop-filter:saturate(120%) blur(8px);-webkit-backdrop-filter:saturate(120%) blur(8px);
-    border-bottom:2px dotted var(--line);}
-  .nav-in{max-width:1060px;margin:0 auto;padding:11px 24px;display:flex;align-items:center;gap:12px;}
+  /* ===== 星空 ===== */
+  #stars{position:fixed;inset:0;z-index:-2;pointer-events:none;overflow:hidden;}
+  #stars i{position:absolute;border-radius:50%;background:#fff;opacity:.7;
+    box-shadow:0 0 6px rgba(255,255,255,.8);animation:tw 3.6s ease-in-out infinite;}
+  @keyframes tw{0%,100%{opacity:.22;}50%{opacity:.95;}}
+
+  /* ===== オーロラ（マウスの跡＝星雲のしっぽ） ===== */
+  #aurora{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;}
+  #aurora b{position:absolute;left:0;top:0;border-radius:50%;filter:blur(40px);
+    will-change:transform,opacity;opacity:0;mix-blend-mode:screen;}
+  #aurora b:nth-child(1){width:340px;height:340px;background:radial-gradient(circle,rgba(255,107,74,.42),rgba(255,107,74,0) 70%);}
+  #aurora b:nth-child(2){width:300px;height:300px;background:radial-gradient(circle,rgba(77,139,255,.40),rgba(77,139,255,0) 70%);}
+  #aurora b:nth-child(3){width:262px;height:262px;background:radial-gradient(circle,rgba(43,212,155,.36),rgba(43,212,155,0) 70%);}
+  #aurora b:nth-child(4){width:226px;height:226px;background:radial-gradient(circle,rgba(255,203,71,.40),rgba(255,203,71,0) 70%);}
+  #aurora b:nth-child(5){width:196px;height:196px;background:radial-gradient(circle,rgba(155,123,255,.40),rgba(155,123,255,0) 70%);}
+  #aurora b:nth-child(6){width:166px;height:166px;background:radial-gradient(circle,rgba(77,139,255,.30),rgba(77,139,255,0) 70%);}
+  #aurora b:nth-child(7){width:138px;height:138px;background:radial-gradient(circle,rgba(255,107,74,.30),rgba(255,107,74,0) 70%);}
+
+  /* ===== ヘッダー ===== */
+  .nav{position:sticky;top:0;z-index:50;background:rgba(6,8,28,.72);
+    backdrop-filter:saturate(150%) blur(14px);-webkit-backdrop-filter:saturate(150%) blur(14px);
+    border-bottom:1px solid var(--line-soft);}
+  .nav-in{max-width:1080px;margin:0 auto;padding:11px 24px;display:flex;align-items:center;gap:12px;}
   .brand{display:flex;align-items:center;gap:11px;text-decoration:none;color:inherit;}
-  .mk{width:34px;height:34px;border-radius:9px;background:var(--primary);color:#fff;flex:none;
-    display:grid;place-items:center;box-shadow:0 0 0 3px #fff,0 0 0 5px rgba(255,78,58,.28);}
+  .mk{width:36px;height:36px;border-radius:11px;background:linear-gradient(150deg,var(--primary),#FF9A5A);color:#fff;flex:none;
+    display:grid;place-items:center;box-shadow:0 0 0 1px rgba(255,255,255,.15),0 6px 18px -6px rgba(255,107,74,.9);}
   .mk svg{width:21px;height:21px;display:block;}
   .brand .bt{font-weight:900;font-size:19px;letter-spacing:-.01em;color:var(--ink);}
   .nav .sp{flex:1;}
-  .pref{font-size:13.5px;font-weight:800;cursor:pointer;border:2px solid var(--line);background:#fff;
+  .pref{font-size:13.5px;font-weight:800;cursor:pointer;border:1.5px solid var(--line);background:rgba(255,255,255,.06);
     color:var(--subink);border-radius:999px;padding:8px 15px;min-height:44px;white-space:nowrap;
-    transition:background .18s,color .18s,border-color .18s;}
-  .pref:hover{border-color:var(--ink);color:var(--ink);}
-  .pref.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+    transition:background .18s,color .18s,border-color .18s,transform .12s;}
+  .pref:hover{border-color:rgba(255,255,255,.4);color:var(--ink);}
+  .pref:active{transform:scale(.96);}
+  .pref.on{background:var(--ink);color:var(--bg-deep);border-color:var(--ink);}
 
   /* ===== ヒーロー ===== */
-  .hero{position:relative;overflow:hidden;padding:40px 0 28px;}
-  .hero::before{content:"";position:absolute;left:50%;top:-120px;width:760px;height:760px;
-    transform:translateX(-50%);z-index:0;pointer-events:none;
-    background:radial-gradient(circle,rgba(255,78,58,.05),transparent 60%);}
-  .hero-in{position:relative;z-index:1;display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
-  .hero-main{flex:1;min-width:280px;}
+  .hero{position:relative;overflow:hidden;padding:46px 0 22px;}
+  .hero-in{position:relative;z-index:1;display:flex;align-items:center;gap:28px;flex-wrap:wrap;}
+  .hero-main{flex:1;min-width:300px;}
+  .eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:900;letter-spacing:.08em;
+    color:#FFD9A0;background:rgba(255,203,71,.12);border:1.5px solid rgba(255,203,71,.3);
+    border-radius:999px;padding:5px 13px;margin-bottom:14px;}
   .logo{display:flex;align-items:center;gap:16px;}
-  .logo .mklg{width:56px;height:56px;border-radius:14px;background:var(--primary);color:#fff;flex:none;
-    display:grid;place-items:center;box-shadow:0 0 0 4px #fff,0 0 0 6px rgba(255,78,58,.25);
+  .logo .mklg{width:60px;height:60px;border-radius:17px;background:linear-gradient(150deg,var(--primary),#FF9A5A);color:#fff;flex:none;
+    display:grid;place-items:center;box-shadow:0 0 0 1px rgba(255,255,255,.18),0 14px 34px -10px rgba(255,107,74,.95);
     animation:powerOn .7s ease-out 1;}
-  .logo .mklg svg{width:34px;height:34px;display:block;}
-  @keyframes powerOn{0%{box-shadow:0 0 0 4px #fff,0 0 0 4px rgba(255,78,58,0);}
-    100%{box-shadow:0 0 0 4px #fff,0 0 0 6px rgba(255,78,58,.25);}}
-  .logo h1{font-size:clamp(44px,7vw,74px);font-weight:900;margin:0;line-height:1.02;
-    letter-spacing:-.02em;color:var(--ink);}
-  .hero-sub{font-size:18px;font-weight:800;color:var(--subink);margin:13px 0 0;}
-  body.big .logo h1{font-size:clamp(50px,7vw,82px);}
+  .logo .mklg svg{width:36px;height:36px;display:block;}
+  @keyframes powerOn{0%{transform:scale(.7) rotate(-12deg);opacity:0;}100%{transform:scale(1) rotate(0);opacity:1;}}
+  .logo h1{font-size:clamp(44px,6.8vw,72px);font-weight:900;margin:0;line-height:1.02;
+    letter-spacing:-.02em;color:#fff;text-shadow:0 2px 30px rgba(120,140,255,.4);}
+  .hero-sub{font-size:18px;font-weight:800;color:var(--subink);margin:15px 0 0;}
+  body.big .logo h1{font-size:clamp(50px,6.8vw,80px);}
 
-  /* 総攻略リング */
-  .total{flex:none;text-align:center;}
-  .ring{width:108px;height:108px;border-radius:50%;display:grid;place-items:center;position:relative;margin:0 auto;}
-  .ring .hole{width:78px;height:78px;border-radius:50%;background:#fff;display:grid;place-items:center;
-    line-height:1.1;box-shadow:inset 0 0 0 1px var(--line);}
-  .ring .hole .pct{font-size:23px;font-weight:900;color:var(--ink);}
-  .ring .hole .lab{font-size:10.5px;font-weight:800;color:var(--subink);letter-spacing:.04em;}
-  .total .cap{font-size:12px;font-weight:800;color:var(--subink);margin-top:7px;}
-  .ring.allclear .hole .pct{font-size:30px;}
+  /* 総ぼうけんレベル：星のランク */
+  .crest{flex:none;width:196px;text-align:center;position:relative;}
+  .orb{position:relative;width:158px;height:158px;margin:0 auto;display:grid;place-items:center;}
+  .orb::before{content:"";position:absolute;inset:14px;border-radius:50%;
+    background:radial-gradient(circle at 38% 32%, #FFF0C2, var(--gold) 46%, var(--gold-deep) 78%, #8A5E12);
+    box-shadow:0 0 44px rgba(255,203,71,.55),inset -6px -8px 16px rgba(120,72,0,.5),inset 4px 5px 10px rgba(255,255,255,.6);}
+  .orb .ring{position:absolute;inset:0;border-radius:50%;border:2px dashed rgba(255,203,71,.5);
+    animation:spin 22s linear infinite;}
+  .orb .ring i{position:absolute;top:-5px;left:50%;width:9px;height:9px;margin-left:-4px;border-radius:50%;
+    background:#fff;box-shadow:0 0 10px rgba(255,255,255,.9);}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .orb .core{position:relative;z-index:1;line-height:1.0;text-align:center;}
+  .orb .core .lv{font-size:42px;font-weight:900;color:#5A3D00;letter-spacing:-.02em;}
+  .orb .core .lvlab{font-size:11px;font-weight:900;color:#7A5410;letter-spacing:.04em;}
+  .crest .cap{font-size:12.5px;font-weight:900;color:var(--subink);margin-top:11px;}
+  .crest .xpbar{height:9px;border-radius:999px;background:rgba(255,255,255,.1);overflow:hidden;margin:8px auto 0;width:158px;}
+  .crest .xpbar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--gold-deep),var(--gold));
+    width:0;transition:width 1s cubic-bezier(.2,.8,.2,1);box-shadow:0 0 12px rgba(255,203,71,.7);}
+  .crest .next{font-size:11px;font-weight:800;color:var(--subink);margin-top:6px;}
+  .crest.allclear .orb::before{animation:crestGlow 2.2s ease-in-out infinite;}
+  @keyframes crestGlow{0%,100%{box-shadow:0 0 44px rgba(255,203,71,.55),inset -6px -8px 16px rgba(120,72,0,.5),inset 4px 5px 10px rgba(255,255,255,.6);}
+    50%{box-shadow:0 0 70px rgba(255,203,71,.95),inset -6px -8px 16px rgba(120,72,0,.5),inset 4px 5px 10px rgba(255,255,255,.8);}}
   .confetti{position:absolute;inset:0;overflow:visible;pointer-events:none;}
-  .confetti i{position:absolute;top:48%;left:50%;width:7px;height:11px;border-radius:2px;opacity:0;animation:conf 1.3s ease-out forwards;}
+  .confetti i{position:absolute;top:42%;left:50%;width:7px;height:11px;border-radius:2px;opacity:0;animation:conf 1.3s ease-out forwards;}
   @keyframes conf{0%{opacity:1;transform:translate(0,0) rotate(0);}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(320deg);}}
 
-  /* ===== 学びの地図バナー（ヘッダー画像＝サイクルのルート） ===== */
-  .mapwrap{position:relative;margin-top:24px;border-radius:22px;overflow:hidden;
-    background:linear-gradient(160deg,#FFFEF7 0%,#F2F8F3 55%,#EEF5FB 100%);
-    border:2px solid var(--line);box-shadow:var(--shadow-sm);}
-  .mapwrap .trail{display:block;width:100%;height:auto;}
-  .maptag{position:absolute;left:20px;top:15px;font-size:12px;font-weight:900;letter-spacing:.1em;
-    color:var(--subink);background:rgba(255,255,255,.8);border:2px solid var(--line);border-radius:999px;padding:5px 13px;}
-  .wp{position:absolute;transform:translate(-50%,-50%);display:inline-flex;align-items:center;gap:9px;
-    cursor:pointer;text-decoration:none;background:#fff;border:2px solid var(--line);border-radius:999px;padding:11px 19px;
-    font-weight:900;font-size:15.5px;color:var(--ink);box-shadow:var(--shadow-sm);white-space:nowrap;
-    transition:transform .16s,box-shadow .16s,border-color .16s,background .16s;}
-  .wp .we{font-size:21px;}
-  .wp:hover{border-color:var(--ink);transform:translate(-50%,-58%);box-shadow:var(--shadow);}
-  .wp.on{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:var(--shadow);animation:chipPop .4s ease-out 1;}
-  @keyframes chipPop{0%{transform:translate(-50%,-50%) scale(1.1);}100%{transform:translate(-50%,-50%) scale(1);}}
-  .wp1{left:15%;top:62%;} .wp2{left:50%;top:30%;} .wp3{left:85%;top:63%;}
-  .loopbadge{position:absolute;left:50%;top:88%;transform:translate(-50%,-50%);font-size:12.5px;font-weight:900;
-    color:var(--primary);background:#fff;border:2px solid var(--primary);border-radius:999px;padding:5px 14px;white-space:nowrap;}
-  .cyc-note{text-align:center;font-size:13px;font-weight:800;color:var(--subink);margin:14px 0 0;}
-
-  hr.div{height:0;border:0;border-top:2px dotted var(--line);margin:0;}
+  /* 称号棚 */
+  .badges{margin-top:22px;display:flex;flex-wrap:wrap;gap:9px;align-items:center;}
+  .badges .blab{font-size:12.5px;font-weight:900;color:var(--subink);margin-right:2px;}
+  .badge{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:900;
+    border-radius:999px;padding:7px 14px;border:1.5px solid var(--line);
+    background:rgba(255,255,255,.04);color:#6E76A0;transition:transform .14s;}
+  .badge .be{font-size:16px;filter:grayscale(1);opacity:.45;}
+  .badge.got{background:linear-gradient(135deg,rgba(255,203,71,.22),rgba(255,203,71,.1));border-color:var(--gold);
+    color:#FFE0A0;box-shadow:0 0 20px -6px rgba(255,203,71,.7);}
+  .badge.got .be{filter:none;opacity:1;}
+  .badge.got:hover{transform:translateY(-2px);}
 
   /* ===== セクション ===== */
-  section.block{padding:40px 0;scroll-margin-top:76px;}
-  .sec-head{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
-  .sec-head .n{width:38px;height:38px;border-radius:11px;background:var(--ink);color:#fff;
-    display:grid;place-items:center;font-size:19px;font-weight:900;flex:none;}
-  .sec-head .ico{width:38px;height:38px;border-radius:11px;background:#fff;border:2px solid var(--line);
-    display:grid;place-items:center;font-size:21px;flex:none;}
-  .sec-head h2{font-size:clamp(20px,3vw,25px);font-weight:900;margin:0;letter-spacing:-.01em;}
-  .sec-head .date{margin-left:auto;font-size:12.5px;font-weight:800;color:var(--subink);
-    background:#fff;border:2px solid var(--line);border-radius:999px;padding:5px 14px;}
+  main{position:relative;z-index:1;}
+  section.block{padding:34px 0;scroll-margin-top:76px;}
+  .sec-head{display:flex;align-items:center;gap:13px;margin-bottom:8px;}
+  .sec-head .ico{width:42px;height:42px;border-radius:13px;background:var(--glass);border:1px solid var(--glass-bd);
+    display:grid;place-items:center;font-size:22px;flex:none;}
+  .sec-head h2{font-size:clamp(21px,3vw,27px);font-weight:900;margin:0;letter-spacing:-.01em;color:#fff;}
+  .sec-sub{font-size:13.5px;font-weight:800;color:var(--subink);margin:0 0 18px 55px;}
 
-  /* 入力パネル */
-  .panel{background:#fff;border:2px solid var(--line);border-radius:18px;padding:20px 22px;box-shadow:var(--shadow-sm);}
-  .panel .lbl{font-size:14.5px;font-weight:800;color:var(--ink);margin-bottom:9px;}
-  .panel .lbl small{color:var(--subink);font-weight:800;font-size:12px;margin-left:4px;}
-  .fld{width:100%;font-size:16px;font-weight:700;color:var(--ink);border:2px solid var(--line);
-    border-radius:13px;padding:13px 15px;outline:none;font-family:inherit;min-height:52px;background:#fff;
-    transition:border-color .15s,box-shadow .15s;}
-  .fld:focus{border-color:var(--primary);box-shadow:0 0 0 4px rgba(255,78,58,.14);}
-  .rate{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:16px;}
-  .rbtn{position:relative;font-size:15px;font-weight:800;cursor:pointer;border:2px solid var(--line);
-    background:#fff;color:var(--ink);border-radius:999px;padding:11px 20px;min-height:46px;transition:all .15s;}
-  .rbtn:hover{border-color:var(--ink);}
-  .rbtn.on{background:var(--c-science);color:#fff;border-color:var(--c-science);box-shadow:var(--shadow-sm);}
-  .loop-note{margin-top:12px;font-size:13px;font-weight:800;color:var(--ink);
-    background:#fff;border:2px dashed var(--line);border-radius:13px;padding:11px 15px;}
-  .loop-note b{color:var(--primary);}
-  .prev{background:#fff;border:2px solid var(--line);border-left:6px solid var(--primary);
-    border-radius:14px;padding:15px 18px;margin-bottom:16px;box-shadow:var(--shadow-sm);}
-  .prev .pr-ttl{font-size:13px;font-weight:900;color:var(--primary);margin-bottom:7px;}
-  .prev .pr{font-size:14px;font-weight:700;color:var(--ink);line-height:1.8;}
-  .prev .pr b{color:var(--ink);}
-  .prev .pr-nudge{font-size:13px;font-weight:800;color:var(--subink);margin-top:9px;}
+  /* ===== ワールド（進度表タイル） ===== */
+  .worlds{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;}
+  .world{position:relative;display:flex;flex-direction:column;text-decoration:none;color:inherit;
+    border-radius:22px;overflow:hidden;border:1px solid var(--glass-bd);
+    background:var(--glass-2);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);
+    box-shadow:var(--shadow-sm);transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s,border-color .2s;}
+  .world:hover{transform:translateY(-7px);box-shadow:var(--shadow-lg);border-color:rgba(255,255,255,.28);}
+  .world:active{transform:translateY(-2px) scale(.995);}
+  .world:focus-visible,.pref:focus-visible,.linkcard:focus-visible{outline:3px solid var(--gold);outline-offset:3px;}
+  .world .cover{position:relative;padding:18px 18px 16px;overflow:hidden;color:#fff;
+    background:linear-gradient(150deg,var(--tc),var(--tcd));}
+  .world.ink .cover{color:#15182C;}
+  .world .cover::after{content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(120px 80px at 82% 18%, rgba(255,255,255,.4),transparent 60%);}
+  .world .crestmini{position:absolute;right:14px;top:13px;font-size:44px;line-height:1;z-index:1;
+    filter:drop-shadow(0 4px 8px rgba(0,0,0,.3));transition:transform .25s;}
+  .world:hover .crestmini{transform:scale(1.1) rotate(-5deg);}
+  .world .lvbadge{position:relative;z-index:1;display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:900;
+    background:rgba(10,12,30,.55);color:#fff;border-radius:999px;padding:4px 11px;
+    box-shadow:0 4px 10px -5px rgba(0,0,0,.4);backdrop-filter:blur(4px);}
+  .world.ink .lvbadge{background:rgba(10,12,30,.75);}
+  .world .subj{position:relative;z-index:1;font-size:12.5px;font-weight:900;opacity:.95;margin:11px 0 2px;}
+  .world .unit{position:relative;z-index:1;font-size:18px;font-weight:900;line-height:1.3;letter-spacing:-.01em;max-width:80%;}
+  .world .body{padding:15px 18px 17px;display:flex;flex-direction:column;gap:11px;flex:1;}
 
-  /* ===== 教科タイル ===== */
-  .grid{display:grid;grid-template-columns:repeat(3,minmax(280px,1fr));gap:20px;}
-  .tile{display:flex;flex-direction:column;text-decoration:none;color:inherit;background:#fff;
-    border-radius:18px;overflow:hidden;box-shadow:var(--shadow);
-    transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s;}
-  .tile:hover{transform:translateY(-8px) scale(1.015);box-shadow:var(--shadow-lg);}
-  .tile:active{transform:translateY(-2px) scale(.99);}
-  .tile:focus-visible,.wp:focus-visible,.pref:focus-visible,.rbtn:focus-visible,.linkcard:focus-visible,.fld:focus-visible{outline:3px solid var(--ink);outline-offset:3px;}
-  .jacket{position:relative;padding:18px 18px 16px;color:#fff;overflow:hidden;min-height:188px;display:flex;flex-direction:column;}
-  .jacket.dark{color:var(--ink);}
-  .jacket .gloss{position:absolute;right:-26px;top:-26px;width:150px;height:150px;border-radius:50%;
-    background:rgba(255,255,255,.16);transition:transform .22s;}
-  .jacket.dark .gloss{background:rgba(255,255,255,.32);}
-  .tile:hover .jacket .gloss{transform:scale(1.18);}
-  .lv{position:relative;align-self:flex-start;background:rgba(255,255,255,.24);color:#fff;
-    font-weight:900;font-size:11.5px;border-radius:999px;padding:4px 11px;letter-spacing:.02em;}
-  .jacket.dark .lv{background:rgba(0,0,0,.13);color:var(--ink);}
-  .appic{position:relative;width:84px;height:84px;border-radius:21px;background:rgba(255,255,255,.18);
-    display:grid;place-items:center;font-size:46px;margin:12px 0 auto;transition:transform .22s;}
-  .jacket.dark .appic{background:rgba(255,255,255,.45);}
-  .tile:hover .appic{transform:scale(1.08) rotate(-3deg);}
-  .jacket .subj{position:relative;font-size:12px;font-weight:800;opacity:.95;letter-spacing:.06em;margin-top:12px;}
-  .jacket .unit{position:relative;font-size:18.5px;font-weight:900;line-height:1.3;margin-top:2px;letter-spacing:-.005em;}
-  .status{padding:16px 18px 18px;display:flex;flex-direction:column;gap:13px;}
-  .road{position:relative;padding:4px 0 2px;}
-  .road .track{position:absolute;left:11px;right:11px;top:13px;border-top:2px dashed var(--dash);}
-  .road .fill{position:absolute;left:11px;top:13px;border-top:4px solid var(--tcg,var(--tc));width:0;
-    max-width:calc(100% - 22px);transition:width .8s cubic-bezier(.2,.8,.2,1);}
-  .nodes{position:relative;display:flex;justify-content:space-between;}
-  .node{width:22px;height:22px;border-radius:50%;background:#fff;border:2px solid var(--dash);
-    display:grid;place-items:center;font-size:12px;line-height:1;}
-  .node.done{background:var(--tcg,var(--tc));border-color:var(--tcg,var(--tc));}
-  .node.current{border-color:var(--tcg,var(--tc));animation:pulse 1.6s ease-in-out infinite;}
-  .node:empty::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--dash);}
-  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.16);}}
-  .nudge{font-size:11.5px;font-weight:800;color:var(--subink);margin-top:5px;}
-  .stars{display:flex;align-items:center;flex-wrap:wrap;gap:1px;font-size:17px;line-height:1;}
-  .star{position:relative;display:inline-block;color:var(--star-empty);width:1em;animation:starPop .4s ease-out both;}
-  .star>b{position:absolute;left:0;top:0;overflow:hidden;white-space:nowrap;color:var(--tcg,var(--tc));-webkit-text-stroke:.4px rgba(0,0,0,.32);}
-  .star.full>b{color:var(--gold);}
-  @keyframes starPop{0%{transform:scale(0);}70%{transform:scale(1.2);}100%{transform:scale(1);}}
-  .mas{margin-left:8px;font-size:13px;font-weight:900;color:var(--ink);}
-  .core{font-size:13px;font-weight:700;color:var(--subink);line-height:1.7;}
-  .go{font-size:15px;font-weight:900;color:#fff;background:var(--tc);border-radius:12px;
-    padding:13px 16px;text-align:center;box-shadow:0 8px 16px -8px rgba(22,24,31,.5);}
-  .go.darkgo{color:var(--ink);}
-  .go .ar{display:inline-block;transition:transform .15s;}
-  .tile:hover .go .ar{transform:translateX(4px);}
-  .go.clear{background:var(--gold);color:var(--ink);}
+  /* 道（旗） */
+  .road{position:relative;height:30px;}
+  .road .track{position:absolute;left:2%;right:2%;top:50%;height:5px;border-radius:999px;background:rgba(255,255,255,.13);transform:translateY(-50%);}
+  .road .fill{position:absolute;left:2%;top:50%;height:5px;border-radius:999px;background:var(--tc);transform:translateY(-50%);width:0;transition:width .9s cubic-bezier(.2,.8,.2,1);box-shadow:0 0 10px var(--tc);}
+  .road .nodes{position:absolute;inset:0;display:flex;justify-content:space-between;align-items:center;padding:0 1%;}
+  .road .node{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:14px;
+    background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.16);}
+  .road .node.done{border-color:var(--tc);background:rgba(255,255,255,.14);}
+  .road .node.current{border-color:var(--tc);box-shadow:0 0 0 4px rgba(255,255,255,.06);animation:hop 1.4s ease-in-out infinite;}
+  @keyframes hop{0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);}}
+  .nudge{font-size:12.5px;font-weight:800;color:var(--subink);}
+  .world .core{font-size:12.5px;font-weight:700;color:#C7CEF0;line-height:1.55;
+    background:rgba(255,255,255,.05);border-radius:11px;padding:9px 12px;}
+  .go{margin-top:auto;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    font-size:15px;font-weight:900;color:#fff;background:linear-gradient(150deg,var(--tc),var(--tcd));
+    border-radius:13px;padding:12px;box-shadow:0 8px 22px -9px var(--tc);}
+  .world.ink .go{color:#15182C;}
+  .go .ar{transition:transform .18s;}
+  .world:hover .go .ar{transform:translateX(5px);}
+  .go.clear{background:linear-gradient(150deg,var(--gold),#FFE08A);color:#5A3D00;}
 
   /* ===== 教材リンク ===== */
-  .links{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
-  .linkcard{display:flex;gap:13px;align-items:center;text-decoration:none;color:inherit;background:#fff;
-    border:2px solid var(--line);border-radius:14px;padding:15px 17px;min-height:74px;
-    transition:border-color .15s,transform .15s,box-shadow .15s;}
-  .linkcard:hover{border-color:var(--ink);transform:translateY(-2px);box-shadow:var(--shadow-sm);}
-  .linkcard .li{width:44px;height:44px;border-radius:12px;background:#fff;border:2px solid var(--line);
+  .links{display:grid;grid-template-columns:repeat(2,1fr);gap:13px;}
+  .linkcard{display:flex;align-items:center;gap:13px;text-decoration:none;color:inherit;
+    background:var(--glass);backdrop-filter:blur(12px);border:1px solid var(--glass-bd);border-radius:16px;padding:14px 16px;
+    box-shadow:var(--shadow-sm);transition:transform .16s,box-shadow .16s,border-color .16s;}
+  .linkcard:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.3);box-shadow:var(--shadow);}
+  .linkcard .li{width:44px;height:44px;border-radius:13px;background:rgba(255,255,255,.08);border:1px solid var(--line);
     display:grid;place-items:center;font-size:23px;flex:none;}
-  .linkcard .lcol{min-width:0;}
-  .linkcard .ln{display:block;font-size:15.5px;font-weight:800;}
-  .linkcard .ld{display:block;font-size:12px;font-weight:700;color:var(--subink);margin-top:2px;}
-  .linkcard .ext{margin-left:auto;font-size:15px;font-weight:900;color:var(--ink);flex:none;}
+  .linkcard .lcol{display:flex;flex-direction:column;flex:1;min-width:0;}
+  .linkcard .ln{font-size:15px;font-weight:900;color:var(--ink);}
+  .linkcard .ld{font-size:12px;font-weight:700;color:var(--subink);}
+  .linkcard .ext{font-size:16px;color:var(--subink);flex:none;}
 
-  footer.site{padding:30px 0 50px;border-top:2px dotted var(--line);margin-top:14px;}
-  footer .ft{font-size:12px;font-weight:700;color:var(--subink);line-height:1.95;text-align:center;}
+  /* ===== フッター ===== */
+  footer.site{padding:34px 0 48px;}
+  footer .ft{font-size:12.5px;font-weight:700;color:var(--subink);text-align:center;line-height:1.9;}
   footer .ft b{color:var(--ink);}
 
-  ruby rt{font-size:.5em;font-weight:800;}
-  .hide-furi rt{display:none;}
-
-  @media(max-width:820px){ .grid{grid-template-columns:repeat(2,minmax(260px,1fr));} }
+  @media(max-width:760px){
+    .worlds{grid-template-columns:1fr;} .links{grid-template-columns:1fr;}
+    .hero-in{justify-content:center;text-align:center;} .logo{justify-content:center;}
+    .badges{justify-content:center;} .sec-sub{margin-left:0;}
+  }
   @media(max-width:560px){
     .wrap{padding:0 16px;} .nav-in{padding:10px 16px;}
-    .grid{grid-template-columns:1fr;} .hero-in{justify-content:center;text-align:center;} .logo{justify-content:center;}
+    .world .unit{max-width:100%;}
   }
-  /* ===== 🎨 オーロラ：マウスの跡が背景にふわっととける ===== */
-  #aurora{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;}
-  #aurora b{position:absolute;left:0;top:0;border-radius:50%;filter:blur(34px);
-    will-change:transform,opacity;opacity:0;mix-blend-mode:multiply;}
-  #aurora b:nth-child(1){width:300px;height:300px;background:radial-gradient(circle,rgba(255,78,58,.20),rgba(255,78,58,0) 70%);}
-  #aurora b:nth-child(2){width:262px;height:262px;background:radial-gradient(circle,rgba(43,127,255,.17),rgba(43,127,255,0) 70%);}
-  #aurora b:nth-child(3){width:230px;height:230px;background:radial-gradient(circle,rgba(26,161,121,.17),rgba(26,161,121,0) 70%);}
-  #aurora b:nth-child(4){width:202px;height:202px;background:radial-gradient(circle,rgba(255,196,0,.20),rgba(255,196,0,0) 70%);}
-  #aurora b:nth-child(5){width:176px;height:176px;background:radial-gradient(circle,rgba(255,78,58,.15),rgba(255,78,58,0) 70%);}
-  #aurora b:nth-child(6){width:152px;height:152px;background:radial-gradient(circle,rgba(43,127,255,.13),rgba(43,127,255,0) 70%);}
-  #aurora b:nth-child(7){width:130px;height:130px;background:radial-gradient(circle,rgba(26,161,121,.12),rgba(26,161,121,0) 70%);}
-
   @media (prefers-reduced-motion: reduce){
     *{animation:none !important;}
-    .tile,.go .ar,.appic,.jacket .gloss,.road .fill,.wp{transition:none !important;}
-    #aurora{display:none !important;}
+    .world,.go .ar,.crestmini,.road .fill,.world .cover .sheen{transition:none !important;}
+    #aurora,#stars{display:none !important;}
   }
 </style>
 </head>
 <body class="hide-furi">
 
-<!-- 🎨 オーロラ（マウスの跡が背景にとける） -->
+<!-- 星空 ＋ オーロラ（マウスの跡が星雲のしっぽに） -->
+<div id="stars" aria-hidden="true"></div>
 <div id="aurora" aria-hidden="true"><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div>
 
 <!-- ヘッダー -->
@@ -261,78 +250,30 @@
   <div class="wrap">
     <div class="hero-in">
       <div class="hero-main">
+        <span class="eyebrow" data-furi>🚀 学《まな》びの たんけんへ</span>
         <div class="logo">
           <span class="mklg"><svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><polygon points="12,1.5 14.2,9.8 22.5,12 14.2,14.2 12,22.5 9.8,14.2 1.5,12 9.8,9.8"/></svg></span>
           <h1>学びの地図</h1>
         </div>
-        <p class="hero-sub" data-furi>きょうの 学《まな》びを 地図《ちず》で すすめよう。</p>
+        <p class="hero-sub" data-furi>4つの ワールドを めぐって、じぶんの 学《まな》びを すすめよう。</p>
+        <div class="badges" id="badges"></div>
       </div>
-      <div class="total" id="total-ring"></div>
+      <div class="crest" id="crest"></div>
     </div>
-
-    <!-- 学びの地図バナー：計画→実行→ふりかえり の巡回ルート -->
-    <div class="mapwrap">
-      <svg class="trail" viewBox="0 0 1000 270" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-        <defs>
-          <marker id="ah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-            <path d="M0,0 L10,5 L0,10 z" fill="#FF4E3A"/>
-          </marker>
-        </defs>
-        <!-- 遠景の丘 -->
-        <path d="M0,242 Q120,200 240,238 T520,236 T800,240 T1000,232 L1000,270 L0,270 Z" fill="rgba(26,161,121,.10)"/>
-        <path d="M0,252 Q160,224 340,250 T720,250 T1000,248 L1000,270 L0,270 Z" fill="rgba(43,127,255,.08)"/>
-        <!-- ルート（行き） -->
-        <path d="M150,168 C300,168 350,82 500,82 C650,82 700,170 850,170"
-              fill="none" stroke="rgba(22,24,31,.30)" stroke-width="4" stroke-linecap="round" stroke-dasharray="3 12"/>
-        <!-- もどるループ（くりかえし） -->
-        <path d="M850,170 C905,255 600,262 500,250 C360,233 235,250 182,206"
-              fill="none" stroke="#FF4E3A" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="2 11" marker-end="url(#ah)"/>
-        <!-- コンパス -->
-        <g transform="translate(930,52)">
-          <circle r="22" fill="#fff" stroke="rgba(22,24,31,.18)" stroke-width="2"/>
-          <polygon points="0,-15 4,0 0,4 -4,0" fill="#FF4E3A"/>
-          <polygon points="0,15 4,0 0,-4 -4,0" fill="rgba(22,24,31,.30)"/>
-          <text x="0" y="-26" text-anchor="middle" font-size="10" font-weight="900" fill="#5B5E6B">N</text>
-        </g>
-      </svg>
-      <span class="maptag" data-furi>🗺️ 学《まな》びの ルート</span>
-      <a class="wp wp1" data-step="1" href="#sec-plan"><span class="we">📝</span><span data-furi>①計画《けいかく》</span></a>
-      <a class="wp wp2" data-step="2" href="#sec-do"><span class="we">🚀</span><span data-furi>②実行《じっこう》</span></a>
-      <a class="wp wp3" data-step="3" href="#sec-reflect"><span class="we">🔁</span><span data-furi>③ふりかえり</span></a>
-      <span class="loopbadge" data-furi>🔁 ①に もどって くりかえす</span>
-    </div>
-    <p class="cyc-note" data-furi>この 道《みち》を ぐるぐる まわって、じぶんの 学《まな》びを レベルアップ。</p>
   </div>
 </section>
-<hr class="div">
 
 <main>
 
-  <!-- ① 計画 -->
-  <section class="block" id="sec-plan">
-    <div class="wrap">
-      <div class="sec-head">
-        <span class="n">1</span>
-        <h2 data-furi>計画《けいかく》｜きょうの めあて</h2>
-        <span class="date num-f" id="d-date"></span>
-      </div>
-      <div class="prev" id="prev"></div>
-      <div class="panel">
-        <div class="lbl" data-furi>📌 きょうは なにを、どこまで やる？ <small>（自分《じぶん》で きめよう）</small></div>
-        <input class="fld" id="plan" type="text" maxlength="70" placeholder="れい：たしざんの ひっさんを 5もんめまで／チョウの そだちを せつめいできるように">
-      </div>
-    </div>
-  </section>
-
-  <!-- ② 実行（進度表） -->
+  <!-- ワールド（進度表） -->
   <section class="block" id="sec-do">
     <div class="wrap">
       <div class="sec-head">
-        <span class="n">2</span>
-        <h2 data-furi>実行《じっこう》｜進度表《しんどひょう》</h2>
+        <span class="ico">🪐</span>
+        <h2 data-furi>4つの ワールドを めぐる</h2>
       </div>
-      <p class="cyc-note" data-furi style="text-align:left;margin:-6px 0 16px;">🚀 いまの えき／🚩 クリアした えき／★ は すすんだ ぶん。3つの きょうかを すすめよう。</p>
-      <div class="grid" id="grid-units"></div>
+      <p class="sec-sub" data-furi>🚀 いまの えき／🚩 クリアした えき。タイルを ひらいて、ぼうけんに でかけよう。</p>
+      <div class="worlds" id="grid-units"></div>
     </div>
   </section>
 
@@ -340,27 +281,10 @@
   <section class="block">
     <div class="wrap">
       <div class="sec-head">
-        <span class="ico">🔗</span>
-        <h2 data-furi>こまったら｜教材《きょうざい》リンク</h2>
+        <span class="ico">🎒</span>
+        <h2 data-furi>こまったら｜ヒントの どうぐ</h2>
       </div>
       <div class="links" id="grid-links"></div>
-    </div>
-  </section>
-
-  <!-- ③ ふりかえり -->
-  <section class="block" id="sec-reflect">
-    <div class="wrap">
-      <div class="sec-head">
-        <span class="n">3</span>
-        <h2 data-furi>ふりかえり｜きょうの 学《まな》び</h2>
-      </div>
-      <div class="panel">
-        <div class="lbl" data-furi>🎯 めあては できた？</div>
-        <div class="rate" id="rate"></div>
-        <div class="lbl" data-furi>💭 気《き》づいたこと・つぎ がんばること</div>
-        <input class="fld" id="reflect" type="text" maxlength="70" placeholder="れい：くりあがりで まちがえた。つぎは ゆっくり たしかめる">
-        <div class="loop-note" data-furi>🔁 この ふりかえりが、あしたの <b>計画《けいかく》</b>に つながるよ。</div>
-      </div>
     </div>
   </section>
 
@@ -369,7 +293,7 @@
 <footer class="site">
   <div class="wrap ft" data-furi>
     制作《せいさく》：<b>紺谷 隆《こんたに たかし》</b>（奈良市立東登美ヶ丘小学校《ならしりつ ひがしとみがおか しょうがっこう》）<br>
-    計画《けいかく》・ふりかえり・進度《しんど》（色《いろ》ぬり）は つかっている 端末《たんまつ》に 自動保存《じどうほぞん》されます。
+    進度《しんど》（色《いろ》ぬり）は つかっている 端末《たんまつ》に 自動保存《じどうほぞん》されます。
   </div>
 </footer>
 
@@ -405,28 +329,28 @@
     try{ var r=localStorage.getItem(key); if(!r) return 0; var o=JSON.parse(r); var d=(o&&o.done)?o.done:{}; var n=0; for(var k in d){if(d[k])n++;} return n; }catch(e){ return 0; }
   }
 
-  /* 教科タイル（算数=青／理科=緑／社会=黄・相対パス） */
+  /* 教科ワールド（相対パス） */
   var BASE="./";
   var UNITS=[
-    {emoji:"🧮",color:"#2B7FFF",ink:false,
+    {emoji:"🧮",color:"#4D8BFF",ink:false,
      subject:"算数《さんすう》3年《ねん》",
-     unit:"たし算《ざん》とひき算《ざん》の筆算《ひっさん》",
-     core:"位《くらい》をそろえて 計算《けいさん》する。お買《か》いもの・バトルのPBLつき。",
+     unit:"たし算《ざん》と ひき算《ざん》の 筆算《ひっさん》",
+     core:"位《くらい》を そろえて 計算《けいさん》。お買《か》いもの・バトルの PBLつき。",
      storeKey:"shindo3d_hissan_v6",total:20,path:BASE+"sansu/"},
-    {emoji:"📏",color:"#2B7FFF",ink:false,
-     subject:"算数《さんすう》3年《ねん》 ⚔クエスト版《ばん》",
-     unit:"長《なが》いものの 長《なが》さの はかり方《かた》と 表《あらわ》し方《かた》",
-     core:"まきじゃくと kmで 長《なが》い 長《なが》さを はかる。レベルアップ・ボスせんつき。",
+    {emoji:"📏",color:"#9B7BFF",ink:false,
+     subject:"算数《さんすう》3年《ねん》 ⭐クエスト版《ばん》",
+     unit:"長《なが》いものの 長《なが》さ（まきじゃく・km）",
+     core:"まきじゃくと kmで 長《なが》さを はかる。レベルアップ・ボスせんつき。",
      storeKey:"shindo3d_nagasa_v1",total:20,path:BASE+"sansu-nagasa/"},
-    {emoji:"🌱",color:"#1AA179",ink:false,
+    {emoji:"🌱",color:"#2BD49B",ink:false,
      subject:"理科《りか》3年《ねん》",
-     unit:"生《い》きものの育《そだ》ちとつくり（たね・植物《しょくぶつ》・チョウ）",
+     unit:"生《い》きものの 育《そだ》ちと つくり",
      core:"すがたは ちがっても、育《そだ》ちの じゅんばんは おなじ。",
      storeKey:"shindo3d_rika3_v1",total:24,path:BASE+"rika/"},
-    {emoji:"🗺️",color:"#F5B400",ink:true,strong:"#9A6A00",
+    {emoji:"🗺️",color:"#FFC24B",ink:true,
      subject:"社会《しゃかい》3年《ねん》",
-     unit:"わたしたちの奈良市《ならし》（方位《ほうい》・地図記号《ちずきごう》）",
-     core:"方位《ほうい》と地図記号《ちずきごう》で 土地《とち》のようすを 読《よ》む。",
+     unit:"わたしたちの 奈良市《ならし》",
+     core:"方位《ほうい》と 地図記号《ちずきごう》で 土地《とち》の ようすを 読《よ》む。",
      storeKey:"shindo3d_shakai_nara_v1",total:20,path:BASE+"shakai/"}
   ];
 
@@ -445,34 +369,28 @@
     return '<div class="road"><div class="track"></div><div class="fill" data-w="'+w+'"></div>'+
       '<div class="nodes">'+nodes+'</div></div><div class="nudge">'+nudge+'</div>';
   }
-  function starsHTML(c,total){
-    var val=total>0?c/total*10:0, full=c>=total, s="";
-    for(var i=0;i<10;i++){
-      var frac=Math.max(0,Math.min(1,val-i)), w=Math.round(frac*100);
-      s+='<span class="star'+(full?' full':'')+'" style="animation-delay:'+(i*0.05)+'s"><b style="width:'+w+'%">★</b>★</span>';
-    }
-    return '<div class="stars">'+s+'<span class="mas num-f">'+c+' / '+total+' マス</span></div>';
-  }
 
+  /* ===== ワールドタイル ＋ 総ぼうけんレベル ＋ 称号 ===== */
   (function(){
-    var g=document.getElementById("grid-units"),html="",sumC=0,sumT=0,allFull=true;
+    var g=document.getElementById("grid-units"),html="",sumC=0,sumT=0,allFull=true,allStarted=true;
     UNITS.forEach(function(u){
-      var c=Math.min(doneCount(u.storeKey),u.total); sumC+=c; sumT+=u.total; if(c<u.total) allFull=false;
-      var dg=u.ink?' darkgo':'';
+      var c=Math.min(doneCount(u.storeKey),u.total); sumC+=c; sumT+=u.total;
+      if(c<u.total) allFull=false;
+      if(c<=0) allStarted=false;
+      var tcd=darken(u.color, u.ink?.16:.34);
+      var slv=Math.max(1, Math.floor(c/2)+ (c>0?1:0));
       var go=c>=u.total?'<span class="go clear">クリア！ もういちど <span class="ar">→</span></span>'
-            :(c>0?'<span class="go'+dg+'">つづきから <span class="ar">→</span></span>'
-                 :'<span class="go'+dg+'">はじめる <span class="ar">→</span></span>');
-      html+='<a class="tile" href="'+esc(u.path)+'" style="--tc:'+u.color+';--tcg:'+(u.strong||u.color)+'">'+
-        '<div class="jacket'+(u.ink?' dark':'')+'" style="background:linear-gradient(160deg,'+u.color+','+darken(u.color,.14)+')">'+
-          '<span class="gloss"></span>'+
-          '<span class="lv num-f">Lv.'+c+'</span>'+
-          '<span class="appic">'+u.emoji+'</span>'+
+            :(c>0?'<span class="go">ぼうけんを つづける <span class="ar">→</span></span>'
+                 :'<span class="go">ぼうけんに でかける <span class="ar">→</span></span>');
+      html+='<a class="world'+(u.ink?' ink':'')+'" href="'+esc(u.path)+'" style="--tc:'+u.color+';--tcd:'+tcd+'">'+
+        '<div class="cover">'+
+          '<span class="crestmini">'+u.emoji+'</span>'+
+          '<span class="lvbadge">⭐ ぼうけんレベル '+(c>0?slv:'-')+'</span>'+
           '<div class="subj">'+toRuby(u.subject)+'</div>'+
           '<div class="unit">'+toRuby(u.unit)+'</div>'+
         '</div>'+
-        '<div class="status">'+
+        '<div class="body">'+
           roadHTML(c,u.total)+
-          starsHTML(c,u.total)+
           '<div class="core">'+toRuby(u.core)+'</div>'+
           go+
         '</div></a>';
@@ -480,24 +398,51 @@
     g.innerHTML=html;
     setTimeout(function(){ g.querySelectorAll(".road .fill").forEach(function(f){ f.style.width=(f.getAttribute("data-w")||0)+"%"; }); },90);
 
+    /* 総ぼうけんレベル：星のランク */
     var pct=sumT>0?Math.round(sumC/sumT*100):0;
-    var ring=document.getElementById("total-ring");
-    ring.innerHTML='<div class="ring'+(allFull?' allclear':'')+'" style="background:conic-gradient(var(--primary) '+pct+'%, rgba(22,24,31,.08) 0)">'+
-      '<div class="hole">'+(allFull?'<span class="pct">🏆</span>':'<span class="pct num-f">'+pct+'%</span><span class="lab">たんけん</span>')+'</div>'+
-      (allFull?'<div class="confetti" id="conf"></div>':'')+'</div>'+
-      '<div class="cap" data-furi>3きょうか ぜんたい</div>';
-    ring.querySelectorAll("[data-furi]").forEach(function(el){ el.innerHTML=toRuby(el.innerHTML); });
+    var tlv=Math.min(20, Math.floor(sumC/4)+1);
+    var inLv=sumC%4, toNext=4-inLv, nbar=Math.round(inLv/4*100);
+    var crest=document.getElementById("crest");
+    crest.className="crest"+(allFull?" allclear":"");
+    crest.innerHTML=
+      '<div class="orb">'+
+        '<div class="ring"><i></i></div>'+
+        '<div class="core">'+(allFull
+          ?'<span class="lv">MAX</span><span class="lvlab" data-furi>ぜんクリア</span>'
+          :'<span class="lv num-f">'+tlv+'</span><span class="lvlab" data-furi>そうレベル</span>')+
+        '</div>'+
+        (allFull?'<div class="confetti" id="conf"></div>':'')+
+      '</div>'+
+      '<div class="cap" data-furi>ぼうけんレベル（4きょう ぜんたい）</div>'+
+      '<div class="xpbar"><i id="xpfill"></i></div>'+
+      '<div class="next" data-furi>'+(allFull?'すべての ワールドを せいは！':'つぎの レベルまで あと '+toNext+' マス（ぜんたい '+pct+'%）')+'</div>';
+    crest.querySelectorAll("[data-furi]").forEach(function(el){ el.innerHTML=toRuby(el.innerHTML); });
+    setTimeout(function(){ var xf=document.getElementById("xpfill"); if(xf) xf.style.width=(allFull?100:nbar)+"%"; },120);
     if(allFull){
-      var conf=document.getElementById("conf"), cols=["#FF4E3A","#2B7FFF","#1AA179","#F5B400","#FFC400"];
-      for(var i=0;i<16;i++){
-        var p=document.createElement("i"), ang=(i/16)*Math.PI*2, dist=70+(i%3)*22;
+      var conf=document.getElementById("conf"), cols=["#FF6B4A","#4D8BFF","#2BD49B","#FFC24B","#9B7BFF","#FFCB47"];
+      for(var i=0;i<18;i++){
+        var p=document.createElement("i"), ang=(i/18)*Math.PI*2, dist=66+(i%3)*22;
         p.style.background=cols[i%cols.length];
         p.style.setProperty("--dx",Math.round(Math.cos(ang)*dist)+"px");
-        p.style.setProperty("--dy",Math.round(Math.sin(ang)*dist - 20)+"px");
+        p.style.setProperty("--dy",Math.round(Math.sin(ang)*dist - 18)+"px");
         p.style.animationDelay=(i*0.03)+"s";
         conf.appendChild(p);
       }
     }
+
+    /* 称号棚（ポータル全体のマイルストーン） */
+    var BADGES=[
+      {got:sumC>=1,   e:"🌱", t:"たんけんの はじまり"},
+      {got:allStarted,e:"🧭", t:"4つの ワールドへ"},
+      {got:pct>=50,   e:"⭐", t:"はんぶん とうたつ"},
+      {got:allFull,   e:"👑", t:"ぜんぶ クリア"}
+    ];
+    var bh='<span class="blab" data-furi>🏅 称号《しょうごう》：</span>';
+    BADGES.forEach(function(b){
+      bh+='<span class="badge'+(b.got?' got':'')+'"><span class="be">'+(b.got?b.e:"？")+'</span>'+toRuby(b.t)+'</span>';
+    });
+    var bd=document.getElementById("badges"); bd.innerHTML=bh;
+    bd.querySelectorAll("[data-furi]").forEach(function(el){ el.innerHTML=toRuby(el.innerHTML); });
   })();
 
   /* 教材リンク */
@@ -518,84 +463,29 @@
     });
     g.innerHTML=html;
   })();
-
-  /* ===== 計画→振り返りサイクル ===== */
-  function ts(){ var d=new Date(); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
-  function tl(){ var d=new Date(); return (d.getMonth()+1)+"月"+d.getDate()+"日"; }
-  var CK="manabi_cycle", LK="manabi_cycle_last";
-  function getJSON(k){ try{ return JSON.parse(localStorage.getItem(k)); }catch(e){ return null; } }
-  function setJSON(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
-  function hasC(s){ return !!(s && (s.plan || s.rate || s.reflect)); }
-  var cur=getJSON(CK), last=getJSON(LK), cyc;
-  if(cur && cur.date===ts()){
-    cyc=cur;
-  }else{
-    if(hasC(cur)){ last=cur; setJSON(LK,last); }
-    cyc={date:ts(),plan:"",rate:"",reflect:""};
-    setJSON(CK,cyc);
-  }
-  function saveC(s){ setJSON(CK,s); }
-  document.getElementById("d-date").textContent=tl();
-
-  function litStep(){
-    var step = (!cyc.plan) ? 1 : ((!cyc.rate && !cyc.reflect) ? 2 : 3);
-    document.querySelectorAll(".wp").forEach(function(ch){
-      ch.classList.toggle("on", +ch.getAttribute("data-step")===step);
-    });
-  }
-
-  (function(){
-    var box=document.getElementById("prev");
-    if(!hasC(last)){ box.style.display="none"; return; }
-    function md(ds){ var p=String(ds||"").split("-"); return p.length>=3?(p[1]+"月"+p[2]+"日"):""; }
-    var rows="";
-    if(last.plan) rows+='<div class="pr">めあて：<b>'+esc(last.plan)+'</b></div>';
-    var dk=last.rate?('できた？：<b>'+esc(last.rate)+'</b>'):"";
-    if(last.reflect) rows+='<div class="pr">'+(dk?dk+'／':'')+'きづき・つぎ：<b>'+esc(last.reflect)+'</b></div>';
-    else if(dk) rows+='<div class="pr">'+dk+'</div>';
-    box.innerHTML='<div class="pr-ttl">🔁 まえの ふりかえり（'+md(last.date)+'）</div>'+rows+
-      toRuby('<div class="pr-nudge">↓ これを ヒントに、きょうの 計画《けいかく》を 立《た》てよう</div>');
-  })();
-
-  var planEl=document.getElementById("plan");
-  planEl.value=cyc.plan||"";
-  planEl.oninput=function(){ cyc.plan=planEl.value; saveC(cyc); litStep(); };
-
-  var reflectEl=document.getElementById("reflect");
-  reflectEl.value=cyc.reflect||"";
-  reflectEl.oninput=function(){ cyc.reflect=reflectEl.value; saveC(cyc); litStep(); };
-
-  var RATES=[{v:"◎",t:"◎ ばっちり"},{v:"○",t:"○ できた"},{v:"△",t:"△ もうすこし"}];
-  (function(){
-    var box=document.getElementById("rate"); box.innerHTML="";
-    RATES.forEach(function(r){
-      var b=document.createElement("button"); b.className="rbtn"; b.textContent=r.t;
-      if(cyc.rate===r.v) b.classList.add("on");
-      b.onclick=function(){
-        var wasOff=(cyc.rate!==r.v);
-        cyc.rate=(cyc.rate===r.v)?"":r.v; saveC(cyc); litStep();
-        box.querySelectorAll(".rbtn").forEach(function(x){x.classList.remove("on");});
-        if(cyc.rate) b.classList.add("on");
-        if(cyc.rate==="◎" && wasOff) celebrate(b);
-      };
-      box.appendChild(b);
-    });
-  })();
-
-  function celebrate(btn){
-    if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    var s=document.createElement("span"); s.textContent="⭐";
-    s.style.cssText="position:absolute;left:50%;top:-4px;transform:translateX(-50%);font-size:18px;pointer-events:none;transition:transform .6s ease-out,opacity .6s ease-out;";
-    btn.appendChild(s);
-    requestAnimationFrame(function(){ s.style.transform="translate(-50%,-28px)"; s.style.opacity="0"; });
-    setTimeout(function(){ s.remove(); },650);
-  }
-
-  litStep();
 })();
 </script>
 <script>
-/* 🎨 オーロラ：マウスの跡を数珠つなぎのぼかし玉が追いかけ、背景にとける。
+/* ⭐ 星空：ランダムに星をちりばめて、ゆっくりまたたく（reduced-motionでは静止） */
+(function(){
+  var s=document.getElementById("stars"); if(!s) return;
+  var reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var n=reduce?40:78, frag=document.createDocumentFragment();
+  for(var i=0;i<n;i++){
+    var st=document.createElement("i");
+    var sz=Math.random()*2+1;
+    st.style.width=sz+"px"; st.style.height=sz+"px";
+    st.style.left=(Math.random()*100)+"%"; st.style.top=(Math.random()*100)+"%";
+    st.style.opacity=(Math.random()*.5+.3).toFixed(2);
+    if(!reduce){ st.style.animationDelay=(Math.random()*3.6)+"s"; st.style.animationDuration=(Math.random()*2.5+2.6)+"s"; }
+    else { st.style.animation="none"; }
+    frag.appendChild(st);
+  }
+  s.appendChild(frag);
+})();
+</script>
+<script>
+/* 🌌 オーロラ：マウスの跡を数珠つなぎのぼかし玉が追いかけ、星雲のしっぽになる。
    - pointermove(マウス/トラックパッド)に追従。touchは無視
    - 3.5秒なにもないと「ひとり旅モード」でゆっくり漂う(タブレットでも生きる)
    - prefers-reduced-motion では起動しない */

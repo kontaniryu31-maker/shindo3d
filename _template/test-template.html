@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<!-- ============================================================
+  A4テスト 白紙テンプレート（まなびの基地・共通CSS家族）
+  使い方：このファイルを {教科フォルダ}/test-{単元キー}-{種類}.html に複製し、
+          下記コメントの【ここを書く】を差し替えるだけで新テストができる。
+  作り方の手順は同フォルダの「テスト作成手順.md」を必ず見ること。
+
+  ◆ 構成：1ページ目＝もんだい / 2ページ目＝こたえ・かいせつ（.pagebreak）
+  ◆ 印刷：A4タテ・🖨️ボタン or Ctrl/⌘+P。@media print で画面装飾を落とす。
+  ◆ 教科色：CSS変数 --accent を1か所替えるだけ。下のコメント参照。
+============================================================ -->
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- 【ここを書く①】タブに出るタイトル。教科・番号・単元名・種類を入れる -->
+<title>○○科テスト ① 単元名（種類）— まなびの基地</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* ============ 教科色：ここだけ替える ============
+     社会 = 金茶 #9A6A00 ／ 理科 = 緑 #168a68 ／ 算数 = 青 #2F6FB0
+     （他教科を足すときも --accent を1行替えるだけで全体がそろう） */
+  :root{ --ink:#1f2a30; --line:#3a4750; --accent:#168a68; --faint:#9aa7ae; --soft:#cdd5d9; --grid:#cdd5d9; }
+
+  *{ box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  html,body{ margin:0; padding:0; font-family:"M PLUS Rounded 1c",sans-serif; color:var(--ink); background:#eef1f2; }
+  ruby rt{ font-size:.5em; font-weight:600; }   /* ふりがなの大きさ */
+
+  /* ツールバー（画面のみ・印刷では消える） */
+  .toolbar{ max-width:210mm; margin:10px auto; text-align:center; }
+  .toolbar button{ font:inherit; font-weight:900; cursor:pointer; background:var(--accent); color:#fff; border:none; border-radius:10px; padding:9px 20px; }
+  .toolbar span{ color:#667; font-size:12px; margin-left:10px; }
+
+  /* A4の1ページ */
+  .page{ width:210mm; min-height:297mm; margin:0 auto 12px; padding:9mm 12mm; background:#fff; }
+  .pagebreak{ break-before:page; }   /* 2ページ目（答え）に付ける */
+
+  /* 右上の小ロゴ */
+  .logo{ float:right; font-size:11px; font-weight:800; color:var(--faint); margin-top:1px; }
+  .logo b{ color:var(--accent); }
+
+  /* 記名バンド（名前・組・番・点数） */
+  .band{ display:flex; align-items:center; gap:10px; border:2px solid var(--accent); border-radius:9px; padding:6px 12px; font-weight:800; font-size:13px; clear:both; }
+  .band .grade{ white-space:nowrap; }
+  .band .nm{ flex:1; display:flex; align-items:center; gap:6px; }
+  .band .nm .fill{ flex:1; border-bottom:1.5px solid var(--soft); min-height:18px; }
+  .band .score{ white-space:nowrap; border:2px solid var(--ink); border-radius:8px; padding:4px 10px; font-weight:900; font-size:14px; }
+  .band .score b{ font-size:18px; }
+
+  /* タイトル・リード文 */
+  .ttl{ text-align:center; font-size:19px; font-weight:900; margin:5px 0 0; letter-spacing:.5px; }
+  .subttl{ text-align:center; font-size:12px; font-weight:800; color:var(--faint); margin-bottom:5px; }
+  .lead{ font-size:11.5px; font-weight:800; color:var(--ink); background:#EAF6F1; border:1.6px solid var(--accent); border-radius:9px; padding:4px 11px; margin-bottom:6px; line-height:1.5; }
+  /* ↑ .lead の背景 #EAF6F1 は理科緑用。社会=#FBF3E7／算数=#EAF1F8 に替えると色がそろう */
+
+  /* ===== 大問 ===== */
+  .q{ border:1.8px solid var(--soft); border-radius:11px; padding:6px 12px 7px; margin-bottom:7px; }
+  .qhead{ display:flex; align-items:center; gap:9px; border-bottom:2px solid var(--accent); padding-bottom:3px; margin-bottom:5px; flex-wrap:wrap; }
+  .qno{ background:var(--accent); color:#fff; font-weight:900; font-size:14px; border-radius:7px; padding:2px 10px; }
+  .qttl{ font-size:14.5px; font-weight:900; }
+  .tag{ font-size:10.5px; font-weight:900; color:#fff; background:var(--accent); border-radius:6px; padding:2px 8px; } /* 観点タグ */
+  .pt{ font-size:11.5px; font-weight:800; color:var(--faint); margin-left:auto; }                                   /* 配点 */
+
+  /* 小問の共通レイアウト */
+  .item{ margin:0 0 5px; font-size:12px; font-weight:700; line-height:1.5; }
+  .item:last-child{ margin-bottom:1px; }
+  .item .n{ font-weight:900; color:var(--accent); margin-right:4px; }   /* (1) など小問番号 */
+  .ptn{ font-size:10.5px; font-weight:900; color:var(--accent); margin-left:4px; } /* 小問ごとの配点 */
+  .hint{ display:inline-block; font-size:10.5px; font-weight:800; color:var(--faint); margin-left:5px; }
+
+  /* (b)短答・穴うめ用の解答らん */
+  .pans{ white-space:nowrap; font-weight:800; margin-left:8px; }
+  .pans .plab{ font-size:10.5px; font-weight:800; color:var(--faint); margin-right:3px; }
+  .pblank{ display:inline-block; min-width:16mm; border-bottom:1.8px solid var(--ink); height:17px; vertical-align:bottom; }
+
+  /* (a)選択肢 */
+  .choices{ display:flex; flex-wrap:wrap; gap:4px 14px; margin:4px 0 1px 18px; font-size:12px; font-weight:700; }
+  .choices .ch{ display:flex; align-items:center; gap:5px; }
+  .choices .mk{ display:inline-grid; place-items:center; width:20px; height:20px; border:1.6px solid var(--line); border-radius:50%; font-weight:900; font-size:11.5px; flex:none; }
+
+  /* (c)記述らん（罫線つき） */
+  .writebox{ margin:4px 0 0 16px; border:1.6px solid var(--soft); border-radius:7px; min-height:15mm; background:repeating-linear-gradient(transparent,transparent 7.5mm,var(--soft) 7.5mm,var(--soft) calc(7.5mm + 1.2px)); }
+  .writebox.one{ min-height:7.5mm; background:none; }  /* 1行だけのとき */
+
+  /* ===== (d)資料ブロック ===== */
+  .shiryo{ border:2px solid var(--line); border-radius:11px; padding:6px 10px 7px; margin-bottom:7px; background:#fbfdfc; }
+  .shead{ font-size:12.5px; font-weight:900; margin-bottom:5px; }
+  .shead .badge{ background:var(--ink); color:#fff; border-radius:6px; padding:2px 9px; font-size:11px; margin-right:7px; }
+  /* 資料の表 */
+  .rtable{ width:100%; border-collapse:collapse; margin-top:6px; font-size:11px; font-weight:700; }
+  .rtable th,.rtable td{ border:1.6px solid var(--line); padding:2px 3px; text-align:center; }
+  .rtable th{ background:#EAF6F1; font-weight:900; white-space:nowrap; }  /* 社会=#FBF3E7／算数=#EAF1F8 */
+  .rtable td b{ color:var(--accent); }
+  .rtable .qmark{ color:var(--accent); font-weight:900; font-size:14px; }
+  .tnote{ font-size:9.5px; font-weight:800; color:var(--faint); margin-top:2px; }
+  /* 資料のキャプション／注記 */
+  .scap{ font-size:10px; font-weight:800; margin-top:3px; line-height:1.45; }
+  .scap b{ color:var(--accent); }
+  .snote{ font-size:9px; font-weight:700; color:var(--faint); margin-top:2px; line-height:1.4; }
+
+  /* ===== こたえページ ===== */
+  .akey{ border:1.8px solid var(--accent); border-radius:11px; padding:12px 15px; margin-bottom:14px; }
+  .akey h2{ font-size:17px; font-weight:900; color:var(--accent); margin:0 0 6px; border-bottom:2px solid var(--accent); padding-bottom:5px; }
+  .akey .note{ font-size:11px; font-weight:800; color:var(--faint); margin-bottom:9px; line-height:1.6; }
+  .arow{ font-size:12.5px; font-weight:700; line-height:1.8; margin-bottom:9px; }
+  .arow .lab{ display:inline-block; min-width:62px; font-weight:900; color:var(--accent); vertical-align:top; }
+  .arow .ans{ font-weight:900; color:var(--ink); }
+  .arow .pts{ display:block; margin:1px 0 0 62px; font-size:11px; font-weight:800; color:#2E7D5B; line-height:1.6; } /* ✓採点めやす（緑） */
+  .arow .pts b{ color:#2E7D5B; }
+  .arow .miss{ display:block; margin:0 0 0 62px; font-size:11px; font-weight:800; color:#B85C00; line-height:1.6; }   /* 💡つまずき（橙） */
+
+  /* かいせつ */
+  .expl{ border:1.8px solid var(--soft); border-radius:11px; padding:12px 15px; }
+  .expl h2{ font-size:16px; font-weight:900; color:var(--ink); margin:0 0 9px; border-bottom:2px solid var(--soft); padding-bottom:5px; }
+  .expl p{ font-size:12px; font-weight:700; line-height:1.8; margin:0 0 7px; }
+  .expl p:last-child{ margin-bottom:0; }
+  .expl p .lab{ font-weight:900; color:var(--accent); margin-right:5px; }
+
+  @media print{
+    html,body{ background:#fff; }
+    .toolbar{ display:none; }
+    .page{ width:auto; min-height:auto; margin:0; padding:7mm 10mm; }
+    @page{ size:A4 portrait; margin:0; }
+    .pagebreak{ break-before:page; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 🖨️ 印刷ボタン（画面のみ） -->
+<div class="toolbar">
+  <button onclick="window.print()">🖨️ 印刷する（A4・たて）</button>
+  <span>※ 1まい目＝もんだい / 2まい目＝答えとかいせつ（じぶんで○つけ）</span>
+</div>
+
+<!-- ============================================================
+     1ページ目：もんだい
+============================================================ -->
+<div class="page">
+  <div class="logo"><ruby>学<rt>まな</rt></ruby>びの<ruby>基地<rt>きち</rt></ruby> <b>⏻</b></div>
+
+  <!-- 記名バンド（学年だけ単元に合わせて替える） -->
+  <div class="band">
+    <span class="grade">3<ruby>年<rt>ねん</rt></ruby>&nbsp;&nbsp;（&nbsp;&nbsp;）<ruby>組<rt>くみ</rt></ruby>&nbsp;&nbsp;（&nbsp;&nbsp;）<ruby>番<rt>ばん</rt></ruby></span>
+    <span class="nm"><ruby>名前<rt>なまえ</rt></ruby><span class="fill"></span></span>
+    <span class="score">てんすう&nbsp;<b>　</b>&nbsp;／100</span>
+  </div>
+
+  <!-- 【ここを書く②】タイトル・サブタイトル・リード文
+       ★全漢字にrubyを付ける書き方の実例＝<ruby>漢字<rt>かんじ</rt></ruby>。送りがなはruby外。
+         例：「<ruby>育<rt>そだ</rt></ruby>ち」「<ruby>考<rt>かんが</rt></ruby>える」 -->
+  <div class="ttl">○○<ruby>科<rt>か</rt></ruby>テスト ①　<ruby>単元名<rt>たんげんめい</rt></ruby></div>
+  <div class="subttl"><ruby>小見出<rt>こみだ</rt></ruby>し　／　<ruby>観点<rt>かんてん</rt></ruby>（<ruby>知識<rt>ちしき</rt></ruby>・<ruby>技能<rt>ぎのう</rt></ruby> など）</div>
+  <div class="lead">★ <ruby>子<rt>こ</rt></ruby>どもへの<ruby>声<rt>こえ</rt></ruby>かけ（このテストで<ruby>何<rt>なに</rt></ruby>をするか）を1〜2<ruby>文<rt>ぶん</rt></ruby>で。</div>
+
+
+  <!-- ================================================================
+       ▼▼▼ ここから下が「コピーして使う小問パーツ見本」▼▼▼
+       大問ごとに <div class="q"> を作り、qhead に
+       〔番号 / タイトル / 観点タグ / 配点〕を入れる。
+       中に下の (a)〜(d) を必要なだけ並べる。
+  ================================================================= -->
+
+  <!-- ===== 大問の枠（コピー元）===== -->
+  <div class="q">
+    <div class="qhead">
+      <span class="qno">1</span>
+      <span class="qttl"><ruby>大問<rt>だいもん</rt></ruby>のタイトル</span>
+      <span class="tag"><ruby>知識<rt>ちしき</rt></ruby>・<ruby>技能<rt>ぎのう</rt></ruby></span>   <!-- 観点タグ：知識・技能／思考・判断・表現 -->
+      <span class="pt">（<ruby>各<rt>かく</rt></ruby>10<ruby>点<rt>てん</rt></ruby>）</span>     <!-- 配点 -->
+    </div>
+
+    <!-- ───── (a) 選択肢4択 ───── コピーしてここに貼る -->
+    <div class="item"><span class="n">(1)</span><ruby>問題文<rt>もんだいぶん</rt></ruby>をここに<ruby>書<rt>か</rt></ruby>く。<span class="ptn">10<ruby>点<rt>てん</rt></ruby></span>
+      <div class="choices">
+        <span class="ch"><span class="mk">ア</span>せんたくし1</span>
+        <span class="ch"><span class="mk">イ</span>せんたくし2</span>
+        <span class="ch"><span class="mk">ウ</span>せんたくし3</span>
+        <span class="ch"><span class="mk">エ</span>せんたくし4</span>
+      </div>
+    </div>
+
+    <!-- ───── (b) 短答・穴うめ ───── 同じ行に解答らん（   ）が出る -->
+    <div class="item"><span class="n">(2)</span><ruby>問<rt>と</rt></ruby>いの<ruby>文<rt>ぶん</rt></ruby>。<span class="pans"><span class="plab">こたえ</span>（<span class="pblank"></span>）</span></div>
+    <!-- 穴うめは文中に <span class="pblank" style="min-width:30mm;"></span> を埋め込んでもよい -->
+
+    <!-- ───── (c) 記述らん（罫線） ───── 行数は writebox の min-height で調整 -->
+    <div class="item"><span class="n">(3)</span><ruby>考<rt>かんが</rt></ruby>えて<ruby>書<rt>か</rt></ruby>く<ruby>問<rt>と</rt></ruby>い。<span class="hint">れい：「〜だから。」</span>
+      <div class="writebox"></div>          <!-- 罫線2〜3行ぶん。1行だけなら class="writebox one" -->
+    </div>
+  </div>
+
+
+  <!-- ───── (d) 資料ブロック（インラインSVG＋表の雛形）───── -->
+  <!-- 資料を見て答えさせる大問のときは、大問の前か中に この .shiryo を置く。
+       SVGは外部画像を使わず インラインで描く（印刷でも消えない・色は var(--accent)）。 -->
+  <div class="shiryo">
+    <div class="shead"><span class="badge">しりょう</span><ruby>資料<rt>しりょう</rt></ruby>のタイトル</div>
+
+    <!-- SVG雛形（簡単な棒グラフの例。viewBox内に rect と text で描く）-->
+    <svg viewBox="0 0 250 90" style="width:60%;height:auto;display:block;margin:4px auto;" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ぼうグラフの れい">
+      <line x1="30" y1="75" x2="240" y2="75" stroke="var(--line)" stroke-width="1.5"/>  <!-- 横じく -->
+      <line x1="30" y1="10" x2="30"  y2="75" stroke="var(--line)" stroke-width="1.5"/>  <!-- たてじく -->
+      <rect x="50"  y="45" width="28" height="30" fill="var(--accent)"/>
+      <rect x="100" y="30" width="28" height="45" fill="var(--accent)"/>
+      <rect x="150" y="20" width="28" height="55" fill="var(--accent)"/>
+      <text x="64"  y="86" text-anchor="middle" font-size="8" font-weight="800" fill="var(--ink)">ア</text>
+      <text x="114" y="86" text-anchor="middle" font-size="8" font-weight="800" fill="var(--ink)">イ</text>
+      <text x="164" y="86" text-anchor="middle" font-size="8" font-weight="800" fill="var(--ink)">ウ</text>
+    </svg>
+
+    <!-- 表雛形（？の欄は .qmark で目立たせる）-->
+    <table class="rtable">
+      <tr>
+        <th><ruby>項目<rt>こうもく</rt></ruby></th>
+        <td>5<ruby>月<rt>がつ</rt></ruby></td>
+        <td>6<ruby>月<rt>がつ</rt></ruby></td>
+        <td>7<ruby>月<rt>がつ</rt></ruby></td>
+      </tr>
+      <tr>
+        <th><ruby>数<rt>かず</rt></ruby></th>
+        <td><b>8</b></td>
+        <td><b>15</b></td>
+        <td class="qmark">？</td>
+      </tr>
+    </table>
+    <div class="tnote">※ <ruby>注記<rt>ちゅうき</rt></ruby>（<ruby>数<rt>かず</rt></ruby>は およそ／れい など）をここに。</div>
+  </div>
+
+  <!-- 資料を使う大問の例（資料ブロックのすぐ後ろに置く）-->
+  <div class="q">
+    <div class="qhead">
+      <span class="qno">2</span>
+      <span class="qttl"><ruby>資料<rt>しりょう</rt></ruby>から<ruby>考<rt>かんが</rt></ruby>える</span>
+      <span class="tag"><ruby>思考<rt>しこう</rt></ruby>・<ruby>判断<rt>はんだん</rt></ruby>・<ruby>表現<rt>ひょうげん</rt></ruby></span>
+      <span class="pt">（30<ruby>点<rt>てん</rt></ruby>）</span>
+    </div>
+    <div class="item"><span class="n">(1)</span><ruby>資料<rt>しりょう</rt></ruby>を<ruby>手<rt>て</rt></ruby>がかりに、わけを<ruby>書<rt>か</rt></ruby>きましょう。
+      <div class="writebox"></div>
+    </div>
+  </div>
+
+  <!-- ▲▲▲ パーツ見本ここまで。本番では不要な見本を消し、大問を必要数だけ並べる ▲▲▲ -->
+
+</div>
+
+
+<!-- ============================================================
+     2ページ目：こたえ・かいせつ（.pagebreak で改ページ）
+============================================================ -->
+<div class="page pagebreak">
+  <div class="logo"><ruby>学<rt>まな</rt></ruby>びの<ruby>基地<rt>きち</rt></ruby> <b>⏻</b></div>
+  <div class="ttl" style="margin-top:2px;">○○<ruby>科<rt>か</rt></ruby>テスト ①　<ruby>答<rt>こた</rt></ruby>えと かいせつ</div>
+  <div class="subttl"><ruby>単元名<rt>たんげんめい</rt></ruby>　／　じぶんで○をつけて、ふりかえろう</div>
+
+  <!-- こたえ＋採点めやす -->
+  <div class="akey">
+    <h2><ruby>答<rt>こた</rt></ruby>えと <ruby>採点<rt>さいてん</rt></ruby>のめやす</h2>
+    <div class="note">※ <ruby>書<rt>か</rt></ruby>き<ruby>方<rt>かた</rt></ruby>は<ruby>人<rt>ひと</rt></ruby>によってちがってOK。<ruby>緑<rt>みどり</rt></ruby>の「✓ここが<ruby>書<rt>か</rt></ruby>けていれば◯」を<ruby>見<rt>み</rt></ruby>て、じぶんの<ruby>答<rt>こた</rt></ruby>えをたしかめよう。「💡つまずきポイント」は、おしい<ruby>答<rt>こた</rt></ruby>えになりやすいところ。</div>
+
+    <!-- 短答・選択：答えだけでよい -->
+    <div class="arow"><span class="lab">【1】(1)</span><span class="ans">ア　○○</span></div>
+    <div class="arow"><span class="lab">【1】(2)</span><span class="ans">○○</span></div>
+
+    <!-- 記述：答え（れい）＋ ✓採点めやす ＋ なども正解 ＋ 💡つまずき -->
+    <div class="arow"><span class="lab">【1】(3)</span><span class="ans">（れい）〜だから、〜になる。</span>
+      <span class="pts"><b>✓</b>「○○」と「△△」が つながって<ruby>書<rt>か</rt></ruby>けていれば◯。「□□」なども<ruby>正解<rt>せいかい</rt></ruby></span>
+      <span class="miss">💡「○○」だけでは あと<ruby>一歩<rt>いっぽ</rt></ruby>。「なぜ そうなるか」まで<ruby>書<rt>か</rt></ruby>くと わけが はっきりする。</span></div>
+
+    <div class="arow"><span class="lab">【2】(1)</span><span class="ans">（れい）〜。</span>
+      <span class="pts"><b>✓</b><ruby>資料<rt>しりょう</rt></ruby>の<ruby>数<rt>かず</rt></ruby>（または<ruby>言葉<rt>ことば</rt></ruby>）を つかって わけを<ruby>書<rt>か</rt></ruby>けていれば◯。</span></div>
+  </div>
+
+  <!-- かいせつ -->
+  <div class="expl">
+    <h2>もっとくわしく</h2>
+    <p><span class="lab">【1】</span><ruby>解説<rt>かいせつ</rt></ruby>を ここに<ruby>書<rt>か</rt></ruby>く。なぜ その<ruby>答<rt>こた</rt></ruby>えになるのかを、<ruby>子<rt>こ</rt></ruby>どもが<ruby>読<rt>よ</rt></ruby>んで<ruby>分<rt>わ</rt></ruby>かる<ruby>言葉<rt>ことば</rt></ruby>で。</p>
+    <p><span class="lab">【2】</span><ruby>考<rt>かんが</rt></ruby>え<ruby>方<rt>かた</rt></ruby>のコツ（よそうは ぴったり<ruby>当<rt>あ</rt></ruby>てるより「わけ」が<ruby>大切<rt>たいせつ</rt></ruby> など）を そえる。</p>
+  </div>
+</div>
+
+</body>
+</html>
