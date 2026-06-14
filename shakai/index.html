@@ -35,8 +35,43 @@
   }
   ruby rt { font-size: .52em; font-weight: 700; color: inherit; user-select:none; letter-spacing:0; }
 </style>
+<!-- ===== 宇宙テーマ（トップポータルと統一）：背景・星空・オーロラ。地のスタイルに勝つよう後置 ===== -->
+<style>
+  /* 暗い宇宙のグラデーション背景（index.html と同一）。既存の白背景に勝つよう !important */
+  body{
+    background:
+      radial-gradient(1100px 760px at 84% -6%, rgba(155,123,255,.30), transparent 58%),
+      radial-gradient(1000px 720px at 8% 6%, rgba(77,139,255,.24), transparent 56%),
+      radial-gradient(1200px 820px at 50% 116%, rgba(43,212,155,.16), transparent 60%),
+      linear-gradient(180deg,#080A24 0%, #06081C 40%, #04050F 100%) !important;
+    background-attachment:fixed !important;
+  }
+
+  /* ===== 星空 ===== */
+  #stars{position:fixed;inset:0;z-index:-2;pointer-events:none;overflow:hidden;}
+  #stars i{position:absolute;border-radius:50%;background:#fff;opacity:.7;
+    box-shadow:0 0 6px rgba(255,255,255,.8);animation:tw 3.6s ease-in-out infinite;}
+  @keyframes tw{0%,100%{opacity:.22;}50%{opacity:.95;}}
+
+  /* ===== オーロラ（マウスの跡＝星雲のしっぽ） ===== */
+  #aurora{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;}
+  #aurora b{position:absolute;left:0;top:0;border-radius:50%;filter:blur(40px);
+    will-change:transform,opacity;opacity:0;mix-blend-mode:screen;}
+  #aurora b:nth-child(1){width:340px;height:340px;background:radial-gradient(circle,rgba(255,107,74,.42),rgba(255,107,74,0) 70%);}
+  #aurora b:nth-child(2){width:300px;height:300px;background:radial-gradient(circle,rgba(77,139,255,.40),rgba(77,139,255,0) 70%);}
+  #aurora b:nth-child(3){width:262px;height:262px;background:radial-gradient(circle,rgba(43,212,155,.36),rgba(43,212,155,0) 70%);}
+  #aurora b:nth-child(4){width:226px;height:226px;background:radial-gradient(circle,rgba(255,203,71,.40),rgba(255,203,71,0) 70%);}
+  #aurora b:nth-child(5){width:196px;height:196px;background:radial-gradient(circle,rgba(155,123,255,.40),rgba(155,123,255,0) 70%);}
+  #aurora b:nth-child(6){width:166px;height:166px;background:radial-gradient(circle,rgba(77,139,255,.30),rgba(77,139,255,0) 70%);}
+  #aurora b:nth-child(7){width:138px;height:138px;background:radial-gradient(circle,rgba(255,107,74,.30),rgba(255,107,74,0) 70%);}
+
+  @media (prefers-reduced-motion: reduce){ #aurora,#stars{display:none!important;} }
+</style>
 </head>
 <body>
+<!-- 星空 ＋ オーロラ（マウスの跡が星雲のしっぽに）：Reactのroot より前に置き、消されないようにする -->
+<div id="stars" aria-hidden="true"></div>
+<div id="aurora" aria-hidden="true"><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div>
 <div id="root"></div>
 <script type="text/babel" data-presets="react">
 const { useState, useEffect, useRef } = React;
@@ -74,10 +109,16 @@ const darken = (hex, amt) => { const n = parseInt(hex.slice(1), 16); const r = M
 const grad = (hex) => `linear-gradient(165deg, ${hex} 0%, ${hex} 48%, ${darken(hex, 0.14)} 100%)`;
 /* ===== 教科テーマ（外装のみ：3Dロゴ・タイトル・たんげん名・背景の淡い色）=====
    3軸の色（すすむ青BLUE／ふかめる金AMBER／つなげる緑GREEN）は変えない＝システムの統一感は維持。 */
-const THEME = { accent: "#F5B400", bg: "radial-gradient(1200px 700px at 78% -8%, #FFF7DD 0%, #FFFBEC 45%, #FBF4D8 100%)" }; // 社会＝黄色（ポータルと統一）
+const THEME = { accent: "#F5B400", bg: "transparent" }; // 社会＝黄色（accent維持）。bg は宇宙背景を透けさせるため transparent
 const NOTE_BG = "#FCF3D6";        // 黄色の注記帯
 const NOTE_BD = "#E6C34D";
 const NOTE_INK = "#8A6D1B";
+
+/* ===== 宇宙の地（暗背景）の上に「直接」乗る文字だけの明色トークン =====
+   白/明るいカードの中の文字は INK/SUB のまま。これらは盤面コンテナや透明な地に直接乗る文字用。 */
+const SPACE_INK = "#EEF1FF";      // 地の上の見出し（明）
+const SPACE_SUB = "#C7CEF0";      // 地の上の本文（明）
+const SPACE_GOLD = "#E8C75F";     // 地の上の黄系ラベル（凡例の金など。明背景前提だった濃金の置き換え）
 
 /* ===== ふりがな：3年生が ひとりで 読めるように 漢字へ ルビ（sansuの rb() 方式）=====
    ・{漢字|よみ} の明示指定 と FURI_DICT の自動付与を 1つの rb() に集約。
@@ -579,13 +620,13 @@ function App() {
           </svg>
         </div>
         <div style={{ flex: 1, minWidth: 240 }}>
-          <div style={{ fontSize: 22, fontWeight: 900, color: INK, lineHeight: 1.05 }}>3D 自由進度表</div>
-          <div style={{ fontSize: 12.5, fontWeight: 800, marginTop: 2 }}>たんげん：<span style={{ color: C_SOCIAL_STRONG }}>{rb(chromeFuri(UNIT))}</span></div>
-          <div style={{ fontSize: 11.5, fontWeight: 700, color: SUB, marginTop: 2, lineHeight: 1.7 }}>{rb(dataFuri(BOOK))}　／　{rb("いちばん大事")}：{rb(chromeFuri(CORE))}</div>
+          <div style={{ fontSize: 22, fontWeight: 900, color: SPACE_INK, lineHeight: 1.05 }}>3D 自由進度表</div>
+          <div style={{ fontSize: 12.5, fontWeight: 800, marginTop: 2, color: SPACE_SUB }}>たんげん：<span style={{ color: SPACE_GOLD }}>{rb(chromeFuri(UNIT))}</span></div>
+          <div style={{ fontSize: 11.5, fontWeight: 700, color: SPACE_SUB, marginTop: 2, lineHeight: 1.7 }}>{rb(dataFuri(BOOK))}　／　{rb("いちばん大事")}：{rb(chromeFuri(CORE))}</div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
-          <div style={{ fontSize: 11, fontWeight: 800, color: SUB, textAlign: "right", lineHeight: 1.5 }}>
-            <span style={{ color: BLUE }}>━</span>{rb("すすむ")}　<span style={{ color: AMBER_MAIN }}>━</span>{rb("ふかめる")}（{rb("わかりの ふかさ")}）　<span style={{ color: GREEN_TX }}>━</span>{rb("つなげる")}
+          <div style={{ fontSize: 11, fontWeight: 800, color: SPACE_SUB, textAlign: "right", lineHeight: 1.5 }}>
+            <span style={{ color: SPACE_GOLD }}>━</span>{rb("すすむ")}　<span style={{ color: SPACE_GOLD }}>━</span>{rb("ふかめる")}（{rb("わかりの ふかさ")}）　<span style={{ color: "#5BD9AD" }}>━</span>{rb("つなげる")}
           </div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end", rowGap: 6 }}>
             <button onClick={() => { setShowPBL(true); setShowBack(false); }} style={{
@@ -616,9 +657,9 @@ function App() {
 
       {/* ===== 上段：立体ビュー ===== */}
       <div ref={sceneBoxRef} style={{
-        marginTop: 10, height: DRAW_H * fit, borderRadius: 18, border: "2px dotted rgba(22,24,31,.12)",
-        background: "linear-gradient(180deg,#FFFDF6,#FBF3DE)", position: "relative", overflow: "hidden", perspective: 1500,
-        boxShadow: "0 12px 30px -16px rgba(22,24,31,.35)",
+        marginTop: 10, height: DRAW_H * fit, borderRadius: 18, border: "1px solid rgba(255,255,255,.12)",
+        background: "linear-gradient(160deg, rgba(22,28,62,.55), rgba(10,14,40,.62))", position: "relative", overflow: "hidden", perspective: 1500,
+        boxShadow: "0 18px 44px -18px rgba(0,0,0,.7)",
       }}>
         {/* fitスケール用ラッパ（実描画域 DRAW_W×DRAW_H を中央に置いて縮小） */}
         <div style={{ position: "absolute", left: "50%", top: 0, width: DRAW_W, height: DRAW_H, transform: `translateX(-50%) scale(${fit})`, transformOrigin: "top center" }}>
@@ -652,15 +693,15 @@ function App() {
               })()}
             </svg>
             {(() => {
-              const labelShadow = "0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff, 1px 1px 2px #fff";
+              const labelShadow = "0 0 4px rgba(4,6,20,.9), 0 0 4px rgba(4,6,20,.9), 0 1px 2px rgba(4,6,20,.9)";
               const ox = wrap(px(FW - 82, -64, 0));        // すすむ：線の上・右寄り
               const oy = wrap(px(-122, FH + 12, 0));        // ふかめる：線の左下
               const oz = wrap(px(-30, -44, DEEP * 0.5));    // つなげる：短い線の先
               const base = { position: "absolute", fontSize: 15, fontWeight: 900, whiteSpace: "nowrap", textShadow: labelShadow };
               return (<>
-                <div style={{ ...base, ...ox, color: BLUE }}>すすむ →</div>
-                <div style={{ ...base, ...oy, color: AMBER_TX }}>ふかめる ↓</div>
-                <div style={{ ...base, ...oz, color: GREEN_TX }}>つなげる ↗</div>
+                <div style={{ ...base, ...ox, color: SPACE_GOLD }}>すすむ →</div>
+                <div style={{ ...base, ...oy, color: SPACE_GOLD }}>ふかめる ↓</div>
+                <div style={{ ...base, ...oz, color: "#5BD9AD" }}>つなげる ↗</div>
               </>);
             })()}
             {/* 上面・右側面 */}
@@ -740,40 +781,40 @@ function App() {
             {DEPTH.map((d, k) => {
               const p = wrap(px(-150, HEADER + k * CH, 0));
               return (
-                <div key={"dl" + k} style={{ position: "absolute", ...p, width: 140, height: CH - 6, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                <div key={"dl" + k} style={{ position: "absolute", ...p, width: 140, height: CH - 6, display: "flex", flexDirection: "column", justifyContent: "center", color: SPACE_INK }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                     <span style={{ fontSize: 16 }}>{d.badge}</span>
                     <span style={{ fontSize: 13, fontWeight: 900 }}>Lv{d.lv} {furi(d.name)}</span>
                   </div>
-                  <span style={{ fontSize: 10.5, fontWeight: 700, color: SUB, marginLeft: 22 }}>{furi(d.desc)}</span>
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: SPACE_SUB, marginLeft: 22 }}>{furi(d.desc)}</span>
                 </div>
               );
             })}
-            <div style={{ position: "absolute", right: 14, bottom: 10, fontSize: 12.5, fontWeight: 900, color: INK }}>👆 {rb("マスを タップ → 下に「やること」が でるよ")}</div>
+            <div style={{ position: "absolute", right: 14, bottom: 10, fontSize: 12.5, fontWeight: 900, color: SPACE_INK }}>👆 {rb("マスを タップ → 下に「やること」が でるよ")}</div>
           </div>
 
           {/* ---------- うら面（つなげる） ---------- */}
           <div style={{
             position: "absolute", inset: 0, backfaceVisibility: "hidden",
-            transform: "rotateY(180deg)", background: "linear-gradient(180deg,#F3FBF7,#e6f4ee)",
+            transform: "rotateY(180deg)", background: "linear-gradient(160deg, rgba(22,28,62,.55), rgba(10,14,40,.62))",
             padding: "16px 20px", boxSizing: "border-box", display: "flex", flexDirection: "column",
           }}>
-            <div style={{ fontSize: 15, fontWeight: 900, color: GREEN_TX }}>↗ つなげる（伸度）：この単元は どこから来て、どこへ つながる？</div>
-            <div style={{ fontSize: 10.5, fontWeight: 700, color: SUB, marginTop: 2 }}>カードを えらぶと、下に くわしく（系統の話・動画・リンク・チャレンジ問題）が出るよ</div>
+            <div style={{ fontSize: 15, fontWeight: 900, color: "#5BD9AD" }}>↗ つなげる（伸度）：この単元は どこから来て、どこへ つながる？</div>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: SPACE_SUB, marginTop: 2 }}>カードを えらぶと、下に くわしく（系統の話・動画・リンク・チャレンジ問題）が出るよ</div>
 
             {/* どこから（系統） */}
             <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 10.5, fontWeight: 900, color: GRAY }}>← どこから：</span>
+              <span style={{ fontSize: 10.5, fontWeight: 900, color: SPACE_SUB }}>← どこから：</span>
               {FROM_CHAIN.map((c, i) => (
                 <span key={i} title={c.think} style={{ fontSize: 10.5, fontWeight: 800, color: "#5b6a72", background: "#fff", border: "1.5px dashed #9aa7ad", borderRadius: 10, padding: "3px 9px" }}>
                   {c.grade}：{c.label}
                 </span>
               ))}
-              <span style={{ fontSize: 11, fontWeight: 900, color: BLUE, background: "rgba(178,104,54,.12)", border: `2px solid ${BLUE}`, borderRadius: 10, padding: "3px 10px" }}>● 3年：この単元</span>
+              <span style={{ fontSize: 11, fontWeight: 900, color: SPACE_GOLD, background: "rgba(245,180,0,.14)", border: `2px solid ${SPACE_GOLD}`, borderRadius: 10, padding: "3px 10px" }}>● 3年：この単元</span>
             </div>
 
             {/* つなげる先カード */}
-            <div style={{ marginTop: 12, fontSize: 10.5, fontWeight: 900, color: GREEN_TX }}>↗ この先（カードを えらぶ）</div>
+            <div style={{ marginTop: 12, fontSize: 10.5, fontWeight: 900, color: "#5BD9AD" }}>↗ この先（カードを えらぶ）</div>
             <div style={{ marginTop: 7, display: "flex", gap: 10, flexWrap: "wrap" }}>
               {NEXT_CARDS.map((c) => {
                 const on = activeCard === c.key;
@@ -791,7 +832,7 @@ function App() {
                 );
               })}
             </div>
-            <div style={{ marginTop: "auto", fontSize: 10, fontWeight: 700, color: SUB }}>★方位と地図記号は“だれにでも伝わる共通のルール”。3年の市→4年の県→地図帳と、ずっと同じ見方でつながる</div>
+            <div style={{ marginTop: "auto", fontSize: 10, fontWeight: 700, color: SPACE_SUB }}>★方位と地図記号は“だれにでも伝わる共通のルール”。3年の市→4年の県→地図帳と、ずっと同じ見方でつながる</div>
           </div>
         </div>
         </div>
@@ -1649,6 +1690,62 @@ function SectionTitle({ color, icon, text, mt }) {
 }
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(<App />);
+</script>
+<script>
+/* ⭐ 星空：ランダムに星をちりばめて、ゆっくりまたたく（reduced-motionでは静止） */
+(function(){
+  var s=document.getElementById("stars"); if(!s) return;
+  var reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var n=reduce?40:78, frag=document.createDocumentFragment();
+  for(var i=0;i<n;i++){
+    var st=document.createElement("i");
+    var sz=Math.random()*2+1;
+    st.style.width=sz+"px"; st.style.height=sz+"px";
+    st.style.left=(Math.random()*100)+"%"; st.style.top=(Math.random()*100)+"%";
+    st.style.opacity=(Math.random()*.5+.3).toFixed(2);
+    if(!reduce){ st.style.animationDelay=(Math.random()*3.6)+"s"; st.style.animationDuration=(Math.random()*2.5+2.6)+"s"; }
+    else { st.style.animation="none"; }
+    frag.appendChild(st);
+  }
+  s.appendChild(frag);
+})();
+</script>
+<script>
+/* 🌌 オーロラ：マウスの跡を数珠つなぎのぼかし玉が追いかけ、星雲のしっぽになる。
+   - pointermove(マウス/トラックパッド)に追従。touchは無視
+   - 3.5秒なにもないと「ひとり旅モード」でゆっくり漂う(タブレットでも生きる)
+   - prefers-reduced-motion では起動しない */
+(function(){
+  if(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var au=document.getElementById("aurora"); if(!au) return;
+  var blobs=[].slice.call(au.children); if(!blobs.length) return;
+  var halves=blobs.map(function(b){return b.offsetWidth/2;});
+  var pts=blobs.map(function(){return {x:innerWidth/2,y:innerHeight*0.38,o:0};});
+  var mx=innerWidth/2,my=innerHeight*0.38,idle=99,t=0,last=performance.now();
+  addEventListener("pointermove",function(e){
+    if(e.pointerType==="touch") return;
+    mx=e.clientX; my=e.clientY; idle=0;
+  },{passive:true});
+  function frame(now){
+    var dt=Math.min((now-last)/1000,.05); last=now; t+=dt; idle+=dt;
+    var tx=mx, ty=my;
+    if(idle>3.5){ /* ひとり旅 */
+      tx=innerWidth *(0.50+0.34*Math.sin(t*0.21));
+      ty=innerHeight*(0.40+0.24*Math.cos(t*0.15));
+    }
+    for(var i=0;i<blobs.length;i++){
+      var p=pts[i], g= i===0 ? {x:tx,y:ty} : pts[i-1];
+      var k= i===0 ? .20 : .26;
+      p.x+=(g.x-p.x)*k; p.y+=(g.y-p.y)*k;
+      var oT= idle>3.5 ? .55-(i*.06) : .95-(i*.11);
+      p.o+=(oT-p.o)*.045;
+      blobs[i].style.transform="translate3d("+(p.x-halves[i])+"px,"+(p.y-halves[i])+"px,0)";
+      blobs[i].style.opacity=p.o.toFixed(3);
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
 </script>
 </body>
 </html>

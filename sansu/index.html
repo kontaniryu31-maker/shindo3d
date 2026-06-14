@@ -14,8 +14,42 @@
   html, body { margin: 0; padding: 0; }
   ruby rt { font-size: 0.5em; font-weight: 600; user-select: none; letter-spacing: 0; }
 </style>
+<style>
+  /* ===== 宇宙テーマ（ポータルと統一）：背景＋星空＋星雲のしっぽ ===== */
+  body{
+    background:
+      radial-gradient(1100px 760px at 84% -6%, rgba(155,123,255,.30), transparent 58%),
+      radial-gradient(1000px 720px at 8% 6%, rgba(77,139,255,.24), transparent 56%),
+      radial-gradient(1200px 820px at 50% 116%, rgba(43,212,155,.16), transparent 60%),
+      linear-gradient(180deg,#080A24 0%, #06081C 40%, #04050F 100%) !important;
+    background-attachment:fixed !important;
+  }
+
+  /* ===== 星空 ===== */
+  #stars{position:fixed;inset:0;z-index:-2;pointer-events:none;overflow:hidden;}
+  #stars i{position:absolute;border-radius:50%;background:#fff;opacity:.7;
+    box-shadow:0 0 6px rgba(255,255,255,.8);animation:tw 3.6s ease-in-out infinite;}
+  @keyframes tw{0%,100%{opacity:.22;}50%{opacity:.95;}}
+
+  /* ===== オーロラ（マウスの跡＝星雲のしっぽ） ===== */
+  #aurora{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;}
+  #aurora b{position:absolute;left:0;top:0;border-radius:50%;filter:blur(40px);
+    will-change:transform,opacity;opacity:0;mix-blend-mode:screen;}
+  #aurora b:nth-child(1){width:340px;height:340px;background:radial-gradient(circle,rgba(255,107,74,.42),rgba(255,107,74,0) 70%);}
+  #aurora b:nth-child(2){width:300px;height:300px;background:radial-gradient(circle,rgba(77,139,255,.40),rgba(77,139,255,0) 70%);}
+  #aurora b:nth-child(3){width:262px;height:262px;background:radial-gradient(circle,rgba(43,212,155,.36),rgba(43,212,155,0) 70%);}
+  #aurora b:nth-child(4){width:226px;height:226px;background:radial-gradient(circle,rgba(255,203,71,.40),rgba(255,203,71,0) 70%);}
+  #aurora b:nth-child(5){width:196px;height:196px;background:radial-gradient(circle,rgba(155,123,255,.40),rgba(155,123,255,0) 70%);}
+  #aurora b:nth-child(6){width:166px;height:166px;background:radial-gradient(circle,rgba(77,139,255,.30),rgba(77,139,255,0) 70%);}
+  #aurora b:nth-child(7){width:138px;height:138px;background:radial-gradient(circle,rgba(255,107,74,.30),rgba(255,107,74,0) 70%);}
+
+  @media (prefers-reduced-motion: reduce){ #aurora,#stars{display:none !important;} }
+</style>
 </head>
 <body>
+<!-- 星空 ＋ オーロラ（マウスの跡が星雲のしっぽに）：Reactのrootより前に置く -->
+<div id="stars" aria-hidden="true"></div>
+<div id="aurora" aria-hidden="true"><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div>
 <div id="root"></div>
 <script type="text/babel" data-presets="react">
 const { useState, useEffect, useRef } = React;
@@ -47,7 +81,7 @@ const darken = (hex, amt) => { const n = parseInt(hex.slice(1), 16); const r = M
 const grad = (hex) => `linear-gradient(165deg, ${hex} 0%, ${hex} 48%, ${darken(hex, 0.14)} 100%)`;
 /* ===== 教科テーマ（外装のみ：3Dロゴ・タイトル・たんげん名・背景の淡い色）=====
    3軸の色（すすむ青BLUE／ふかめる金AMBER／つなげる緑GREEN）は変えない＝システムの統一感は維持。 */
-const THEME = { accent: "#2F6FB0", bg: "radial-gradient(1200px 700px at 78% -8%, #EAF1FB 0%, #EEF4FB 45%, #E8EFF8 100%)" }; // 算数＝ブルー
+const THEME = { accent: "#2F6FB0", bg: "transparent" }; // 算数＝ブルー（宇宙背景が透けるよう透明に。accentは不変）
 const NOTE_BG = "#FCF3D6";        // 黄色の注記帯
 const NOTE_BD = "#E6C34D";
 const NOTE_INK = "#8A6D1B";
@@ -483,13 +517,13 @@ function App() {
       <div style={{ display: "flex", alignItems: "center", gap: 13, flexWrap: "wrap" }}>
         <div style={{ width: 46, height: 46, borderRadius: 12, background: THEME.accent, color: "#fff", fontWeight: 900, fontSize: 16, display: "grid", placeItems: "center", flex: "none", boxShadow: "0 5px 0 rgba(0,0,0,.14)" }}>3D</div>
         <div style={{ flex: 1, minWidth: 240 }}>
-          <div style={{ fontSize: 22, fontWeight: 900, color: THEME.accent, lineHeight: 1.05 }}>3D 自由進度表</div>
-          <div style={{ fontSize: 12.5, fontWeight: 800, marginTop: 2 }}>たんげん：<span style={{ color: THEME.accent }}>{rb(chromeFuri(UNIT))}</span></div>
-          <div style={{ fontSize: 10, fontWeight: 700, color: SUB, marginTop: 1 }}>{BOOK}　／　{rb("いちばん大事")}：{rb(chromeFuri(CORE))}</div>
+          <div style={{ fontSize: 22, fontWeight: 900, color: "#EEF1FF", lineHeight: 1.05, textShadow: "0 2px 18px rgba(120,140,255,.45)" }}>3D 自由進度表</div>
+          <div style={{ fontSize: 12.5, fontWeight: 800, marginTop: 2, color: "#C7CEF0" }}>たんげん：<span style={{ color: "#7FB2EE" }}>{rb(chromeFuri(UNIT))}</span></div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "#A4ADD6", marginTop: 1 }}>{BOOK}　／　{rb("いちばん大事")}：{rb(chromeFuri(CORE))}</div>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
-          <div style={{ fontSize: 11, fontWeight: 800, color: SUB, textAlign: "right", lineHeight: 1.5 }}>
-            <span style={{ color: BLUE }}>━</span>すすむ　<span style={{ color: AMBER_MAIN }}>━</span>ふかめる（わかりの ふかさ）　<span style={{ color: GREEN_TX }}>━</span>つなげる
+          <div style={{ fontSize: 11, fontWeight: 800, color: "#C7CEF0", textAlign: "right", lineHeight: 1.5 }}>
+            <span style={{ color: "#5FC6D8" }}>━</span>すすむ　<span style={{ color: "#E8C75F" }}>━</span>ふかめる（わかりの ふかさ）　<span style={{ color: "#5FD3A8" }}>━</span>つなげる
           </div>
           <div style={{ display: "flex", gap: 6 }}>
             <button onClick={() => { setShowPBL(true); setShowBack(false); }} style={{
@@ -516,8 +550,9 @@ function App() {
 
       {/* ===== 上段：立体ビュー ===== */}
       <div ref={sceneBoxRef} style={{
-        marginTop: 10, height: DRAW_H * fit, borderRadius: 16, border: "1px solid #e1e8ea",
-        background: "linear-gradient(180deg,#FBFEFE,#E9F4F6)", position: "relative", overflow: "hidden", perspective: 1500,
+        marginTop: 10, height: DRAW_H * fit, borderRadius: 16, border: "1px solid rgba(255,255,255,.12)",
+        background: "linear-gradient(160deg, rgba(22,28,62,.55), rgba(10,14,40,.62))", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+        boxShadow: "0 18px 44px -18px rgba(0,0,0,.7)", position: "relative", overflow: "hidden", perspective: 1500,
       }}>
         {/* fitスケール用ラッパ（実描画域 DRAW_W×DRAW_H を中央に置いて縮小） */}
         <div style={{ position: "absolute", left: "50%", top: 0, width: DRAW_W, height: DRAW_H, transform: `translateX(-50%) scale(${fit})`, transformOrigin: "top center" }}>
@@ -648,21 +683,21 @@ function App() {
                 </div>
               );
             })}
-            <div style={{ position: "absolute", right: 14, bottom: 10, fontSize: 10, fontWeight: 800, color: SUB }}>マスを タップ → 下に「やるべきこと」</div>
+            <div style={{ position: "absolute", right: 14, bottom: 10, fontSize: 10, fontWeight: 800, color: "#A4ADD6" }}>マスを タップ → 下に「やるべきこと」</div>
           </div>
 
           {/* ---------- うら面（つなげる） ---------- */}
           <div style={{
             position: "absolute", inset: 0, backfaceVisibility: "hidden",
-            transform: "rotateY(180deg)", background: "linear-gradient(180deg,#F3FBF7,#e6f4ee)",
+            transform: "rotateY(180deg)", background: "linear-gradient(160deg, rgba(22,28,62,.55), rgba(10,14,40,.62))",
             padding: "16px 20px", boxSizing: "border-box", display: "flex", flexDirection: "column",
           }}>
-            <div style={{ fontSize: 15, fontWeight: 900, color: GREEN_TX }}>↗ つなげる（伸度）：この単元は どこから来て、どこへ つながる？</div>
-            <div style={{ fontSize: 10.5, fontWeight: 700, color: SUB, marginTop: 2 }}>カードを えらぶと、下に くわしく（系統の話・動画・リンク・チャレンジ問題）が出るよ</div>
+            <div style={{ fontSize: 15, fontWeight: 900, color: "#7FE3C0" }}>↗ つなげる（伸度）：この単元は どこから来て、どこへ つながる？</div>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: "#C7CEF0", marginTop: 2 }}>カードを えらぶと、下に くわしく（系統の話・動画・リンク・チャレンジ問題）が出るよ</div>
 
             {/* どこから（系統） */}
             <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 10.5, fontWeight: 900, color: GRAY }}>← どこから：</span>
+              <span style={{ fontSize: 10.5, fontWeight: 900, color: "#A4ADD6" }}>← どこから：</span>
               {FROM_CHAIN.map((c, i) => (
                 <span key={i} title={c.think} style={{ fontSize: 10.5, fontWeight: 800, color: "#5b6a72", background: "#fff", border: "1.5px dashed #9aa7ad", borderRadius: 10, padding: "3px 9px" }}>
                   {c.grade}：{c.label}
@@ -672,7 +707,7 @@ function App() {
             </div>
 
             {/* つなげる先カード */}
-            <div style={{ marginTop: 12, fontSize: 10.5, fontWeight: 900, color: GREEN_TX }}>↗ この先（カードを えらぶ）</div>
+            <div style={{ marginTop: 12, fontSize: 10.5, fontWeight: 900, color: "#7FE3C0" }}>↗ この先（カードを えらぶ）</div>
             <div style={{ marginTop: 7, display: "flex", gap: 10, flexWrap: "wrap" }}>
               {NEXT_CARDS.map((c) => {
                 const on = activeCard === c.key;
@@ -690,7 +725,7 @@ function App() {
                 );
               })}
             </div>
-            <div style={{ marginTop: "auto", fontSize: 10, fontWeight: 700, color: SUB }}>★かけ算だけ 考え方がかわる：位ごとに分けてたす（右にそろえる）／たし算・ひき算・小数は「位をそろえる」で同じ</div>
+            <div style={{ marginTop: "auto", fontSize: 10, fontWeight: 700, color: "#C7CEF0" }}>★かけ算だけ 考え方がかわる：位ごとに分けてたす（右にそろえる）／たし算・ひき算・小数は「位をそろえる」で同じ</div>
           </div>
         </div>
         </div>
@@ -1889,6 +1924,62 @@ function SectionTitle({ color, icon, text, mt }) {
 }
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(<App />);
+</script>
+<script>
+/* ⭐ 星空：ランダムに星をちりばめて、ゆっくりまたたく（reduced-motionでは静止） */
+(function(){
+  var s=document.getElementById("stars"); if(!s) return;
+  var reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var n=reduce?40:78, frag=document.createDocumentFragment();
+  for(var i=0;i<n;i++){
+    var st=document.createElement("i");
+    var sz=Math.random()*2+1;
+    st.style.width=sz+"px"; st.style.height=sz+"px";
+    st.style.left=(Math.random()*100)+"%"; st.style.top=(Math.random()*100)+"%";
+    st.style.opacity=(Math.random()*.5+.3).toFixed(2);
+    if(!reduce){ st.style.animationDelay=(Math.random()*3.6)+"s"; st.style.animationDuration=(Math.random()*2.5+2.6)+"s"; }
+    else { st.style.animation="none"; }
+    frag.appendChild(st);
+  }
+  s.appendChild(frag);
+})();
+</script>
+<script>
+/* 🌌 オーロラ：マウスの跡を数珠つなぎのぼかし玉が追いかけ、星雲のしっぽになる。
+   - pointermove(マウス/トラックパッド)に追従。touchは無視
+   - 3.5秒なにもないと「ひとり旅モード」でゆっくり漂う(タブレットでも生きる)
+   - prefers-reduced-motion では起動しない */
+(function(){
+  if(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  var au=document.getElementById("aurora"); if(!au) return;
+  var blobs=[].slice.call(au.children); if(!blobs.length) return;
+  var halves=blobs.map(function(b){return b.offsetWidth/2;});
+  var pts=blobs.map(function(){return {x:innerWidth/2,y:innerHeight*0.38,o:0};});
+  var mx=innerWidth/2,my=innerHeight*0.38,idle=99,t=0,last=performance.now();
+  addEventListener("pointermove",function(e){
+    if(e.pointerType==="touch") return;
+    mx=e.clientX; my=e.clientY; idle=0;
+  },{passive:true});
+  function frame(now){
+    var dt=Math.min((now-last)/1000,.05); last=now; t+=dt; idle+=dt;
+    var tx=mx, ty=my;
+    if(idle>3.5){ /* ひとり旅 */
+      tx=innerWidth *(0.50+0.34*Math.sin(t*0.21));
+      ty=innerHeight*(0.40+0.24*Math.cos(t*0.15));
+    }
+    for(var i=0;i<blobs.length;i++){
+      var p=pts[i], g= i===0 ? {x:tx,y:ty} : pts[i-1];
+      var k= i===0 ? .20 : .26;
+      p.x+=(g.x-p.x)*k; p.y+=(g.y-p.y)*k;
+      var oT= idle>3.5 ? .55-(i*.06) : .95-(i*.11);
+      p.o+=(oT-p.o)*.045;
+      blobs[i].style.transform="translate3d("+(p.x-halves[i])+"px,"+(p.y-halves[i])+"px,0)";
+      blobs[i].style.opacity=p.o.toFixed(3);
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
 </script>
 </body>
 </html>
