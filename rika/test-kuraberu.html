@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>理科テスト ⑦ 深い学び問題（くらべて 考える）— まなびの基地</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --ink:#1f2a30; --line:#3a4750; --accent:#168a68; --faint:#9aa7ae; --soft:#cdd5d9; }
+  *{ box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  html,body{ margin:0; padding:0; font-family:"M PLUS Rounded 1c",sans-serif; color:var(--ink); background:#eef1f2; }
+  ruby rt{ font-size:.5em; font-weight:600; }
+
+  .toolbar{ max-width:210mm; margin:10px auto; text-align:center; }
+  .toolbar button{ font:inherit; font-weight:900; cursor:pointer; background:var(--accent); color:#fff; border:none; border-radius:10px; padding:9px 20px; }
+  .toolbar span{ color:#667; font-size:12px; margin-left:10px; }
+
+  .page{ width:210mm; min-height:297mm; margin:0 auto 12px; padding:7mm 11mm; background:#fff; }
+  .pagebreak{ break-before:page; }
+
+  .logo{ float:right; font-size:11px; font-weight:800; color:var(--faint); margin-top:1px; }
+  .logo b{ color:var(--accent); }
+
+  .band{ display:flex; align-items:center; gap:10px; border:2px solid var(--accent); border-radius:9px; padding:3px 12px; font-weight:800; font-size:13px; clear:both; }
+  .band .grade{ white-space:nowrap; }
+  .band .nm{ flex:1; display:flex; align-items:center; gap:6px; }
+  .band .nm .fill{ flex:1; border-bottom:1.5px solid var(--soft); min-height:18px; }
+  .band .score{ white-space:nowrap; border:2px solid var(--ink); border-radius:8px; padding:3px 10px; font-weight:900; font-size:14px; }
+  .band .score b{ font-size:18px; }
+
+  .ttl{ text-align:center; font-size:17px; font-weight:900; margin:1px 0 0; letter-spacing:.5px; }
+  .subttl{ text-align:center; font-size:10.5px; font-weight:800; color:var(--faint); margin-bottom:2px; }
+  .lead{ font-size:9.5px; font-weight:800; color:var(--ink); background:#EAF6F1; border:1.4px solid var(--accent); border-radius:9px; padding:1px 10px; margin-bottom:3px; line-height:1.35; }
+
+  .q{ border:1.6px solid var(--soft); border-radius:10px; padding:2px 10px 3px; margin-bottom:2px; }
+  .qhead{ display:flex; align-items:center; gap:8px; border-bottom:2px solid var(--accent); padding-bottom:1px; margin-bottom:3px; flex-wrap:wrap; }
+  .qno{ background:var(--accent); color:#fff; font-weight:900; font-size:13.5px; border-radius:7px; padding:1px 10px; }
+  .qttl{ font-size:13px; font-weight:900; }
+  .tag{ font-size:9.5px; font-weight:900; color:#fff; background:var(--accent); border-radius:6px; padding:2px 8px; }
+  .pt{ font-size:10.5px; font-weight:800; color:var(--faint); margin-left:auto; }
+
+  .qbody{ display:flex; gap:10px; align-items:flex-start; }
+  .sh{ width:66mm; flex:none; }
+  .qx{ flex:1; min-width:0; }
+
+  .item{ margin:0 0 2px; font-size:11px; font-weight:700; line-height:1.4; }
+  .item:last-child{ margin-bottom:1px; }
+  .item .n{ font-weight:900; color:var(--accent); margin-right:4px; }
+  .focus{ display:inline-block; font-size:9.5px; font-weight:900; color:#fff; background:var(--ink); border-radius:5px; padding:1px 7px; margin:1px 0; }
+  .writebox{ margin:2px 0 0 2px; border:1.5px solid var(--soft); border-radius:7px; min-height:11mm; background:repeating-linear-gradient(transparent,transparent 6mm,var(--soft) 6mm,var(--soft) calc(6mm + 1.2px)); }
+  .writebox.one{ min-height:6.5mm; background:none; }
+  .writebox.tall{ min-height:15mm; }
+
+  .hintchip{ display:block; margin:1px 0 2px 2px; font-size:8.5px; font-weight:800; color:#0f5f47; background:#EAF6F1; border:1.2px dashed var(--accent); border-radius:6px; padding:1px 8px; line-height:1.45; }
+
+  /* しりょう（資料） */
+  .slabel{ font-size:10px; font-weight:900; margin:0 0 2px; }
+  .slabel .schip{ display:inline-block; background:var(--accent); color:#fff; border-radius:5px; padding:0 8px; font-size:9px; margin-right:5px; }
+  .sh svg{ max-height:13mm; }
+  .scap{ font-size:9px; font-weight:800; margin-top:1px; line-height:1.4; }
+  .scap b{ color:var(--accent); }
+  .snote{ font-size:8.5px; font-weight:700; color:var(--faint); margin-top:1px; line-height:1.4; }
+
+  table.cmp{ width:100%; border-collapse:collapse; font-size:9px; font-weight:700; line-height:1.3; }
+  .cmp th,.cmp td{ border:1.2px solid var(--soft); padding:1px 3px; text-align:center; }
+  .cmp thead th{ background:var(--accent); color:#fff; font-weight:900; }
+  .cmp tbody th{ background:#EAF6F1; white-space:nowrap; font-weight:900; }
+  .cmp .qmark{ color:var(--accent); font-weight:900; }
+
+  /* 2まいならべカード */
+  .twoCard{ display:flex; gap:6px; }
+  .twoCard > div{ flex:1; }
+  .card{ border:1.6px solid var(--accent); border-radius:8px; overflow:hidden; background:#fff; }
+  .card .chead{ background:var(--accent); color:#fff; font-weight:900; font-size:10px; padding:2px 7px; text-align:center; }
+  .card .cbody{ font-size:9px; font-weight:700; line-height:1.5; padding:3px 7px; }
+
+  /* 答え・かいせつページ */
+  .akey{ border:1.8px solid var(--accent); border-radius:11px; padding:9px 13px; margin-bottom:9px; }
+  .akey h2{ font-size:15px; font-weight:900; color:var(--accent); margin:0 0 4px; border-bottom:2px solid var(--accent); padding-bottom:3px; }
+  .akey .note{ font-size:9.5px; font-weight:800; color:var(--faint); margin-bottom:6px; line-height:1.5; }
+  .arow{ font-size:11px; font-weight:700; line-height:1.6; margin-bottom:7px; }
+  .arow:last-child{ margin-bottom:0; }
+  .arow .lab{ display:inline-block; min-width:38px; font-weight:900; color:var(--accent); vertical-align:top; }
+  .arow .ans{ font-weight:900; color:var(--ink); }
+  .arow .pts{ display:block; margin:1px 0 0 38px; font-size:9.5px; font-weight:800; color:#2E7D5B; line-height:1.5; }
+  .arow .pts b{ color:#2E7D5B; }
+  .arow .miss{ display:block; margin:0 0 0 38px; font-size:9.5px; font-weight:800; color:#B85C00; line-height:1.5; }
+
+  .expl{ border:1.8px solid var(--soft); border-radius:11px; padding:9px 13px; }
+  .expl h2{ font-size:14px; font-weight:900; color:var(--ink); margin:0 0 5px; border-bottom:2px solid var(--soft); padding-bottom:3px; }
+  .expl p{ font-size:10.5px; font-weight:700; line-height:1.6; margin:0 0 5px; }
+  .expl p:last-child{ margin-bottom:0; }
+  .expl p .lab{ font-weight:900; color:var(--accent); margin-right:5px; }
+
+  @media print{
+    html,body{ background:#fff; }
+    .toolbar{ display:none; }
+    .page{ width:auto; min-height:auto; margin:0; padding:5mm 10mm; }
+    @page{ size:A4 portrait; margin:0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button onclick="window.print()">🖨️ 印刷する（A4・たて）</button>
+  <span>※ 1まい目＝もんだい / 2まい目＝答えとかいせつ（じぶんで○つけ）</span>
+</div>
+
+<!-- ============ 1ページ目：もんだい ============ -->
+<div class="page">
+  <div class="logo"><ruby>学<rt>まな</rt></ruby>びの<ruby>基地<rt>きち</rt></ruby> <b>⏻</b></div>
+  <div class="band">
+    <span class="grade">3<ruby>年<rt>ねん</rt></ruby>&nbsp;&nbsp;（&nbsp;&nbsp;）<ruby>組<rt>くみ</rt></ruby>&nbsp;&nbsp;（&nbsp;&nbsp;）<ruby>番<rt>ばん</rt></ruby></span>
+    <span class="nm"><ruby>名前<rt>なまえ</rt></ruby><span class="fill"></span></span>
+    <span class="score">てんすう&nbsp;<b>　</b>&nbsp;／100</span>
+  </div>
+
+  <div class="ttl">理科テスト ⑦　<ruby>深<rt>ふか</rt></ruby>い<ruby>学<rt>まな</rt></ruby>び<ruby>問題<rt>もんだい</rt></ruby>（くらべて <ruby>考<rt>かんが</rt></ruby>える）</div>
+  <div class="subttl">2つを くらべて わけを <ruby>書<rt>か</rt></ruby>く　／　<ruby>思考<rt>しこう</rt></ruby>・<ruby>判断<rt>はんだん</rt></ruby>・<ruby>表現<rt>ひょうげん</rt></ruby></div>
+  <div class="lead">★ おぼえたことを <ruby>書<rt>か</rt></ruby>くテストでは ありません。<b>2つを くらべて</b>、すがたは ちがっても <ruby>同<rt>おな</rt></ruby>じところ（きまり）や、ちがう <ruby>理由<rt>りゆう</rt></ruby>を、<ruby>自分<rt>じぶん</rt></ruby>の<ruby>言葉<rt>ことば</rt></ruby>で <ruby>書<rt>か</rt></ruby>きましょう。<ruby>正<rt>ただ</rt></ruby>しい<ruby>答<rt>こた</rt></ruby>えは1つでは ありません。</div>
+
+  <!-- 【1】ホウセンカとヒマワリをくらべる -->
+  <div class="q">
+    <div class="qhead">
+      <span class="qno">1</span>
+      <span class="qttl">ホウセンカと ヒマワリを くらべる</span>
+      <span class="tag"><ruby>思考<rt>しこう</rt></ruby>・<ruby>判断<rt>はんだん</rt></ruby>・<ruby>表現<rt>ひょうげん</rt></ruby></span>
+      <span class="pt">（20<ruby>点<rt>てん</rt></ruby>）</span>
+    </div>
+    <div class="qbody">
+      <div class="sh">
+        <div class="slabel"><span class="schip">しりょう①</span>2つの <ruby>植物<rt>しょくぶつ</rt></ruby>の <ruby>体<rt>からだ</rt></ruby>のつくり</div>
+        <svg viewBox="0 0 250 96" style="width:100%;height:auto;display:block;" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ホウセンカと ヒマワリの ねくきはの ず">
+          <!-- ホウセンカ（小さめ） -->
+          <text x="58" y="9" text-anchor="middle" font-size="8" font-weight="900" fill="var(--ink)">ホウセンカ</text>
+          <line x1="58" y1="40" x2="58" y2="74" stroke="var(--accent)" stroke-width="3"/>
+          <ellipse cx="44" cy="46" rx="9" ry="4.5" fill="#EAF6F1" stroke="var(--accent)" stroke-width="1.4"/>
+          <ellipse cx="72" cy="52" rx="9" ry="4.5" fill="#EAF6F1" stroke="var(--accent)" stroke-width="1.4"/>
+          <line x1="58" y1="74" x2="49" y2="86" stroke="var(--accent)" stroke-width="1.6"/>
+          <line x1="58" y1="74" x2="67" y2="86" stroke="var(--accent)" stroke-width="1.6"/>
+          <line x1="58" y1="74" x2="58" y2="88" stroke="var(--accent)" stroke-width="1.6"/>
+          <!-- ヒマワリ（大きめ） -->
+          <text x="188" y="9" text-anchor="middle" font-size="8" font-weight="900" fill="var(--ink)">ヒマワリ</text>
+          <line x1="188" y1="22" x2="188" y2="74" stroke="var(--accent)" stroke-width="4"/>
+          <ellipse cx="170" cy="40" rx="12" ry="6" fill="#EAF6F1" stroke="var(--accent)" stroke-width="1.4"/>
+          <ellipse cx="206" cy="50" rx="12" ry="6" fill="#EAF6F1" stroke="var(--accent)" stroke-width="1.4"/>
+          <line x1="188" y1="74" x2="176" y2="88" stroke="var(--accent)" stroke-width="2"/>
+          <line x1="188" y1="74" x2="200" y2="88" stroke="var(--accent)" stroke-width="2"/>
+          <line x1="188" y1="74" x2="188" y2="90" stroke="var(--accent)" stroke-width="2"/>
+          <!-- ラベル -->
+          <text x="100" y="38" font-size="7.5" font-weight="800" fill="var(--ink)">←葉</text>
+          <text x="100" y="60" font-size="7.5" font-weight="800" fill="var(--ink)">←くき</text>
+          <text x="100" y="84" font-size="7.5" font-weight="800" fill="var(--ink)">←根</text>
+        </svg>
+        <div class="scap"><b><ruby>形<rt>かたち</rt></ruby>や<ruby>大<rt>おお</rt></ruby>きさ</b>は ちがうのに、どちらも <b><ruby>根<rt>ね</rt></ruby>・くき・<ruby>葉<rt>は</rt></ruby></b>が ある。</div>
+      </div>
+      <div class="qx">
+        <div class="item"><ruby>形<rt>かたち</rt></ruby>も <ruby>大<rt>おお</rt></ruby>きさも ちがう ホウセンカと ヒマワリ。でも、<ruby>体<rt>からだ</rt></ruby>のつくりを くらべると <ruby>同<rt>おな</rt></ruby>じです。「どの<ruby>植物<rt>しょくぶつ</rt></ruby>も <ruby>根<rt>ね</rt></ruby>・くき・<ruby>葉<rt>は</rt></ruby>の 3つから できている」と <ruby>言<rt>い</rt></ruby>えるのは なぜですか。<ruby>2<rt>ふた</rt></ruby>つを くらべて <ruby>書<rt>か</rt></ruby>きましょう。</div>
+        <span class="focus">くらべる ところ：体の つくり</span>
+        <span class="hintchip">ヒント：「すがた（形・大きさ）は ちがうけれど、どちらにも …があるから」と つなげて<ruby>書<rt>か</rt></ruby>こう</span>
+        <div class="writebox"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 【2】モンシロチョウとダンゴムシをくらべる -->
+  <div class="q">
+    <div class="qhead">
+      <span class="qno">2</span>
+      <span class="qttl">モンシロチョウと ダンゴムシを くらべる</span>
+      <span class="tag"><ruby>思考<rt>しこう</rt></ruby>・<ruby>判断<rt>はんだん</rt></ruby>・<ruby>表現<rt>ひょうげん</rt></ruby></span>
+      <span class="pt">（20<ruby>点<rt>てん</rt></ruby>：<ruby>記号<rt>きごう</rt></ruby>5<ruby>点<rt>てん</rt></ruby>・わけ15<ruby>点<rt>てん</rt></ruby>）</span>
+    </div>
+    <div class="qbody">
+      <div class="sh">
+        <div class="slabel"><span class="schip">しりょう②</span>あしの <ruby>数<rt>かず</rt></ruby>を くらべる</div>
+        <svg viewBox="0 0 250 84" style="width:100%;height:auto;display:block;" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="モンシロチョウと ダンゴムシの あしの かず">
+          <!-- チョウ：頭・むね・はら／あし6本 -->
+          <text x="62" y="9" text-anchor="middle" font-size="8" font-weight="900" fill="var(--ink)">モンシロチョウ</text>
+          <circle cx="38" cy="42" r="7" fill="#EAF6F1" stroke="var(--accent)" stroke-width="1.4"/>
+          <ellipse cx="56" cy="42" rx="9" ry="7" fill="#EAF6F1" stroke="var(--accent)" stroke-width="1.4"/>
+          <ellipse cx="80" cy="42" rx="13" ry="7" fill="#EAF6F1" stroke="var(--accent)" stroke-width="1.4"/>
+          <!-- あし6本（むねから） -->
+          <line x1="50" y1="49" x2="46" y2="60" stroke="var(--accent)" stroke-width="1.6"/>
+          <line x1="56" y1="49" x2="56" y2="61" stroke="var(--accent)" stroke-width="1.6"/>
+          <line x1="62" y1="49" x2="66" y2="60" stroke="var(--accent)" stroke-width="1.6"/>
+          <line x1="50" y1="35" x2="46" y2="24" stroke="var(--accent)" stroke-width="1.6"/>
+          <line x1="56" y1="35" x2="56" y2="23" stroke="var(--accent)" stroke-width="1.6"/>
+          <line x1="62" y1="35" x2="66" y2="24" stroke="var(--accent)" stroke-width="1.6"/>
+          <text x="62" y="74" text-anchor="middle" font-size="7.5" font-weight="900" fill="var(--ink)">あし 6本</text>
+          <!-- ダンゴムシ：あし多い -->
+          <text x="190" y="9" text-anchor="middle" font-size="8" font-weight="900" fill="var(--ink)">ダンゴムシ</text>
+          <ellipse cx="190" cy="42" rx="26" ry="11" fill="#EAF6F1" stroke="var(--accent)" stroke-width="1.4"/>
+          <line x1="172" y1="35" x2="172" y2="20" stroke="var(--line)" stroke-width="1.3"/>
+          <line x1="182" y1="33" x2="182" y2="19" stroke="var(--line)" stroke-width="1.3"/>
+          <line x1="192" y1="33" x2="192" y2="19" stroke="var(--line)" stroke-width="1.3"/>
+          <line x1="202" y1="33" x2="202" y2="19" stroke="var(--line)" stroke-width="1.3"/>
+          <line x1="172" y1="49" x2="172" y2="64" stroke="var(--line)" stroke-width="1.3"/>
+          <line x1="182" y1="51" x2="182" y2="65" stroke="var(--line)" stroke-width="1.3"/>
+          <line x1="192" y1="51" x2="192" y2="65" stroke="var(--line)" stroke-width="1.3"/>
+          <line x1="202" y1="51" x2="202" y2="65" stroke="var(--line)" stroke-width="1.3"/>
+          <text x="190" y="78" text-anchor="middle" font-size="7.5" font-weight="900" fill="var(--ink)">あしは 6本より 多い</text>
+        </svg>
+        <div class="scap">こん<ruby>虫<rt>ちゅう</rt></ruby>の<ruby>体<rt>からだ</rt></ruby>＝<b><ruby>頭<rt>あたま</rt></ruby>・むね・はら</b>、<b>あしは むねに 6<ruby>本<rt>ぽん</rt></ruby></b>。</div>
+      </div>
+      <div class="qx">
+        <div class="item">ダンゴムシは こん<ruby>虫<rt>ちゅう</rt></ruby>の なかまですか。</div>
+        <div class="item" style="margin-left:2px;">こん<ruby>虫<rt>ちゅう</rt></ruby>だと <ruby>思<rt>おも</rt></ruby>う →（&nbsp;&nbsp;&nbsp;&nbsp;）&nbsp;&nbsp;／&nbsp;&nbsp;こん<ruby>虫<rt>ちゅう</rt></ruby>では ないと <ruby>思<rt>おも</rt></ruby>う →（&nbsp;&nbsp;&nbsp;&nbsp;）&nbsp;<span style="font-size:9.5px;color:var(--faint);">どちらかに ○</span></div>
+        <div class="item"><span class="n">わけ</span>モンシロチョウ（こん<ruby>虫<rt>ちゅう</rt></ruby>）の<ruby>体<rt>からだ</rt></ruby>と くらべて、そう<ruby>考<rt>かんが</rt></ruby>えた わけを <ruby>書<rt>か</rt></ruby>きましょう。</div>
+        <span class="focus">くらべる ところ：あしの 数</span>
+        <span class="hintchip">ヒント：「こん<ruby>虫<rt>ちゅう</rt></ruby>の あしは …<ruby>本<rt>ほん</rt></ruby>。ダンゴムシは …。だから …」と くらべて<ruby>書<rt>か</rt></ruby>こう</span>
+        <div class="writebox"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 【3】育つ順番をくらべる -->
+  <div class="q">
+    <div class="qhead">
+      <span class="qno">3</span>
+      <span class="qttl"><ruby>育<rt>そだ</rt></ruby>つ じゅんばんを くらべる</span>
+      <span class="tag"><ruby>思考<rt>しこう</rt></ruby>・<ruby>判断<rt>はんだん</rt></ruby>・<ruby>表現<rt>ひょうげん</rt></ruby></span>
+      <span class="pt">（20<ruby>点<rt>てん</rt></ruby>）</span>
+    </div>
+    <div class="qbody">
+      <div class="sh">
+        <div class="slabel"><span class="schip">しりょう③</span>2つの <ruby>育<rt>そだ</rt></ruby>ちカード</div>
+        <div class="twoCard">
+          <div class="card">
+            <div class="chead"><ruby>植物<rt>しょくぶつ</rt></ruby></div>
+            <div class="cbody">たね<br>↓<br><ruby>子葉<rt>しよう</rt></ruby>（め）<br>↓<br><ruby>葉<rt>は</rt></ruby>が ふえる<br>↓<br><ruby>花<rt>はな</rt></ruby><br>↓<br><ruby>実<rt>み</rt></ruby></div>
+          </div>
+          <div class="card">
+            <div class="chead">チョウ</div>
+            <div class="cbody">たまご<br>↓<br>よう<ruby>虫<rt>ちゅう</rt></ruby><br>↓<br>さなぎ<br>↓<br>せい<ruby>虫<rt>ちゅう</rt></ruby></div>
+          </div>
+        </div>
+      </div>
+      <div class="qx">
+        <div class="item"><ruby>植物<rt>しょくぶつ</rt></ruby>と チョウでは、<ruby>育<rt>そだ</rt></ruby>ち<ruby>方<rt>かた</rt></ruby>は ちがいます。でも、2つの <ruby>育<rt>そだ</rt></ruby>ち<ruby>方<rt>かた</rt></ruby>を くらべると <ruby>同<rt>おな</rt></ruby>じところが あります。どんなところが <ruby>同<rt>おな</rt></ruby>じですか。2つを くらべて <ruby>書<rt>か</rt></ruby>きましょう。</div>
+        <span class="focus">くらべる ところ：育つ じゅんばん</span>
+        <span class="hintchip">ヒント：「どちらも … で <ruby>育<rt>そだ</rt></ruby>つ」と、2つに <ruby>共通<rt>きょうつう</rt></ruby>する きまりを <ruby>書<rt>か</rt></ruby>こう</span>
+        <div class="writebox"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 【4】5月と6月のホウセンカをくらべる -->
+  <div class="q">
+    <div class="qhead">
+      <span class="qno">4</span>
+      <span class="qttl">5<ruby>月<rt>がつ</rt></ruby>と 6<ruby>月<rt>がつ</rt></ruby>の ホウセンカを くらべる</span>
+      <span class="tag"><ruby>思考<rt>しこう</rt></ruby>・<ruby>判断<rt>はんだん</rt></ruby>・<ruby>表現<rt>ひょうげん</rt></ruby></span>
+      <span class="pt">（20<ruby>点<rt>てん</rt></ruby>）</span>
+    </div>
+    <div class="qbody">
+      <div class="sh">
+        <div class="slabel"><span class="schip">しりょう④</span>5<ruby>月<rt>がつ</rt></ruby>と 6<ruby>月<rt>がつ</rt></ruby>の くらべ</div>
+        <table class="cmp">
+          <thead><tr><th>くらべる ところ</th><th>5<ruby>月<rt>がつ</rt></ruby></th><th>6<ruby>月<rt>がつ</rt></ruby></th></tr></thead>
+          <tbody>
+            <tr><th><ruby>葉<rt>は</rt></ruby>の <ruby>数<rt>かず</rt></ruby></th><td>4まい</td><td>10まい</td></tr>
+            <tr><th><ruby>草<rt>くさ</rt></ruby>たけ</th><td>5cm</td><td>20cm</td></tr>
+            <tr><th>くきの <ruby>太<rt>ふと</rt></ruby>さ</th><td>ほそい</td><td>太い</td></tr>
+          </tbody>
+        </table>
+        <div class="snote">※<ruby>数<rt>かず</rt></ruby>は れいです。<ruby>同<rt>おな</rt></ruby>じ ホウセンカを 1か<ruby>月<rt>げつ</rt></ruby>あけて くらべた きろく。</div>
+      </div>
+      <div class="qx">
+        <div class="item">5<ruby>月<rt>がつ</rt></ruby>と 6<ruby>月<rt>がつ</rt></ruby>の ホウセンカを くらべると、どう かわりましたか。<b>くらべると「<ruby>育<rt>そだ</rt></ruby>っている」と <ruby>言<rt>い</rt></ruby>えるのは なぜ</b>ですか。<ruby>表<rt>ひょう</rt></ruby>の<ruby>数<rt>かず</rt></ruby>を つかって <ruby>書<rt>か</rt></ruby>きましょう。</div>
+        <span class="focus">くらべる ところ：時間が たつと どう かわるか</span>
+        <span class="hintchip">ヒント：<ruby>表<rt>ひょう</rt></ruby>の <ruby>数<rt>かず</rt></ruby>（4まい→10まい など）を つかって「ふえた・のびた・太くなった」を<ruby>書<rt>か</rt></ruby>こう</span>
+        <div class="writebox"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 【5】すみかをくらべる -->
+  <div class="q">
+    <div class="qhead">
+      <span class="qno">5</span>
+      <span class="qttl">すみかを くらべる</span>
+      <span class="tag"><ruby>思考<rt>しこう</rt></ruby>・<ruby>判断<rt>はんだん</rt></ruby>・<ruby>表現<rt>ひょうげん</rt></ruby></span>
+      <span class="pt">（20<ruby>点<rt>てん</rt></ruby>）</span>
+    </div>
+    <div class="qbody">
+      <div class="sh">
+        <div class="slabel"><span class="schip">しりょう⑤</span>すんでいる <ruby>場所<rt>ばしょ</rt></ruby>メモ</div>
+        <div class="twoCard">
+          <div class="card">
+            <div class="chead">モンシロチョウ</div>
+            <div class="cbody">・<ruby>花<rt>はな</rt></ruby>の まわり<br>　（みつを すう）<br>・キャベツや アブラナの<ruby>葉<rt>は</rt></ruby><br>　（よう<ruby>虫<rt>ちゅう</rt></ruby>が <ruby>食<rt>た</rt></ruby>べる）<br>・<ruby>葉<rt>は</rt></ruby>の うらに たまご</div>
+          </div>
+          <div class="card">
+            <div class="chead">ダンゴムシ</div>
+            <div class="cbody">・<ruby>石<rt>いし</rt></ruby>の 下<br>・<ruby>落<rt>お</rt></ruby>ち<ruby>葉<rt>ば</rt></ruby>の 下<br>　（くらくて しめった<br>　ところ）</div>
+          </div>
+        </div>
+      </div>
+      <div class="qx">
+        <div class="item">モンシロチョウと ダンゴムシは、すんでいる<ruby>場所<rt>ばしょ</rt></ruby>が ちがいます。2つの すみかを くらべて、<b>すんでいる<ruby>場所<rt>ばしょ</rt></ruby>が ちがうのは なぜ</b>だと <ruby>考<rt>かんが</rt></ruby>えますか。あなたの<ruby>考<rt>かんが</rt></ruby>えを <ruby>書<rt>か</rt></ruby>きましょう。</div>
+        <span class="focus">くらべる ところ：食べものや 体に 合う 場所</span>
+        <span class="hintchip">ヒント：「それぞれ、<ruby>食<rt>た</rt></ruby>べものや <ruby>体<rt>からだ</rt></ruby>に 合った 場所だから」と つなげて<ruby>書<rt>か</rt></ruby>こう</span>
+        <div class="writebox"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 2ページ目：答え・かいせつ ============ -->
+<div class="page pagebreak">
+  <div class="logo"><ruby>学<rt>まな</rt></ruby>びの<ruby>基地<rt>きち</rt></ruby> <b>⏻</b></div>
+  <div class="ttl" style="margin-top:2px;">理科テスト ⑦　<ruby>答<rt>こた</rt></ruby>えと かいせつ</div>
+  <div class="subttl"><ruby>深<rt>ふか</rt></ruby>い<ruby>学<rt>まな</rt></ruby>び<ruby>問題<rt>もんだい</rt></ruby>（くらべて <ruby>考<rt>かんが</rt></ruby>える）　／　じぶんで○をつけて、ふりかえろう</div>
+
+  <div class="akey">
+    <h2><ruby>答<rt>こた</rt></ruby>え（れい）と <ruby>採点<rt>さいてん</rt></ruby>のめやす</h2>
+    <div class="note">※ <ruby>書<rt>か</rt></ruby>き<ruby>方<rt>かた</rt></ruby>は<ruby>人<rt>ひと</rt></ruby>によって ちがってOK。<ruby>緑<rt>みどり</rt></ruby>の「✓ここが<ruby>書<rt>か</rt></ruby>けていれば◯」で たしかめよう。「💡つまずきポイント」は、おしい<ruby>答<rt>こた</rt></ruby>えに なりやすいところです。</div>
+
+    <div class="arow"><span class="lab">【1】</span><span class="ans">（れい）<ruby>形<rt>かたち</rt></ruby>や<ruby>大<rt>おお</rt></ruby>きさは ちがうけれど、ホウセンカにも ヒマワリにも <ruby>根<rt>ね</rt></ruby>・くき・<ruby>葉<rt>は</rt></ruby>が あるから。どの<ruby>植物<rt>しょくぶつ</rt></ruby>でも くらべると <ruby>体<rt>からだ</rt></ruby>のつくりは <ruby>同<rt>おな</rt></ruby>じになっている。</span>
+      <span class="pts"><b>✓</b>「すがた（<ruby>形<rt>かたち</rt></ruby>・<ruby>大<rt>おお</rt></ruby>きさ）は ちがう」と「どちらにも <ruby>根<rt>ね</rt></ruby>・くき・<ruby>葉<rt>は</rt></ruby>が ある」の 2つが つながって<ruby>書<rt>か</rt></ruby>けていれば◯。「<ruby>2<rt>ふた</rt></ruby>つとも 3つの ぶぶんで できているから」なども<ruby>正解<rt>せいかい</rt></ruby></span>
+      <span class="miss">💡「<ruby>根<rt>ね</rt></ruby>・くき・<ruby>葉<rt>は</rt></ruby>がある」だけでは あと<ruby>一歩<rt>いっぽ</rt></ruby>。「すがたは ちがっても」と <b>くらべた ところ</b>を そえると わけが はっきりする。</span></div>
+
+    <div class="arow"><span class="lab">【2】</span><span class="ans"><b>こん<ruby>虫<rt>ちゅう</rt></ruby>では ない</b>　（れい）こん<ruby>虫<rt>ちゅう</rt></ruby>の あしは むねに 6<ruby>本<rt>ぽん</rt></ruby>。ダンゴムシの あしは 6<ruby>本<rt>ぽん</rt></ruby>より <ruby>多<rt>おお</rt></ruby>いので、モンシロチョウと くらべると こん<ruby>虫<rt>ちゅう</rt></ruby>では ないと <ruby>考<rt>かんが</rt></ruby>えられる。</span>
+      <span class="pts"><b>✓</b>「こん<ruby>虫<rt>ちゅう</rt></ruby>では ない」が えらべて（5<ruby>点<rt>てん</rt></ruby>）、「こん<ruby>虫<rt>ちゅう</rt></ruby>の あしは 6<ruby>本<rt>ぽん</rt></ruby>」と「ダンゴムシは 6<ruby>本<rt>ぽん</rt></ruby>より<ruby>多<rt>おお</rt></ruby>い」を くらべて<ruby>書<rt>か</rt></ruby>けていれば◯（15<ruby>点<rt>てん</rt></ruby>）。「あしの<ruby>数<rt>かず</rt></ruby>が ちがうから」も<ruby>正解<rt>せいかい</rt></ruby></span>
+      <span class="miss">💡「むしだから こん<ruby>虫<rt>ちゅう</rt></ruby>」はNG。<ruby>体<rt>からだ</rt></ruby>のつくり（<ruby>頭<rt>あたま</rt></ruby>・むね・はら、あし6<ruby>本<rt>ぽん</rt></ruby>）と <b>くらべる</b>のが ポイント。あしの<ruby>数<rt>かず</rt></ruby>に <ruby>注目<rt>ちゅうもく</rt></ruby>しよう。</span></div>
+
+    <div class="arow"><span class="lab">【3】</span><span class="ans">（れい）どちらも、<ruby>決<rt>き</rt></ruby>まった じゅんばんで <ruby>育<rt>そだ</rt></ruby>っていく ところが <ruby>同<rt>おな</rt></ruby>じ。<ruby>植物<rt>しょくぶつ</rt></ruby>は たね→め→<ruby>葉<rt>は</rt></ruby>→<ruby>花<rt>はな</rt></ruby>→<ruby>実<rt>み</rt></ruby>、チョウは たまご→よう<ruby>虫<rt>ちゅう</rt></ruby>→さなぎ→せい<ruby>虫<rt>ちゅう</rt></ruby>と、じゅんばんが 入れかわらない。</span>
+      <span class="pts"><b>✓</b>「どちらも <ruby>決<rt>き</rt></ruby>まった じゅんばんで <ruby>育<rt>そだ</rt></ruby>つ」という <ruby>共通<rt>きょうつう</rt></ruby>の きまりが <ruby>書<rt>か</rt></ruby>けていれば◯。「<ruby>育<rt>そだ</rt></ruby>つ <ruby>順番<rt>じゅんばん</rt></ruby>が <ruby>決<rt>き</rt></ruby>まっている」なども<ruby>正解<rt>せいかい</rt></ruby></span>
+      <span class="miss">💡「どちらも <ruby>育<rt>そだ</rt></ruby>つ」だけでは あと<ruby>一歩<rt>いっぽ</rt></ruby>。<b>「じゅんばんが きまっている」</b>という <ruby>同<rt>おな</rt></ruby>じところまで <ruby>書<rt>か</rt></ruby>こう。「すがたが かわる」も よい<ruby>気<rt>き</rt></ruby>づき。</span></div>
+
+    <div class="arow"><span class="lab">【4】</span><span class="ans">（れい）<ruby>葉<rt>は</rt></ruby>の<ruby>数<rt>かず</rt></ruby>は 4まいから 10まいに ふえ、<ruby>草<rt>くさ</rt></ruby>たけは 5cmから 20cmに のび、くきは 太く なった。くらべると <ruby>大<rt>おお</rt></ruby>きく <ruby>変<rt>か</rt></ruby>わっているので、「<ruby>育<rt>そだ</rt></ruby>っている」と <ruby>言<rt>い</rt></ruby>える。</span>
+      <span class="pts"><b>✓</b><ruby>表<rt>ひょう</rt></ruby>の<ruby>数<rt>かず</rt></ruby>を つかって「ふえた・のびた・太くなった」のうち <ruby>2<rt>ふた</rt></ruby>つ<ruby>以上<rt>いじょう</rt></ruby>を くらべて<ruby>書<rt>か</rt></ruby>けていれば◯。「<ruby>前<rt>まえ</rt></ruby>より <ruby>大<rt>おお</rt></ruby>きくなったから」なども<ruby>正解<rt>せいかい</rt></ruby></span>
+      <span class="miss">💡「<ruby>大<rt>おお</rt></ruby>きくなった」だけでは <ruby>半分<rt>はんぶん</rt></ruby>。<b><ruby>表<rt>ひょう</rt></ruby>の<ruby>数<rt>かず</rt></ruby>（4→10 など）を つかって くらべる</b>と、ぐっと <ruby>深<rt>ふか</rt></ruby>くなる。</span></div>
+
+    <div class="arow"><span class="lab">【5】</span><span class="ans">（れい）すんでいる<ruby>場所<rt>ばしょ</rt></ruby>が ちがうのは、それぞれ <ruby>食<rt>た</rt></ruby>べものや <ruby>体<rt>からだ</rt></ruby>に <ruby>合<rt>あ</rt></ruby>った<ruby>場所<rt>ばしょ</rt></ruby>に すんでいるから。モンシロチョウは みつや よう<ruby>虫<rt>ちゅう</rt></ruby>の <ruby>食<rt>た</rt></ruby>べる<ruby>葉<rt>は</rt></ruby>がある<ruby>花<rt>はな</rt></ruby>の まわり、ダンゴムシは くらくて しめった <ruby>石<rt>いし</rt></ruby>や<ruby>落<rt>お</rt></ruby>ち<ruby>葉<rt>ば</rt></ruby>の下が すみやすいから。</span>
+      <span class="pts"><b>✓</b>「それぞれ <ruby>食<rt>た</rt></ruby>べものが ある」「<ruby>体<rt>からだ</rt></ruby>に <ruby>合<rt>あ</rt></ruby>っている」のどちらかで、2つを くらべて<ruby>書<rt>か</rt></ruby>けていれば◯。「すみやすい<ruby>場所<rt>ばしょ</rt></ruby>が ちがうから」なども<ruby>正解<rt>せいかい</rt></ruby></span>
+      <span class="miss">💡「<ruby>場所<rt>ばしょ</rt></ruby>が ちがうから」だけでは <ruby>同<rt>おな</rt></ruby>じことの くりかえし。<b>「なぜ その<ruby>場所<rt>ばしょ</rt></ruby>なのか」</b>＝<ruby>食<rt>た</rt></ruby>べものや <ruby>体<rt>からだ</rt></ruby>と つなげて くらべよう。</span></div>
+  </div>
+
+  <div class="expl">
+    <h2>くらべる 名人の コツ</h2>
+    <p><span class="lab">コツ①</span>くらべると <b>「<ruby>同<rt>おな</rt></ruby>じところ」と「ちがうところ」</b>が 見えてきます。すがたは ちがっても、<ruby>体<rt>からだ</rt></ruby>のつくりや <ruby>育<rt>そだ</rt></ruby>つ じゅんばんには、どの なかまにも <ruby>共通<rt>きょうつう</rt></ruby>する <b>きまり</b>が あります。これが 理科の <ruby>大切<rt>たいせつ</rt></ruby>な <ruby>見方<rt>みかた</rt></ruby>です。</p>
+    <p><span class="lab">コツ②</span>わけを <ruby>書<rt>か</rt></ruby>くときは、<b>「○○と △△を くらべると…」＋「だから、こう <ruby>言<rt>い</rt></ruby>える」</b>の 2つを つなげましょう。<ruby>表<rt>ひょう</rt></ruby>や<ruby>図<rt>ず</rt></ruby>の <ruby>数<rt>かず</rt></ruby>を つかえたら、くらべる名人です。</p>
+  </div>
+</div>
+
+</body>
+</html>
