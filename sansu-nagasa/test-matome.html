@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>算数テスト ④ まとめ・長いものの長さ（知識・技能＋思考・判断・表現）— まなびの基地</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* 算数 = むらさき #6E5DA8（長さ単元まとめ） */
+  :root{ --ink:#1f2a30; --line:#3a4750; --accent:#6E5DA8; --faint:#9aa7ae; --soft:#cdd5d9; --tint:#EFEAF6; }
+  *{ box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  html,body{ margin:0; padding:0; font-family:"M PLUS Rounded 1c",sans-serif; color:var(--ink); background:#eef1f2; }
+  ruby rt{ font-size:.5em; font-weight:600; }
+
+  .toolbar{ max-width:210mm; margin:10px auto; text-align:center; }
+  .toolbar button{ font:inherit; font-weight:900; cursor:pointer; background:var(--accent); color:#fff; border:none; border-radius:10px; padding:9px 20px; }
+  .toolbar span{ color:#667; font-size:12px; margin-left:10px; }
+
+  .page{ position:relative; width:210mm; min-height:297mm; margin:0 auto 12px; padding:8mm 11mm; background:#fff; }
+  .pagebreak{ break-before:page; }
+
+  .logo{ position:absolute; top:3mm; right:11mm; font-size:10px; font-weight:800; color:var(--faint); }
+  .logo b{ color:var(--accent); }
+
+  /* 記名バンド */
+  .band{ display:flex; align-items:center; gap:10px; border:2px solid var(--accent); border-radius:9px; padding:4px 12px; font-weight:800; font-size:12.5px; clear:both; }
+  .band .grade{ white-space:nowrap; }
+  .band .nm{ flex:1; display:flex; align-items:center; gap:6px; }
+  .band .nm .fill{ flex:1; border-bottom:1.5px solid var(--soft); min-height:16px; }
+  .band .score{ white-space:nowrap; border:2px solid var(--ink); border-radius:8px; padding:3px 10px; font-weight:900; font-size:13px; }
+  .band .score b{ font-size:16px; }
+
+  .ttl{ text-align:center; font-size:18px; font-weight:900; margin:3px 0 0; letter-spacing:.4px; }
+  .subttl{ text-align:center; font-size:11px; font-weight:800; color:var(--faint); margin-bottom:3px; }
+  .lead{ font-size:10px; font-weight:800; color:var(--ink); background:var(--tint); border:1.6px solid var(--accent); border-radius:9px; padding:3px 10px; margin-bottom:5px; line-height:1.45; }
+
+  /* 大問 */
+  .q{ border:1.8px solid var(--soft); border-radius:11px; padding:4px 11px 5px; margin-bottom:5px; }
+  .qhead{ display:flex; align-items:center; gap:8px; border-bottom:2px solid var(--accent); padding-bottom:2px; margin-bottom:4px; flex-wrap:wrap; }
+  .qno{ background:var(--accent); color:#fff; font-weight:900; font-size:13.5px; border-radius:7px; padding:1px 10px; }
+  .qttl{ font-size:13.5px; font-weight:900; }
+  .tag{ font-size:9.5px; font-weight:900; color:#fff; background:var(--accent); border-radius:6px; padding:2px 8px; }
+  .pt{ font-size:10.5px; font-weight:800; color:var(--faint); margin-left:auto; }
+
+  /* 小問 */
+  .item{ margin:0 0 4px; font-size:11.5px; font-weight:700; line-height:1.5; }
+  .item:last-child{ margin-bottom:1px; }
+  .item .n{ font-weight:900; color:var(--accent); margin-right:4px; }
+  .ptn{ font-size:10px; font-weight:900; color:var(--accent); margin-left:4px; }
+  .hint{ display:inline-block; font-size:10px; font-weight:800; color:var(--faint); margin-left:4px; }
+
+  /* 短答らん */
+  .pans{ white-space:nowrap; font-weight:800; margin-left:6px; }
+  .pans .plab{ font-size:10px; font-weight:800; color:var(--faint); margin-right:3px; }
+  .pblank{ display:inline-block; min-width:18mm; border-bottom:1.8px solid var(--ink); height:16px; vertical-align:bottom; }
+
+  /* 選択肢 */
+  .choices{ display:flex; flex-wrap:wrap; gap:4px 16px; margin:3px 0 1px 16px; font-size:11.5px; font-weight:700; }
+  .choices .ch{ display:flex; align-items:center; gap:5px; }
+  .choices .mk{ display:inline-grid; place-items:center; width:19px; height:19px; border:1.6px solid var(--line); border-radius:50%; font-weight:900; font-size:11px; flex:none; }
+
+  /* 記述らん */
+  .writebox{ margin:3px 0 0 4px; border:1.6px solid var(--soft); border-radius:7px; min-height:14mm; background:repeating-linear-gradient(transparent,transparent 6.5mm,var(--soft) 6.5mm,var(--soft) calc(6.5mm + 1.2px)); }
+  .writebox.one{ min-height:7mm; background:none; }
+
+  /* 単位変換の二段ます */
+  .conv{ display:flex; flex-wrap:wrap; gap:6px 18px; margin:4px 0 1px 16px; }
+  .conv .cv{ font-size:12px; font-weight:800; }
+  .conv .cv .eq{ color:var(--accent); margin:0 5px; }
+  .convblank{ display:inline-block; min-width:14mm; border-bottom:1.8px solid var(--ink); height:16px; vertical-align:bottom; }
+
+  /* 資料 */
+  .shiryo{ border:2px solid var(--line); border-radius:11px; padding:4px 10px 5px; margin:4px 0; background:#fbfbfd; }
+  .shead{ font-size:11px; font-weight:900; margin-bottom:2px; }
+  .shead .badge{ background:var(--ink); color:#fff; border-radius:6px; padding:1px 8px; font-size:9.5px; margin-right:6px; }
+  .scap{ font-size:9.5px; font-weight:800; margin-top:1px; line-height:1.4; }
+  .scap b{ color:var(--accent); }
+  .snote{ font-size:8.5px; font-weight:700; color:var(--faint); margin-top:1px; line-height:1.4; }
+
+  /* 答え・かいせつページ */
+  .akey{ border:1.8px solid var(--accent); border-radius:11px; padding:10px 14px; margin-bottom:10px; }
+  .akey h2{ font-size:16px; font-weight:900; color:var(--accent); margin:0 0 5px; border-bottom:2px solid var(--accent); padding-bottom:4px; }
+  .akey .note{ font-size:10.5px; font-weight:800; color:var(--faint); margin-bottom:8px; line-height:1.6; }
+  .arow{ font-size:12px; font-weight:700; line-height:1.7; margin-bottom:7px; }
+  .arow .lab{ display:inline-block; min-width:54px; font-weight:900; color:var(--accent); vertical-align:top; }
+  .arow .ans{ font-weight:900; color:var(--ink); }
+  .arow .pts{ display:block; margin:1px 0 0 54px; font-size:10.5px; font-weight:800; color:#2E7D5B; line-height:1.6; }
+  .arow .pts b{ color:#2E7D5B; }
+  .arow .miss{ display:block; margin:0 0 0 54px; font-size:10.5px; font-weight:800; color:#B85C00; line-height:1.6; }
+
+  .expl{ border:1.8px solid var(--soft); border-radius:11px; padding:10px 14px; }
+  .expl h2{ font-size:15px; font-weight:900; color:var(--ink); margin:0 0 7px; border-bottom:2px solid var(--soft); padding-bottom:4px; }
+  .expl p{ font-size:11.5px; font-weight:700; line-height:1.7; margin:0 0 6px; }
+  .expl p:last-child{ margin-bottom:0; }
+  .expl p .lab{ font-weight:900; color:var(--accent); margin-right:5px; }
+
+  @media print{
+    html,body{ background:#fff; }
+    .toolbar{ display:none; }
+    .page{ width:auto; min-height:auto; margin:0; padding:7mm 10mm; }
+    @page{ size:A4 portrait; margin:0; }
+    .pagebreak{ break-before:page; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <button onclick="window.print()">🖨️ 印刷する（A4・たて）</button>
+  <span>※ 1まい目＝もんだい / 2まい目＝答えとかいせつ（じぶんで○つけ）</span>
+</div>
+
+<!-- ============ 1ページ目：もんだい ============ -->
+<div class="page">
+  <div class="logo"><ruby>学<rt>まな</rt></ruby>びの<ruby>基地<rt>きち</rt></ruby> <b>⏻</b></div>
+  <div class="band">
+    <span class="grade">3<ruby>年<rt>ねん</rt></ruby>&nbsp;&nbsp;（&nbsp;&nbsp;）<ruby>組<rt>くみ</rt></ruby>&nbsp;&nbsp;（&nbsp;&nbsp;）<ruby>番<rt>ばん</rt></ruby></span>
+    <span class="nm"><ruby>名前<rt>なまえ</rt></ruby><span class="fill"></span></span>
+    <span class="score">てんすう&nbsp;<b>　</b>&nbsp;／100</span>
+  </div>
+
+  <div class="ttl"><ruby>算数<rt>さんすう</rt></ruby>テスト ④　まとめ・<ruby>長<rt>なが</rt></ruby>いものの<ruby>長<rt>なが</rt></ruby>さ</div>
+  <div class="subttl"><ruby>知識<rt>ちしき</rt></ruby>・<ruby>技能<rt>ぎのう</rt></ruby> 70<ruby>点<rt>てん</rt></ruby>　＋　<ruby>思考<rt>しこう</rt></ruby>・<ruby>判断<rt>はんだん</rt></ruby>・<ruby>表現<rt>ひょうげん</rt></ruby> 30<ruby>点<rt>てん</rt></ruby></div>
+  <div class="lead">★ たんいは「10のまとまり」で つながっています（1km＝1000m）。<b>はかる<ruby>物<rt>もの</rt></ruby>に<ruby>合<rt>あ</rt></ruby>わせて 道具とたんいをえらび、「<ruby>道<rt>みち</rt></ruby>のり」と「きょり」を つかい分けましょう。</b></div>
+
+  <!-- 【1】まきじゃくの めもり読み -->
+  <div class="q">
+    <div class="qhead">
+      <span class="qno">1</span>
+      <span class="qttl">まきじゃくの めもりを<ruby>読<rt>よ</rt></ruby>もう</span>
+      <span class="tag"><ruby>知識<rt>ちしき</rt></ruby>・<ruby>技能<rt>ぎのう</rt></ruby></span>
+      <span class="pt">（<ruby>各<rt>かく</rt></ruby>10<ruby>点<rt>てん</rt></ruby>・<ruby>計<rt>けい</rt></ruby>20<ruby>点<rt>てん</rt></ruby>）</span>
+    </div>
+
+    <div class="shiryo">
+      <div class="shead"><span class="badge">しりょう①</span>まきじゃくの めもり（→ のところを<ruby>読<rt>よ</rt></ruby>む）</div>
+      <svg viewBox="0 0 540 90" style="width:100%;height:auto;display:block;margin:2px auto;" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="まきじゃくの めもり 2つ">
+        <!-- ものさし本体 ア -->
+        <rect x="6" y="14" width="252" height="20" rx="3" fill="#FFFDF5" stroke="var(--line)" stroke-width="1.4"/>
+        <!-- 大きいめもり（10cmごと数字） 1m から 1m30cm あたり -->
+        <!-- 0基準は左端=1m20cmの少し手前。読み取り位置 1m26cm -->
+        <g stroke="var(--ink)">
+          <line x1="26"  y1="14" x2="26"  y2="34" stroke-width="1.6"/>
+          <line x1="49"  y1="18" x2="49"  y2="34" stroke-width="0.8"/>
+          <line x1="72"  y1="18" x2="72"  y2="34" stroke-width="0.8"/>
+          <line x1="95"  y1="18" x2="95"  y2="34" stroke-width="0.8"/>
+          <line x1="118" y1="18" x2="118" y2="34" stroke-width="0.8"/>
+          <line x1="141" y1="14" x2="141" y2="34" stroke-width="1.6"/>
+          <line x1="164" y1="18" x2="164" y2="34" stroke-width="0.8"/>
+          <line x1="187" y1="18" x2="187" y2="34" stroke-width="0.8"/>
+          <line x1="210" y1="18" x2="210" y2="34" stroke-width="0.8"/>
+          <line x1="233" y1="18" x2="233" y2="34" stroke-width="0.8"/>
+          <line x1="256" y1="14" x2="256" y2="34" stroke-width="1.6"/>
+        </g>
+        <text x="26"  y="11" text-anchor="middle" font-size="8" font-weight="800" fill="var(--ink)">1m20</text>
+        <text x="141" y="11" text-anchor="middle" font-size="8" font-weight="800" fill="var(--ink)">1m25</text>
+        <text x="256" y="11" text-anchor="middle" font-size="8" font-weight="800" fill="var(--ink)">1m30</text>
+        <!-- 読み取り矢印 アは 1m26cm（25の1つ右） -->
+        <polygon points="164,52 158,62 170,62" fill="var(--accent)"/>
+        <line x1="164" y1="34" x2="164" y2="52" stroke="var(--accent)" stroke-width="2"/>
+        <text x="164" y="74" text-anchor="middle" font-size="9.5" font-weight="900" fill="var(--accent)">ア</text>
+        <text x="132" y="86" text-anchor="middle" font-size="7.5" font-weight="700" fill="var(--faint)">（たんいは cm）</text>
+
+        <!-- ものさし本体 イ -->
+        <rect x="288" y="14" width="246" height="20" rx="3" fill="#FFFDF5" stroke="var(--line)" stroke-width="1.4"/>
+        <g stroke="var(--ink)">
+          <line x1="308" y1="14" x2="308" y2="34" stroke-width="1.6"/>
+          <line x1="330" y1="18" x2="330" y2="34" stroke-width="0.8"/>
+          <line x1="352" y1="18" x2="352" y2="34" stroke-width="0.8"/>
+          <line x1="374" y1="18" x2="374" y2="34" stroke-width="0.8"/>
+          <line x1="396" y1="18" x2="396" y2="34" stroke-width="0.8"/>
+          <line x1="418" y1="14" x2="418" y2="34" stroke-width="1.6"/>
+          <line x1="440" y1="18" x2="440" y2="34" stroke-width="0.8"/>
+          <line x1="462" y1="18" x2="462" y2="34" stroke-width="0.8"/>
+          <line x1="484" y1="18" x2="484" y2="34" stroke-width="0.8"/>
+          <line x1="506" y1="18" x2="506" y2="34" stroke-width="0.8"/>
+          <line x1="528" y1="14" x2="528" y2="34" stroke-width="1.6"/>
+        </g>
+        <text x="308" y="11" text-anchor="middle" font-size="8" font-weight="800" fill="var(--ink)">2m90</text>
+        <text x="418" y="11" text-anchor="middle" font-size="8" font-weight="800" fill="var(--ink)">2m95</text>
+        <text x="528" y="11" text-anchor="middle" font-size="8" font-weight="800" fill="var(--ink)">3m00</text>
+        <!-- 読み取り矢印 イは 2m98cm（95の3つ右） -->
+        <polygon points="484,52 478,62 490,62" fill="var(--accent)"/>
+        <line x1="484" y1="34" x2="484" y2="52" stroke="var(--accent)" stroke-width="2"/>
+        <text x="484" y="74" text-anchor="middle" font-size="9.5" font-weight="900" fill="var(--accent)">イ</text>
+        <text x="408" y="86" text-anchor="middle" font-size="7.5" font-weight="700" fill="var(--faint)">（たんいは cm）</text>
+      </svg>
+    </div>
+
+    <div class="item"><span class="n">(1)</span>しりょう①の <b>ア</b> の めもりは <ruby>何<rt>なん</rt></ruby>mと<ruby>何<rt>なん</rt></ruby>cmですか。<span class="pans"><span class="plab">こたえ</span><span class="pblank"></span>m<span class="pblank"></span>cm</span><span class="ptn">10<ruby>点<rt>てん</rt></ruby></span></div>
+    <div class="item"><span class="n">(2)</span>しりょう①の <b>イ</b> の めもりは <ruby>何<rt>なん</rt></ruby>mと<ruby>何<rt>なん</rt></ruby>cmですか。<span class="pans"><span class="plab">こたえ</span><span class="pblank"></span>m<span class="pblank"></span>cm</span><span class="ptn">10<ruby>点<rt>てん</rt></ruby></span></div>
+  </div>
+
+  <!-- 【2】たんい変換 -->
+  <div class="q">
+    <div class="qhead">
+      <span class="qno">2</span>
+      <span class="qttl">たんいを かえよう（km と m）</span>
+      <span class="tag"><ruby>知識<rt>ちしき</rt></ruby>・<ruby>技能<rt>ぎのう</rt></ruby></span>
+      <span class="pt">（<ruby>各<rt>かく</rt></ruby>10<ruby>点<rt>てん</rt></ruby>・<ruby>計<rt>けい</rt></ruby>30<ruby>点<rt>てん</rt></ruby>）</span>
+    </div>
+    <div class="item">□に あてはまる<ruby>数<rt>かず</rt></ruby>を<ruby>書<rt>か</rt></ruby>きましょう。<span class="hint">ヒント：1km＝1000m。「10（1000）あつまったら 上のたんいへ」</span></div>
+    <div class="conv">
+      <span class="cv"><span class="n">(1)</span>3km<span class="eq">＝</span><span class="convblank"></span>m<span class="ptn">10<ruby>点<rt>てん</rt></ruby></span></span>
+      <span class="cv"><span class="n">(2)</span>2km600m<span class="eq">＝</span><span class="convblank"></span>m<span class="ptn">10<ruby>点<rt>てん</rt></ruby></span></span>
+      <span class="cv"><span class="n">(3)</span>1500m<span class="eq">＝</span><span class="convblank"></span>km<span class="convblank"></span>m<span class="ptn">10<ruby>点<rt>てん</rt></ruby></span></span>
+    </div>
+  </div>
+
+  <!-- 【3】道のりの計算（絵地図） -->
+  <div class="q">
+    <div class="qhead">
+      <span class="qno">3</span>
+      <span class="qttl"><ruby>道<rt>みち</rt></ruby>のりを もとめよう</span>
+      <span class="tag"><ruby>知識<rt>ちしき</rt></ruby>・<ruby>技能<rt>ぎのう</rt></ruby></span>
+      <span class="pt">（<ruby>各<rt>かく</rt></ruby>10<ruby>点<rt>てん</rt></ruby>・<ruby>計<rt>けい</rt></ruby>20<ruby>点<rt>てん</rt></ruby>）</span>
+    </div>
+
+    <div class="shiryo">
+      <div class="shead"><span class="badge">しりょう②</span>みなとさんの まちの<ruby>地図<rt>ちず</rt></ruby></div>
+      <svg viewBox="0 0 540 150" style="width:100%;height:auto;display:block;margin:2px auto;" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="家からポストをとおって駅までの えちず">
+        <!-- まっすぐの きょり（家→駅） 点線 -->
+        <line x1="70" y1="118" x2="470" y2="46" stroke="var(--faint)" stroke-width="1.6" stroke-dasharray="6 5"/>
+        <text x="262" y="98" text-anchor="middle" font-size="9" font-weight="800" fill="var(--faint)">まっすぐの きょり 500m</text>
+
+        <!-- 道のり：家→ポスト→駅（おれ曲がった道） -->
+        <line x1="70" y1="118" x2="280" y2="118" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>
+        <line x1="280" y1="118" x2="280" y2="46" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>
+        <line x1="280" y1="46" x2="470" y2="46" stroke="var(--accent)" stroke-width="4" stroke-linecap="round"/>
+
+        <!-- 区間の長さ -->
+        <text x="175" y="134" text-anchor="middle" font-size="10" font-weight="900" fill="var(--accent)">300m</text>
+        <text x="296" y="86"  text-anchor="start"  font-size="10" font-weight="900" fill="var(--accent)">200m</text>
+        <text x="375" y="38"  text-anchor="middle" font-size="10" font-weight="900" fill="var(--accent)">400m</text>
+
+        <!-- 家 -->
+        <polygon points="70,100 56,112 84,112" fill="var(--tint)" stroke="var(--ink)" stroke-width="1.6"/>
+        <rect x="60" y="112" width="20" height="12" fill="var(--tint)" stroke="var(--ink)" stroke-width="1.6"/>
+        <text x="70" y="140" text-anchor="middle" font-size="9.5" font-weight="900" fill="var(--ink)">いえ</text>
+        <!-- ポスト -->
+        <rect x="271" y="106" width="18" height="14" rx="3" fill="#fff" stroke="var(--ink)" stroke-width="1.6"/>
+        <text x="280" y="117" text-anchor="middle" font-size="8.5" font-weight="900" fill="var(--accent)">〒</text>
+        <text x="280" y="138" text-anchor="middle" font-size="9.5" font-weight="900" fill="var(--ink)">ポスト</text>
+        <!-- 駅 -->
+        <rect x="452" y="32" width="34" height="16" rx="3" fill="var(--accent)"/>
+        <text x="469" y="44" text-anchor="middle" font-size="8.5" font-weight="900" fill="#fff">えき</text>
+        <text x="469" y="26" text-anchor="middle" font-size="9.5" font-weight="900" fill="var(--ink)">えき</text>
+        <!-- はんれい（左上のあき地に置く） -->
+        <rect x="34" y="22" width="150" height="38" rx="5" fill="#fff" stroke="var(--soft)" stroke-width="1.2"/>
+        <line x1="44" y1="35" x2="68" y2="35" stroke="var(--accent)" stroke-width="4"/>
+        <text x="74" y="38" font-size="8.5" font-weight="800" fill="var(--ink)">＝みち（みちのり）</text>
+        <line x1="44" y1="49" x2="68" y2="49" stroke="var(--faint)" stroke-width="1.6" stroke-dasharray="6 5"/>
+        <text x="74" y="52" font-size="8.5" font-weight="800" fill="var(--ink)">＝まっすぐ（きょり）</text>
+      </svg>
+      <div class="scap"><b><ruby>道<rt>みち</rt></ruby>のり</b>＝<ruby>道<rt>みち</rt></ruby>にそって はかった<ruby>長<rt>なが</rt></ruby>さ　／　<b>きょり</b>＝まっすぐ はかった<ruby>長<rt>なが</rt></ruby>さ</div>
+    </div>
+
+    <div class="item"><span class="n">(1)</span><ruby>家<rt>いえ</rt></ruby>から ポストを とおって<ruby>駅<rt>えき</rt></ruby>まで<ruby>行<rt>い</rt></ruby>くときの <b><ruby>道<rt>みち</rt></ruby>のり</b>は <ruby>何<rt>なん</rt></ruby>mですか。<span class="pans"><span class="plab">しき・こたえ</span><span class="pblank" style="min-width:34mm;"></span>m</span><span class="ptn">10<ruby>点<rt>てん</rt></ruby></span></div>
+    <div class="item"><span class="n">(2)</span><ruby>家<rt>いえ</rt></ruby>から<ruby>駅<rt>えき</rt></ruby>までの <b><ruby>道<rt>みち</rt></ruby>のり</b>は、<b>きょり</b>（500m）より <ruby>何<rt>なん</rt></ruby>m <ruby>長<rt>なが</rt></ruby>いですか。<span class="pans"><span class="plab">こたえ</span><span class="pblank" style="min-width:24mm;"></span>m</span><span class="ptn">10<ruby>点<rt>てん</rt></ruby></span></div>
+  </div>
+
+  <!-- 【4】考える問題 -->
+  <div class="q">
+    <div class="qhead">
+      <span class="qno">4</span>
+      <span class="qttl"><ruby>考<rt>かんが</rt></ruby>える<ruby>問題<rt>もんだい</rt></ruby>　道のりと きょり、どちらを つかう？</span>
+      <span class="tag"><ruby>思考<rt>しこう</rt></ruby>・<ruby>判断<rt>はんだん</rt></ruby>・<ruby>表現<rt>ひょうげん</rt></ruby></span>
+      <span class="pt">（30<ruby>点<rt>てん</rt></ruby>）</span>
+    </div>
+    <div class="item">みなとさんは、<ruby>家<rt>いえ</rt></ruby>から<ruby>駅<rt>えき</rt></ruby>まで <b><ruby>歩<rt>ある</rt></ruby>くと <ruby>何分<rt>なんぷん</rt></ruby> かかるか</b> を しらべたいと<ruby>思<rt>おも</rt></ruby>いました。このとき、しりょう②の <b><ruby>道<rt>みち</rt></ruby>のり</b>と <b>きょり</b>の どちらを つかえばよいですか。<ruby>記号<rt>きごう</rt></ruby>をえらび、そのわけも<ruby>書<rt>か</rt></ruby>きましょう。</div>
+    <div class="choices">
+      <span class="ch"><span class="mk">ア</span><ruby>道<rt>みち</rt></ruby>のり（900m）</span>
+      <span class="ch"><span class="mk">イ</span>きょり（500m）</span>
+    </div>
+    <div class="item" style="margin-top:3px;"><span class="n"></span><ruby>記号<rt>きごう</rt></ruby><span class="pans">（<span class="pblank" style="min-width:14mm;"></span>）</span><span class="hint">わけ：「<ruby>歩<rt>ある</rt></ruby>くのは ＿＿＿＿＿ だから」と つなげて<ruby>書<rt>か</rt></ruby>こう</span></div>
+    <div class="writebox"></div>
+  </div>
+</div>
+
+<!-- ============ 2ページ目：答え・かいせつ ============ -->
+<div class="page pagebreak">
+  <div class="logo"><ruby>学<rt>まな</rt></ruby>びの<ruby>基地<rt>きち</rt></ruby> <b>⏻</b></div>
+  <div class="ttl" style="margin-top:2px;"><ruby>算数<rt>さんすう</rt></ruby>テスト ④　<ruby>答<rt>こた</rt></ruby>えと かいせつ</div>
+  <div class="subttl">まとめ・<ruby>長<rt>なが</rt></ruby>いものの<ruby>長<rt>なが</rt></ruby>さ　／　じぶんで○をつけて、ふりかえろう</div>
+
+  <div class="akey">
+    <h2><ruby>答<rt>こた</rt></ruby>えと <ruby>採点<rt>さいてん</rt></ruby>のめやす</h2>
+    <div class="note">※ 【4】は<ruby>書<rt>か</rt></ruby>き<ruby>方<rt>かた</rt></ruby>が<ruby>人<rt>ひと</rt></ruby>によってちがってOK。<ruby>緑<rt>みどり</rt></ruby>の「✓ここが<ruby>書<rt>か</rt></ruby>けていれば◯」を<ruby>見<rt>み</rt></ruby>て、じぶんの<ruby>答<rt>こた</rt></ruby>えをたしかめよう。「💡つまずきポイント」は、おしい<ruby>答<rt>こた</rt></ruby>えに なりやすいところです。</div>
+
+    <div class="arow"><span class="lab">【1】(1)</span><span class="ans">1m26cm</span></div>
+    <div class="arow"><span class="lab">【1】(2)</span><span class="ans">2m98cm</span></div>
+    <div class="arow"><span class="lab">【2】(1)</span><span class="ans">3000（m）</span></div>
+    <div class="arow"><span class="lab">【2】(2)</span><span class="ans">2600（m）</span></div>
+    <div class="arow"><span class="lab">【2】(3)</span><span class="ans">1km 500m</span></div>
+    <div class="arow"><span class="lab">【3】(1)</span><span class="ans">300＋200＋400＝900　　こたえ 900m</span>
+      <span class="pts"><b>✓</b>3つの<ruby>区間<rt>くかん</rt></ruby>（300・200・400）を ぜんぶ たして 900m になっていれば◯。しきが なくても 900m が<ruby>書<rt>か</rt></ruby>けていれば◯。</span></div>
+    <div class="arow"><span class="lab">【3】(2)</span><span class="ans">900−500＝400　　こたえ 400m</span>
+      <span class="pts"><b>✓</b><ruby>道<rt>みち</rt></ruby>のり900m から きょり500m を ひいて 400m になっていれば◯。</span>
+      <span class="miss">💡 (1)の<ruby>答<rt>こた</rt></ruby>え（道のり）を つかう。きょり どうしを ひかないように<ruby>気<rt>き</rt></ruby>をつけよう。</span></div>
+    <div class="arow"><span class="lab">【4】</span><span class="ans"><ruby>記号<rt>きごう</rt></ruby>… ア（<ruby>道<rt>みち</rt></ruby>のり）　（れい）<ruby>歩<rt>ある</rt></ruby>くのは <ruby>道<rt>みち</rt></ruby>にそって<ruby>進<rt>すす</rt></ruby>むので、<ruby>道<rt>みち</rt></ruby>のりを つかう。まっすぐの きょりでは <ruby>家<rt>いえ</rt></ruby>やかべを とおりぬけてしまうから。</span>
+      <span class="pts"><b>✓</b>「ア（道のり）」がえらべて、「<ruby>歩<rt>ある</rt></ruby>く＝<ruby>道<rt>みち</rt></ruby>にそって<ruby>進<rt>すす</rt></ruby>む から 道のり」が つながって<ruby>書<rt>か</rt></ruby>けていれば◯。「まっすぐは<ruby>通<rt>とお</rt></ruby>れないから」「じっさいに<ruby>歩<rt>ある</rt></ruby>く<ruby>長<rt>なが</rt></ruby>さだから」なども<ruby>正解<rt>せいかい</rt></ruby>。</span>
+      <span class="miss">💡「アだから」だけでは あと<ruby>一歩<rt>いっぽ</rt></ruby>。「<ruby>何<rt>なに</rt></ruby>をはかるか（<ruby>歩<rt>ある</rt></ruby>く<ruby>長<rt>なが</rt></ruby>さ）」と むすびつけて わけを<ruby>書<rt>か</rt></ruby>こう。</span></div>
+  </div>
+
+  <div class="expl">
+    <h2>もっとくわしく</h2>
+    <p><span class="lab">【1】</span>まきじゃくは、はしが0とはかぎりません。<b>大きい数（m）と 小さいめもり（cm）を 合わせて</b>読みます。アは「1m25cm」の めもりの1つ右だから 1m26cm。イは「2m95cm」の3つ右で 2m98cm。1cmごとに ていねいに数えましょう。</p>
+    <p><span class="lab">【2】</span>たんいは「10のまとまり」で つながっています。<b>1km＝1000m</b>。だから 3km＝3000m、2km600m＝2600m。ぎゃくに 1500m は 1000mで1kmだから 1km500m。数の位取り（一・十・百…千）と 同じしくみです。</p>
+    <p><span class="lab">【3】</span><b>道のり</b>は 道にそった長さなので、おれ曲がった道は 区間を ぜんぶ たします（300＋200＋400＝900m）。<b>きょり</b>は まっすぐの長さ（500m）。よりみちすると、道のりは きょりより 長くなります（900−500＝400m）。</p>
+    <p><span class="lab">【4】</span>大事なのは「いま、<b>何をはかっているのか</b>」です。<ruby>歩<rt>ある</rt></ruby>いて かかる時間を しらべたいなら、じっさいに 歩く長さ＝<b>道のり</b>を つかいます。同じ2つの場所でも、目てきによって つかう長さ（道のり／きょり）が かわる――これが この単元の いちばん大切な考え方です。</p>
+  </div>
+</div>
+
+</body>
+</html>
