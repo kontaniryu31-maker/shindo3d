@@ -104,6 +104,13 @@ const GREEN_TX = "#168a68";       // 伸度の文字用（濃い緑＝白地で�
 const GRAY = "#8a8d99";
 const INK = "#16181F";
 const SUB = "#5B5E6B";
+/* ===== 整理デザイン用：構造・常設のクロムは「落ち着いた藍」に寄せる（A案）=====
+   盤面の枠線・3軸の凡例マーク・SVGの軸線/矢印・閉じている（現在地でない）ステージ帯・
+   ゴール塔など “構造・常設” は INDIGO。黄(#FFC24B)は「いま・つぎ」だけに限定する。 */
+const INDIGO = "#3E6CA8";        // 構造・常設のクロム（藍）
+const INDIGO_DK = "#2E5A8A";     // 濃いめ藍（枠線・帯の文字側）
+const FOCUS_YELLOW = "#FFC24B";  // 「いま・つぎ」だけに使う黄（フォーカスカード／開いているステージ）
+const FOCUS_YELLOW_DK = "#F5B400";
 /* グラデ：上は元色のまま・下だけ少し暗くする「片側グラデ」。最明部＝元色なので白文字の見やすさは下がらない。 */
 const darken = (hex, amt) => { const n = parseInt(hex.slice(1), 16); const r = Math.round(((n >> 16) & 255) * (1 - amt)), g = Math.round(((n >> 8) & 255) * (1 - amt)), b = Math.round((n & 255) * (1 - amt)); return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1); };
 const grad = (hex) => `linear-gradient(165deg, ${hex} 0%, ${hex} 48%, ${darken(hex, 0.14)} 100%)`;
@@ -536,6 +543,7 @@ function App() {
   const [showBattle, setShowBattle] = useState(false); // PBL（モンスターバトル）
   const [showCipher, setShowCipher] = useState(false); // PBL（奈良市たんけん）
   const [showMap, setShowMap] = useState(false);   // PBL（絵地図の読み取り）
+  const [showPlayMenu, setShowPlayMenu] = useState(false); // 🎮 あそんで まなぶ（4つのPBLを束ねるメニュー）
   const [showTest, setShowTest] = useState(false); // たしかめテスト（まとめ）
   const [budget, setBudget] = useState(5000);       // 予算（自分で設定）
   const [cart, setCart] = useState({});             // {itemId: 個数}
@@ -599,6 +607,26 @@ function App() {
   const plan = (PLAN[openStage] && PLAN[openStage][openLv]) ? PLAN[openStage][openLv] : { ready: false };
   const showGuide = openLv != null;
 
+  /* ===== 原則1：「つぎは これ！」＝次にやる1マスを自動で1つ選ぶ =====
+     s=1..5 の順、各stage内で 深度 k=0..3 の順に走査し、done[`${s}-${k}`] が未達の最初のマス。
+     全部doneなら allClear。 */
+  let nextStage = null, nextLv = null;
+  for (let i = 0; i < STAGES.length && nextStage == null; i++) {
+    const s = STAGES[i].n;
+    for (let k = 0; k < DEPTH.length; k++) {
+      if (!done[`${s}-${k}`]) { nextStage = s; nextLv = k; break; }
+    }
+  }
+  const allClear = nextStage == null;
+  const nextStageObj = allClear ? null : STAGES.find((s) => s.n === nextStage);
+  // 「はじめる →」＝セルのonClick（goGuide）と同じ状態更新を再現
+  const startNext = () => {
+    if (allClear) return;
+    setShowBack(false);
+    setShowPlayMenu(false);
+    goGuide(nextStage, nextLv);
+  };
+
   // 箱頂点
   const A = px(-20, -20, 0), B = px(FW + 20, -20, 0), Cc = px(FW + 20, FH + 20, 0), D = px(-20, FH + 20, 0);
   const A2 = px(-20, -20, DEEP), B2 = px(FW + 20, -20, DEEP), C2 = px(FW + 20, FH + 20, DEEP), D2 = px(-20, FH + 20, DEEP);
@@ -626,27 +654,43 @@ function App() {
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end" }}>
           <div style={{ fontSize: 11, fontWeight: 800, color: SPACE_SUB, textAlign: "right", lineHeight: 1.5 }}>
-            <span style={{ color: SPACE_GOLD }}>━</span>{rb("すすむ")}　<span style={{ color: SPACE_GOLD }}>━</span>{rb("ふかめる")}（{rb("わかりの ふかさ")}）　<span style={{ color: "#5BD9AD" }}>━</span>{rb("つなげる")}
+            <span style={{ color: INDIGO }}>━</span>{rb("すすむ")}　<span style={{ color: INDIGO }}>━</span>{rb("ふかめる")}（{rb("わかりの ふかさ")}）　<span style={{ color: "#5BD9AD" }}>━</span>{rb("つなげる")}
           </div>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end", rowGap: 6 }}>
-            <button onClick={() => { setShowPBL(true); setShowBack(false); }} style={{
-              fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "7px 14px", borderRadius: 999,
-              color: SYM_COLOR, background: "#fff", border: `2px solid ${SYM_COLOR}`,
-              boxShadow: "var(--shadow-sm)",
-            }}>🗺️ {rb("地図記号マスター")}</button>
-            <button onClick={() => { setShowBattle(true); setShowBack(false); }} style={{
-              fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "7px 14px", borderRadius: 999,
-              color: HOUI_COLOR, background: "#fff", border: `2px solid ${HOUI_COLOR}`, boxShadow: "var(--shadow-sm)",
-            }}>🧭 {rb("方位ナビ")}</button>
-            <button onClick={() => { setShowCipher(true); setShowBack(false); }} style={{
-              fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "7px 14px", borderRadius: 999,
-              color: CHIIKI_COLOR, background: "#fff", border: `2px solid ${CHIIKI_COLOR}`, boxShadow: "var(--shadow-sm)",
-            }}>🏯 {rb("奈良市たんけん")}</button>
-            <button onClick={() => { setShowMap(true); setShowBack(false); }} style={{
-              fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "7px 14px", borderRadius: 999,
-              color: MAP_COLOR, background: "#fff", border: `2px solid ${MAP_COLOR}`, boxShadow: "var(--shadow-sm)",
-            }}>🔍 {rb("絵地図の読み取り")}</button>
-            <button onClick={() => { setShowBack((v) => !v); }} style={{
+            {/* 原則2：4つのPBLボタンを「🎮 あそんで まなぶ」1つに束ねる（押すとメニューが開く） */}
+            <div style={{ position: "relative" }}>
+              <button onClick={() => { setShowPlayMenu((v) => !v); }} style={{
+                fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "7px 14px", borderRadius: 999,
+                color: "#fff", background: grad(INDIGO), border: `2px solid ${INDIGO_DK}`, boxShadow: "var(--shadow-sm)",
+              }}>🎮 {rb("あそんで まなぶ")} {showPlayMenu ? "▲" : "▼"}</button>
+              {showPlayMenu && (
+                <div style={{
+                  position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 50,
+                  background: "rgba(18,24,58,.96)", border: `2px solid ${INDIGO}`, borderRadius: 14,
+                  padding: 10, display: "flex", flexDirection: "column", gap: 7, minWidth: 210,
+                  boxShadow: "0 16px 40px -14px rgba(0,0,0,.7)", textAlign: "left",
+                }}>
+                  <div style={{ fontSize: 10, fontWeight: 900, color: SPACE_SUB, padding: "0 2px 2px" }}>{rb("あそびを えらぶ")}</div>
+                  <button onClick={() => { setShowPBL(true); setShowBack(false); setShowPlayMenu(false); }} style={{
+                    fontSize: 12, fontWeight: 900, cursor: "pointer", padding: "8px 12px", borderRadius: 10, textAlign: "left",
+                    color: SYM_COLOR, background: "#fff", border: `2px solid ${SYM_COLOR}`,
+                  }}>🗺️ {rb("地図記号マスター")}</button>
+                  <button onClick={() => { setShowBattle(true); setShowBack(false); setShowPlayMenu(false); }} style={{
+                    fontSize: 12, fontWeight: 900, cursor: "pointer", padding: "8px 12px", borderRadius: 10, textAlign: "left",
+                    color: HOUI_COLOR, background: "#fff", border: `2px solid ${HOUI_COLOR}`,
+                  }}>🧭 {rb("方位ナビ")}</button>
+                  <button onClick={() => { setShowCipher(true); setShowBack(false); setShowPlayMenu(false); }} style={{
+                    fontSize: 12, fontWeight: 900, cursor: "pointer", padding: "8px 12px", borderRadius: 10, textAlign: "left",
+                    color: CHIIKI_COLOR, background: "#fff", border: `2px solid ${CHIIKI_COLOR}`,
+                  }}>🏯 {rb("奈良市たんけん")}</button>
+                  <button onClick={() => { setShowMap(true); setShowBack(false); setShowPlayMenu(false); }} style={{
+                    fontSize: 12, fontWeight: 900, cursor: "pointer", padding: "8px 12px", borderRadius: 10, textAlign: "left",
+                    color: MAP_COLOR, background: "#fff", border: `2px solid ${MAP_COLOR}`,
+                  }}>🔍 {rb("絵地図の読み取り")}</button>
+                </div>
+              )}
+            </div>
+            <button onClick={() => { setShowBack((v) => !v); setShowPlayMenu(false); }} style={{
               fontSize: 11.5, fontWeight: 900, cursor: "pointer", padding: "7px 14px", borderRadius: 999,
               color: "#fff", background: grad(GREEN), border: "none", boxShadow: "0 8px 16px -8px rgba(22,24,31,.5)",
             }}>{showBack ? <>◀ {rb("おもてに もどる")}</> : <>{rb("つなげる")}（{rb("うらを見る")}）↗</>}</button>
@@ -655,9 +699,44 @@ function App() {
         </div>
       </div>
 
+      {/* ===== 原則1：「つぎは これ！」フォーカスカード（画面で一番目立つ・黄は1点集中） ===== */}
+      <div style={{
+        marginTop: 12,
+        background: "linear-gradient(160deg, rgba(18,24,58,.62), rgba(10,14,40,.66))",
+        border: `2.5px solid ${FOCUS_YELLOW}`, borderRadius: 18,
+        boxShadow: `0 0 0 4px rgba(255,194,75,.16), 0 16px 40px -16px rgba(0,0,0,.7)`,
+        padding: "14px 18px", display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap",
+      }}>
+        {allClear ? (
+          <div style={{ flex: "1 1 240px" }}>
+            <div style={{ fontSize: 12, fontWeight: 900, color: FOCUS_YELLOW, letterSpacing: 1 }}>{rb("つぎは これ！")}</div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: SPACE_INK, lineHeight: 1.2, marginTop: 4 }}>{rb("ぜんぶ できた！")}🎉</div>
+            <div style={{ fontSize: 12, fontWeight: 800, color: SPACE_SUB, marginTop: 4 }}>{rb("たしかめテストに ちょうせんしよう！")}</div>
+          </div>
+        ) : (
+          <>
+            <div style={{ flex: "1 1 240px", minWidth: 220 }}>
+              <div style={{ fontSize: 12, fontWeight: 900, color: FOCUS_YELLOW, letterSpacing: 1, display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: 16 }}>👉</span>{rb("つぎは これ！")}
+              </div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: SPACE_INK, lineHeight: 1.25, marginTop: 5 }}>
+                {rb("ステージ")}{nextStage}「{rb(nextStageObj.title)}」<span style={{ color: FOCUS_YELLOW }}>・{DEPTH[nextLv].badge} {rb(DEPTH[nextLv].name)}</span>
+              </div>
+              <div style={{ fontSize: 12, fontWeight: 800, color: SPACE_SUB, marginTop: 4 }}>{rb(DEPTH[nextLv].desc)}</div>
+            </div>
+            <button onClick={startNext} style={{
+              flex: "none", fontSize: 18, fontWeight: 900, cursor: "pointer",
+              padding: "14px 28px", borderRadius: 14, color: "#3a2a00",
+              background: grad(FOCUS_YELLOW), border: `2px solid ${FOCUS_YELLOW_DK}`,
+              boxShadow: `0 8px 18px -8px rgba(245,180,0,.7)`, whiteSpace: "nowrap",
+            }}>{rb("はじめる")} →</button>
+          </>
+        )}
+      </div>
+
       {/* ===== 上段：立体ビュー ===== */}
       <div ref={sceneBoxRef} style={{
-        marginTop: 10, height: DRAW_H * fit, borderRadius: 18, border: "1px solid rgba(255,255,255,.12)",
+        marginTop: 10, height: DRAW_H * fit, borderRadius: 18, border: `1.5px solid ${INDIGO}`,
         background: "linear-gradient(160deg, rgba(22,28,62,.55), rgba(10,14,40,.62))", position: "relative", overflow: "hidden", perspective: 1500,
         boxShadow: "0 18px 44px -18px rgba(0,0,0,.7)",
       }}>
@@ -687,8 +766,8 @@ function App() {
                 const L = (p, q, col) => <line x1={OX + p.left} y1={OY + p.top} x2={OX + q.left} y2={OY + q.top} stroke={col} strokeWidth="3.5" strokeLinecap="round" markerEnd={`url(#ah-${col.replace('#','')})`} />;
                 const mk = (col) => <marker id={`ah-${col.replace('#','')}`} markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" refX="4" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill={col} /></marker>;
                 return (<>
-                  <defs>{mk(BLUE)}{mk(AMBER_MAIN)}{mk(GREEN)}</defs>
-                  {L(o, ox, BLUE)}{L(o, oy, AMBER_MAIN)}{L(o, oz, GREEN)}
+                  <defs>{mk(INDIGO)}{mk(GREEN)}</defs>
+                  {L(o, ox, INDIGO)}{L(o, oy, INDIGO)}{L(o, oz, GREEN)}
                 </>);
               })()}
             </svg>
@@ -699,8 +778,8 @@ function App() {
               const oz = wrap(px(-30, -44, DEEP * 0.5));    // つなげる：短い線の先
               const base = { position: "absolute", fontSize: 15, fontWeight: 900, whiteSpace: "nowrap", textShadow: labelShadow };
               return (<>
-                <div style={{ ...base, ...ox, color: SPACE_GOLD }}>すすむ →</div>
-                <div style={{ ...base, ...oy, color: SPACE_GOLD }}>ふかめる ↓</div>
+                <div style={{ ...base, ...ox, color: "#9DBDE8" }}>すすむ →</div>
+                <div style={{ ...base, ...oy, color: "#9DBDE8" }}>ふかめる ↓</div>
                 <div style={{ ...base, ...oz, color: "#5BD9AD" }}>つなげる ↗</div>
               </>);
             })()}
@@ -720,15 +799,15 @@ function App() {
               return (
                 <button key={s.n} onClick={() => goGuide(s.n, 0)} style={{
                   position: "absolute", ...p, width: CW, height: HEADER - 6,
-                  background: isOpen ? grad(BLUE) : "#FBF3DE", color: isOpen ? "#fff" : INK,
-                  border: `2px solid ${BLUE}`, borderRadius: 12, cursor: "pointer", padding: "5px 8px", boxSizing: "border-box", textAlign: "left",
-                  boxShadow: isOpen ? "0 8px 18px -10px rgba(154,106,0,.6)" : "none",
+                  background: isOpen ? grad(FOCUS_YELLOW) : "#EDF1F8", color: INK,
+                  border: `2px solid ${isOpen ? FOCUS_YELLOW_DK : INDIGO}`, borderRadius: 12, cursor: "pointer", padding: "5px 8px", boxSizing: "border-box", textAlign: "left",
+                  boxShadow: isOpen ? "0 8px 18px -10px rgba(245,180,0,.6)" : "none",
                 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ width: 22, height: 22, borderRadius: 8, background: isOpen ? "#fff" : BLUE, color: isOpen ? BLUE : "#fff", fontSize: 12, fontWeight: 900, display: "grid", placeItems: "center", flex: "none" }}>{s.n}</span>
+                    <span style={{ width: 22, height: 22, borderRadius: 8, background: isOpen ? "#3a2a00" : INDIGO, color: isOpen ? FOCUS_YELLOW : "#fff", fontSize: 12, fontWeight: 900, display: "grid", placeItems: "center", flex: "none" }}>{s.n}</span>
                     <span style={{ fontSize: 12, fontWeight: 900, lineHeight: 1.25 }}>{furi(s.title)}<br /><span style={{ fontSize: 9, opacity: .9, fontWeight: 800 }}>{furi(s.sub)}</span></span>
                   </div>
-                  <div style={{ fontSize: 10.5, fontWeight: 900, color: isOpen ? "#FFF0D8" : (built ? GREEN_TX : SUB), textAlign: "right", marginTop: 3 }}>{built ? <>✓{rb("つかえる")}</> : rb("じゅんび中")}</div>
+                  <div style={{ fontSize: 10.5, fontWeight: 900, color: isOpen ? "#5a4300" : (built ? GREEN_TX : SUB), textAlign: "right", marginTop: 3 }}>{built ? <>✓{rb("つかえる")}</> : rb("じゅんび中")}</div>
                 </button>
               );
             })}
@@ -764,16 +843,16 @@ function App() {
               return (
                 <button onClick={() => { setShowBack(false); setShowTest(true); }} style={{
                   position: "absolute", ...p, width: CW + 8, height: h,
-                  background: grad(TEST_COLOR), color: "#fff",
-                  border: `2.5px solid ${TEST_COLOR}`, borderRadius: 18, cursor: "pointer",
-                  boxShadow: allDone ? "0 0 0 4px #FCE9C6, 0 8px 18px rgba(138,90,43,.45)" : "0 6px 16px rgba(138,90,43,.4)",
+                  background: grad(INDIGO), color: "#fff",
+                  border: `2.5px solid ${allDone ? FOCUS_YELLOW : INDIGO_DK}`, borderRadius: 18, cursor: "pointer",
+                  boxShadow: allDone ? "0 0 0 4px rgba(255,194,75,.5), 0 8px 18px rgba(46,90,138,.45)" : "0 6px 16px rgba(46,90,138,.4)",
                   padding: "10px 6px", boxSizing: "border-box",
                   display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 7, textAlign: "center",
                 }}>
                   <span style={{ fontSize: 30 }}>🏁</span>
                   <span style={{ fontSize: 14.5, fontWeight: 900, lineHeight: 1.3 }}>{rb("たしかめ")}<br />{rb("テスト")}</span>
                   <span style={{ fontSize: 9.5, fontWeight: 800, opacity: .92, lineHeight: 1.45 }}>{rb("ぜんぶ できたら")}<br />{rb("ちょうせん！")}</span>
-                  <span style={{ marginTop: 2, fontSize: 10, fontWeight: 900, background: "#fff", color: TEST_COLOR, borderRadius: 999, padding: "3px 9px" }}>{rb("はじめる")} →</span>
+                  <span style={{ marginTop: 2, fontSize: 10, fontWeight: 900, background: "#fff", color: INDIGO_DK, borderRadius: 999, padding: "3px 9px" }}>{rb("はじめる")} →</span>
                 </button>
               );
             })()}
