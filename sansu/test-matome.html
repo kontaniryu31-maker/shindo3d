@@ -49,10 +49,11 @@
   .pvcell{ flex:0 0 auto; text-align:center; }
   .pvcell .lbl{ font-size:10.5px; font-weight:900; color:var(--accent); margin-bottom:1px; }
   /* 演算子を左に出すラッパ（けた数がちがっても列ぞろえが くずれない） */
-  .pvgrid{ display:inline-flex; align-items:flex-end; gap:1px; }
+  .pvgrid{ display:inline-flex; align-items:flex-start; gap:1px; }
   .pvops{ display:flex; flex-direction:column; font-size:13px; font-weight:900; color:var(--accent); line-height:6mm; }
   .pvops .blanksp{ height:5mm; }      /* ヘッダ行のぶん */
   .pvops .o1{ height:6mm; }           /* 1ぎょう目（記号なし） */
+  .pvops > span:last-child{ margin-top:2.8px; } /* セルの罫線ぶんの ずれを補正して2行目に そろえる */
   table.pv{ border-collapse:collapse; }
   table.pv td,table.pv th{ width:8.5mm; height:6mm; border:1.3px solid var(--line); text-align:center; font-size:14px; font-weight:900; }
   table.pv th{ height:5mm; font-size:8px; font-weight:900; background:#F2F5F6; color:#556; line-height:1; }
